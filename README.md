@@ -6,7 +6,14 @@ TruyenVietHay là một ứng dụng web full-stack hiện đại cho phép ngư
 
 *   **Đọc Truyện**: Giao diện đọc truyện tùy biến, hỗ trợ mục lục, điều hướng chương.
 *   **Quản Lý Tài Khoản**: Đăng ký, đăng nhập, quản lý thông tin cá nhân.
-*   **Hệ Thống Phân Cấp**: Theo dõi cấp độ người dùng, lịch sử tương tác.
+*   **Hệ Thống Gamification (Mới)**:
+    *   **Cấp Độ & Tu Tiên**: Hệ thống phân cấp người dùng dựa trên điểm kinh nghiệm (EXP).
+    *   **Nhiệm Vụ (User Tasks)**: Hệ thống nhiệm vụ hàng ngày và tự động (đọc chương, cập nhật profile).
+    *   **Đổi Thưởng**: Cửa hàng vật phẩm, sử dụng **Linh Thạch** (Currency) để mua quà tặng và vật phẩm.
+    *   **Kho Đồ**: Quản lý vật phẩm đã nhận/mua.
+*   **Hiệu Năng & Caching (Mới)**:
+    *   **Cache Layer**: Tích hợp `node-cache` giảm tải Database cho các truy vấn phổ biến (BXH, Truyện hot).
+    *   **Database Query Optimization**: Tối ưu hóa Indexes và Fulltext Search.
 *   **Tương Tác**: Bình luận, đánh giá, yêu thích, theo dõi truyện.
 *   **Đăng Truyện**: Người dùng có thể upload truyện, quản lý chương (cần quyền admin/fresher).
 *   **Tìm Kiếm Nâng Cao**: Lọc theo thể loại, trạng thái, số chương.
