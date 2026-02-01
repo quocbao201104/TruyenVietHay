@@ -126,6 +126,19 @@ const getChapterBySlug = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chương!" });
     }
 
+    // GAMIFICATION TRIGGER
+    if (req.user && req.user.id) {
+         try {
+            const taskService = require("../services/task.service");
+            // Trigger "Read Chapter" tasks.
+            // Using "Đọc chương đầu tiên" as the key task name from seeds.
+            // Note: This matches the seed data task_name.
+            await taskService.completeTaskByName(req.user.id, "Đọc chương đầu tiên");
+         } catch (e) {
+             console.error("AutoTask Error:", e.message);
+         }
+    }
+
     res.json(chapter);
   } catch (error) {
     console.error("getChapterBySlug error:", error);

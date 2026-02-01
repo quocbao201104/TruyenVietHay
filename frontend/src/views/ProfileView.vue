@@ -95,6 +95,15 @@
               </span>
             </div>
           </div>
+          
+          <div class="gamification-section" v-if="currentLevel">
+             <LevelCard 
+                :level="currentLevel"
+                :points="userPoints?.total_points || 0"
+                :nextLevelPoints="currentLevel?.next_level_points || 100" 
+                :nextLevelName="currentLevel?.next_level_name || ''"
+             />
+          </div>
 
           <div class="profile-nav">
             <router-link to="/user/cai-dat-thong-tin" class="profile-nav-tab">
@@ -146,12 +155,28 @@ import { computed, onMounted } from "vue";
 import { useAuthStore } from "@/modules/auth/auth.store";
 import { useUserStore } from "@/modules/user/user.store";
 import { getAvatarUrl } from "@/config/constants";
+import LevelCard from "@/components/gamification/LevelCard.vue";
+import { useGamification } from "@/composables/useGamification";
+import { watch } from "vue";
 
 export default {
   name: "ProfileView",
   setup() {
     const authStore = useAuthStore();
     const userStore = useUserStore();
+    const { 
+        currentLevel, 
+        userPoints, 
+        fetchCurrentLevel, 
+        fetchUserPoints 
+    } = useGamification();
+
+    watch(() => userStore.user, (newUser) => {
+        if (newUser && newUser.id) {
+            fetchUserPoints(newUser.id);
+            fetchCurrentLevel(newUser.id);
+        }
+    }, { immediate: true });
 
     onMounted(() => {
       userStore.fetchUserProfile();
@@ -205,8 +230,13 @@ export default {
       handleAvatarError,
       formatDate,
       formatGender,
+      currentLevel,
+      userPoints
     };
   },
+  components: {
+      LevelCard
+  }
 };
 </script>
 

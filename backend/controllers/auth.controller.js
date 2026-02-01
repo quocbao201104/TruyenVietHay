@@ -181,6 +181,17 @@ exports.updateMe = async (req, res) => {
         const updatedUserResults = await User.findById(userId);
         const updatedUser = updatedUserResults[0];
 
+        // START GAMIFICATION TRIGGER
+        try {
+            const taskService = require("../services/task.service");
+            // Auto-complete task "Cập nhật hồ sơ"
+            // Note: We don't await strictly or we catch error so it doesn't fail the update if task fails
+            await taskService.completeTaskByName(userId, "Cập nhật hồ sơ");
+        } catch (taskErr) {
+            console.error("Gamification Trigger Error:", taskErr.message);
+        }
+        // END GAMIFICATION TRIGGER
+
         res.json({ message: "Cập nhật thông tin thành công!", user: updatedUser });
     } catch (err) {
         res.status(500).json({

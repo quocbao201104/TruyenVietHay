@@ -1,12 +1,20 @@
 const db = require("../config/db");
 
 const UserLevelHistory = {
-  getByUserId: async (userId) => {
+  getByUserId: async (userId, limit = 10, offset = 0) => {
     const [rows] = await db.query(
-      "SELECT * FROM user_levels_history WHERE user_id = ? ORDER BY start_date DESC",
-      [userId]
+      "SELECT * FROM user_levels_history WHERE user_id = ? ORDER BY start_date DESC LIMIT ? OFFSET ?",
+      [userId, parseInt(limit), parseInt(offset)]
     );
     return rows;
+  },
+
+  getCountByUserId: async (userId) => {
+    const [rows] = await db.query(
+      "SELECT COUNT(*) as total FROM user_levels_history WHERE user_id = ?",
+      [userId]
+    );
+    return rows[0].total;
   },
 
   create: async (data) => {

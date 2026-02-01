@@ -3,10 +3,27 @@ const router = express.Router();
 const userRewardController = require("../controllers/userReward.controller");
 const { authenticateToken } = require("../middleware/auth");
 
-// Route lấy phần thưởng của người dùng
+// 1. Get User Rewards
 router.get("/:userId", authenticateToken, userRewardController.getUserRewards);
 
-// Route nhận phần thưởng
-router.post("/claim", authenticateToken, userRewardController.claimReward);
+// 2. Buy Reward (Spend Spirit Stones)
+router.post("/buy", authenticateToken, userRewardController.buyReward);
+
+// 3. Claim Milestone/Level Reward (Free if eligible)
+router.post("/milestone", authenticateToken, userRewardController.claimMilestone);
+
+// 4. Claim/Activate an Instance (Already owned/unlocked)
+router.post(
+  "/:userRewardId/claim",
+  authenticateToken,
+  userRewardController.claimRewardInstance
+);
+
+// 5. Use/Consume Item
+router.post(
+  "/:userRewardId/use",
+  authenticateToken,
+  userRewardController.useReward
+);
 
 module.exports = router;

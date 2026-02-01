@@ -1,9 +1,11 @@
 const UserLevel = require("../models/userLevels.model");
 
-const getAllLevels = async () => {
+const getAllLevels = async (pagination = {}) => {
   try {
-    const levels = await UserLevel.getAll();
-    return levels;
+    const { limit = 10, offset = 0 } = pagination;
+    const levels = await UserLevel.getAll(limit, offset);
+    const total = await UserLevel.getCount();
+    return { data: levels, total };
   } catch (error) {
     throw new Error("Lỗi khi lấy danh sách cấp bậc: " + error.message);
   }

@@ -14,6 +14,7 @@ import HistoryView from "@/views/HistoryView.vue";
 import TopView from "@/views/TopView.vue";
 import SearchView from "@/views/SearchView.vue"; 
 import RankingView from "@/views/RankingView.vue";
+import TasksView from "@/views/TasksView.vue";
 
 import { useAuthStore } from "@/modules/auth/auth.store";
 import StoryDetailView from "@/views/StoryDetailView.vue";
@@ -72,6 +73,12 @@ const routes: Array<RouteRecordRaw> = [
         path: "/user/truyen-theo-doi",
         name: "Favorites",
         component: FavoritesView,
+        meta: { requiresAuth: true },
+    },
+    {
+        path: "/nhiem-vu",
+        name: "Tasks",
+        component: TasksView,
         meta: { requiresAuth: true },
     },
     {

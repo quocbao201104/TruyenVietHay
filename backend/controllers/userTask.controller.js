@@ -1,12 +1,14 @@
 // controllers/task.controller.js
 const taskService = require("../services/task.service");
+const { successResponse, errorResponse } = require("../utils/apiResponse");
 
 const getAllTasks = async (req, res) => {
   try {
-    const tasks = await taskService.getAllTasks();
-    res.json(tasks);
+    const userId = req.user.id;
+    const tasks = await taskService.getAllTasks(userId);
+    return successResponse(res, tasks, "Lấy danh sách nhiệm vụ thành công");
   } catch (err) {
-    res.status(500).json({ message: "Lỗi khi lấy danh sách nhiệm vụ" });
+    return errorResponse(res, "Lỗi khi lấy danh sách nhiệm vụ", 500);
   }
 };
 
@@ -14,23 +16,21 @@ const assignTask = async (req, res) => {
   try {
     const { user_id, task_id } = req.body;
     const result = await taskService.assignTask(user_id, task_id);
-    res.status(200).json({ message: "Gán nhiệm vụ thành công", result });
+    return successResponse(res, result, "Gán nhiệm vụ thành công");
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return errorResponse(res, err.message, 400);
   }
 };
 
 const completeTask = async (req, res) => {
   try {
-    // console.log("req.user:", req.user); 
-
     const { task_id } = req.body;
     const user_id = req.user.id;
 
     const result = await taskService.completeTask(user_id, task_id);
-    res.status(200).json({ message: "Hoàn thành nhiệm vụ thành công", result });
+    return successResponse(res, result, "Hoàn thành nhiệm vụ thành công");
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return errorResponse(res, err.message, 500);
   }
 };
 

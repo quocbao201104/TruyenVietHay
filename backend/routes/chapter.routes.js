@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const chapterController = require("../controllers/chapter.controller");
-const { authenticateToken, authorizeRoles } = require("../middleware/auth");
+const { authenticateToken, authorizeRoles, optionalAuthenticateToken } = require("../middleware/auth");
 // const {
 // validateCreateChapter,
 // validateUpdateChapter,
@@ -28,7 +28,7 @@ router.get(
 // Lấy chi tiết 1 chương theo ID
 router.get("/:id", chapterController.getChapterById);
 
-router.get("/slug/:storySlug/:chapterSlug", chapterController.getChapterBySlug); //
+router.get("/slug/:storySlug/:chapterSlug", optionalAuthenticateToken, chapterController.getChapterBySlug); //
 // Lấy chi tiết 1 chương theo slug
 
 router.put(

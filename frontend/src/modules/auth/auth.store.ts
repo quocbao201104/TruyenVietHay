@@ -101,9 +101,12 @@ export const useAuthStore = defineStore("auth", {
         try {
           const response = await getMeApi();
           this.setUser(response.user);
-        } catch (error) {
-          console.error("Token không hợp lệ hoặc hết hạn", error);
-          this.clearAuth();
+        } catch (error: any) {
+          console.error("Lỗi xác thực:", error);
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+             this.clearAuth();
+          }
+           // Don't clear auth on network errors or 500s, let the user retry or see error state
         }
       } else {
           this.setUser(null);

@@ -200,6 +200,9 @@
             <router-link to="/user/thong-tin-ca-nhan" class="dropdown-item">
               <i class="fas fa-user"></i> Thông Tin Cá Nhân
             </router-link>
+            <router-link to="/nhiem-vu" class="dropdown-item">
+              <i class="fas fa-tasks"></i> Nhiệm Vụ
+            </router-link>
             <router-link to="/user/truyen-theo-doi" class="dropdown-item">
               <i class="fas fa-bookmark"></i> Truyện Theo Dõi
             </router-link>
