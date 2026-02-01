@@ -91,6 +91,11 @@
             <router-link v-if="firstChapterSlug && story" :to="`/truyen-chu/${story.slug}/${firstChapterSlug}`" class="btn-read">
                 <i class="fas fa-book-open"></i> Đọc Ngay
             </router-link>
+            <button v-else class="btn-read disabled" disabled>
+                 <i class="fas fa-spinner fa-spin" v-if="chapterLoading"></i>
+                 <i class="fas fa-book-open" v-else></i> 
+                 {{ chapterLoading ? 'Đang tải...' : 'Đọc Ngay' }}
+            </button>
             
             <button @click="toggleFollow" class="btn-follow" :class="{ 'followed': isFollowed }">
                 <i class="fas" :class="isFollowed ? 'fa-heart' : 'fa-heart-circle-plus'"></i>
@@ -499,6 +504,15 @@ watch(() => route.params.slug, (newSlug, oldSlug) => {
     background: linear-gradient(135deg, #16a34a, #15803d);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.btn-read.disabled, .btn-read:disabled {
+    background: #4b5563;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+    color: #d1d5db;
 }
 
 .btn-follow {

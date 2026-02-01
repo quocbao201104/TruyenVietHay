@@ -568,23 +568,22 @@ const truncateText = (text: string, length: number) => {
   /* Enable Mobile Slider */
   .hero-mobile-slider {
     display: flex;
-    gap: 16px;
     overflow-x: auto;
     padding-bottom: 20px;
-    margin: 0 -16px; /* Break content width */
-    padding-left: 16px;
-    padding-right: 16px;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
   }
   
   .hero-mobile-slider::-webkit-scrollbar {
-    display: none;
+    display: none;  
   }
   
   .hero-slide-item {
-     flex: 0 0 85%; /* Shows part of next slide to encourage scroll */
-     height: 220px;
+     flex: 0 0 100%;
+     width: 100%;
+     aspect-ratio: 16/9;
+     height: auto;
      border-radius: 12px;
      overflow: hidden;
      position: relative;

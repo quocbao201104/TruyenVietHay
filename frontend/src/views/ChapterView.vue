@@ -286,7 +286,7 @@ watch(() => [route.params.chapterSlug, route.params.storySlug], async ([newSlug,
 }
 
 .chapter-title {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 800;
   margin-top: 1rem;
   line-height: 1.3;
