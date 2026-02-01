@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { getOrSet } = require("../utils/cache");
 
 const Rating = {
   // Tạo hoặc cập nhật đánh giá
@@ -33,32 +34,40 @@ const Rating = {
     return rows[0];
   },
 
-  // Lấy tất cả truyện có rating, sắp xếp theo rating trung bình
+  //Lấy tất cả truyện có rating, sắp xếp theo rating trung bình
   getAllTopRatedStories: async (limit = 50) => {
-    const [rows] = await db.query(
-      `SELECT 
-        t.id,
-        t.ten_truyen,
-        t.slug,
-        t.anh_bia,
-        t.tac_gia,
-        t.luot_xem,
-        t.luot_thich,
-        t.trang_thai,
-        t.thoi_gian_cap_nhat,
-        t.so_luong_chuong,
-        AVG(r.rating) AS avg_rating,
-        COUNT(r.id) AS total_ratings
-       FROM truyen_new t
-       INNER JOIN ratings r ON t.id = r.truyen_id
-       WHERE t.trang_thai_kiem_duyet = 'duyet'
-       GROUP BY t.id
-       HAVING COUNT(r.id) > 0
-       ORDER BY avg_rating DESC, total_ratings DESC
-       LIMIT ?`,
-      [limit]
+    const cacheKey = `topRated:${limit}`;
+    
+    return getOrSet(
+      cacheKey,
+      600, // 10 minutes TTL (expensive aggregation with JOIN)
+      async () => {
+        const [rows] = await db.query(
+          `SELECT 
+            t.id,
+            t.ten_truyen,
+            t.slug,
+            t.anh_bia,
+            t.tac_gia,
+            t.luot_xem,
+            t.luot_thich,
+            t.trang_thai,
+            t.thoi_gian_cap_nhat,
+            t.so_luong_chuong,
+            AVG(r.rating) AS avg_rating,
+            COUNT(r.id) AS total_ratings
+           FROM truyen_new t
+           INNER JOIN ratings r ON t.id = r.truyen_id
+           WHERE t.trang_thai_kiem_duyet = 'duyet'
+           GROUP BY t.id
+           HAVING COUNT(r.id) > 0
+           ORDER BY avg_rating DESC, total_ratings DESC
+           LIMIT ?`,
+          [limit]
+        );
+        return rows;
+      }
     );
-    return rows;
   },
 };
 

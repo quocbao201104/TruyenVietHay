@@ -151,15 +151,48 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes,
-    scrollBehavior(to, from, savedPosition) {
-        // Always scroll to top when navigating between routes
-        return { top: 0 };
-    },
+  history: createWebHistory(),
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition;
+
+    if (to.name === 'story-detail') {
+      return { top: 0 };
+    }
+
+    return false; // giữ scroll cho list
+  },
+});
+
+router.afterEach((to, from) => {
+  const attemptScrollToTop = () => {
+      window.scrollTo(0, 0);
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      const app = document.getElementById('app');
+      if (app) app.scrollTop = 0;
+  };
+
+  // Immediate
+  attemptScrollToTop();
+
+  // Frame 1
+  requestAnimationFrame(() => {
+    attemptScrollToTop();
+    // Frame 2
+    requestAnimationFrame(() => {
+      attemptScrollToTop();
+    });
+  });
 });
 
 router.beforeEach(async (to, from, next) => {
+    // FIX: Blur active element (button/link) before navigation to prevent
+    // browser from restoring scroll position to that element on the new page.
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+
     const authStore = useAuthStore();
     if (!authStore.isInitialized) {
         try {

@@ -7,7 +7,13 @@
         :key="story.id" 
         class="hero-slide-item"
       >
-        <router-link :to="`/truyen-chu/${story.slug}`" class="slide-content">
+        <div 
+          @click="navigateToStory(story.slug)" 
+          class="slide-content" 
+          role="link" 
+          tabindex="0"
+          style="cursor: pointer"
+        >
           <img :src="getImageUrl(story.anh_bia)" class="slide-bg" loading="lazy" />
           <div class="slide-overlay"></div>
           <div class="slide-info">
@@ -18,7 +24,7 @@
                <span><i class="fas fa-eye"></i> {{ formatNumber(story.luot_xem) }}</span>
              </div>
           </div>
-        </router-link>
+        </div>
       </div>
     </div>
 
@@ -44,12 +50,12 @@
           <p class="main-summary">{{ truncateText(mainStory.mo_ta, 120) }}</p>
           
           <div class="actions">
-            <router-link :to="`/truyen-chu/${mainStory.slug}`" class="btn-read-now">
+            <div @click="navigateToStory(mainStory.slug)" class="btn-read-now" role="link" tabindex="0" style="cursor: pointer">
               Đọc Ngay <i class="fas fa-arrow-right"></i>
-            </router-link>
-            <router-link :to="`/truyen-chu/${mainStory.slug}`" class="btn-info">
+            </div>
+            <div @click="navigateToStory(mainStory.slug)" class="btn-info" role="link" tabindex="0" style="cursor: pointer">
               <i class="fas fa-info-circle"></i> Chi tiết
-            </router-link>
+            </div>
           </div>
         </div>
 
@@ -68,11 +74,14 @@
     <div class="side-trending desktop-only">
       <h3 class="side-title">Thịnh Hành <i class="fas fa-chart-line"></i></h3>
       <div class="trending-list">
-        <router-link 
+        <div 
           v-for="(story, index) in sideStories" 
           :key="story.id" 
-          :to="`/truyen-chu/${story.slug}`"
+          @click="navigateToStory(story.slug)"
           class="trending-item"
+          role="link"
+          tabindex="0"
+          style="cursor: pointer"
         >
           <div class="item-rank" :class="`rank-${getRank(index)}`">{{ getRank(index) }}</div>
           <img 
@@ -88,7 +97,7 @@
               <span class="meta-views"><i class="fas fa-eye"></i> {{ formatNumber(story.luot_xem) }}</span>
             </div>
           </div>
-        </router-link>
+        </div>
       </div>
     </div>
   </div>
@@ -96,7 +105,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { getImageUrl } from "@/config/constants";
+
+const router = useRouter();
+
+const navigateToStory = (slug: string) => {
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+    router.push(`/truyen-chu/${slug}`);
+};
 
 const props = defineProps({
   stories: {

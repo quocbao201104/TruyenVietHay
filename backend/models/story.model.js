@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const { getOrSet } = require("../utils/cache");
 
 const StoryModel = {
   create: async (storyData) => {
@@ -434,18 +435,26 @@ const StoryModel = {
   },
 
   getTopMonthlyStories: async (limit = 10) => {
-    const [rows] = await db.query(
-      `SELECT tn.*, IFNULL(SUM(tv.so_luot_xem), 0) as luot_xem_thang
-       FROM truyen_new tn
-       JOIN truyen_views tv ON tn.id = tv.truyen_id
-       WHERE tv.ngay_xem >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-         AND tn.trang_thai_kiem_duyet = 'duyet'
-       GROUP BY tn.id
-       ORDER BY luot_xem_thang DESC
-       LIMIT ?`,
-      [parseInt(limit)]
+    const cacheKey = `topMonthly:${limit}`;
+    
+    return getOrSet(
+      cacheKey,
+      600, // 10 minutes TTL (expensive aggregation query)
+      async () => {
+        const [rows] = await db.query(
+          `SELECT tn.*, IFNULL(SUM(tv.so_luot_xem), 0) as luot_xem_thang
+           FROM truyen_new tn
+           JOIN truyen_views tv ON tn.id = tv.truyen_id
+           WHERE tv.ngay_xem >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+             AND tn.trang_thai_kiem_duyet = 'duyet'
+           GROUP BY tn.id
+           ORDER BY luot_xem_thang DESC
+           LIMIT ?`,
+          [parseInt(limit)]
+        );
+        return rows;
+      }
     );
-    return rows;
   },
 };
 

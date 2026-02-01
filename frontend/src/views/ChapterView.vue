@@ -222,6 +222,14 @@ const loadData = async () => {
     if (chapter.value) {
         saveReadingHistory(chapter.value.truyen_id, chapter.value.id).catch(console.error);
         incrementViewCount(chapter.value.truyen_id).catch(console.error);
+        
+        // Smart Preload Next Chapter
+        if (hasNext.value) {
+            const nextCh = chapterList.value[currentIndex.value + 1];
+            if (nextCh) {
+                store.preloadChapter(nextCh.slug, storySlug);
+            }
+        }
     }
   }
 };

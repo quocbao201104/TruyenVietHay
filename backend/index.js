@@ -70,6 +70,7 @@ app.use("/api/rewards", require("./routes/reward.routes"));
 app.use("/api/user-rewards", require("./routes/userReward.routes"));
 app.use("/api/ratings", require("./routes/rating.routes"));
 app.use("/api/notifications", require("./routes/notification.routes"));
+app.use("/api/admin", require("./routes/admin.cache.routes")); // Cache monitoring endpoints
 
 app.get("/", (req, res) => {
     res.send("Server is awake!");

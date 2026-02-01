@@ -87,18 +87,21 @@
             <div class="sidebar-widget ranking-widget">
               <h3 class="widget-title">🔥 Bảng Xếp Hạng</h3>
               <div class="ranking-list">
-                <router-link 
+                <div 
                   v-for="(story, index) in topViewStories.slice(0, 10)" 
                   :key="story.id" 
-                  :to="`/truyen-chu/${story.slug}`"
+                  @click="navigateToStory(story.slug)"
                   class="ranking-item"
+                  role="link"
+                  tabindex="0"
+                  style="cursor: pointer"
                 >
                   <div class="rank-number" :class="`rank-${index + 1}`">{{ index + 1 }}</div>
                   <div class="rank-info">
                     <h4 class="rank-title">{{ story.ten_truyen }}</h4>
                     <span class="rank-views">{{ formatNumber(story.luot_xem) }} view</span>
                   </div>
-                </router-link>
+                </div>
               </div>
             </div>
 
@@ -137,6 +140,18 @@ import type { Category } from "@/types/category";
 import NewStoryCard from "@/modules/storyText/components/NewStoryCard.vue";
 import HeroGrid from "@/components/home/HeroGrid.vue"; 
 import ContinueReadingStrip from "@/components/home/ContinueReadingStrip.vue";
+import { useStoryStore } from "@/modules/storyText/story.store";
+import { useRouter } from "vue-router";
+
+const storyStore = useStoryStore();
+const router = useRouter();
+
+const navigateToStory = (slug: string) => {
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+    router.push(`/truyen-chu/${slug}`);
+};
 
 const categories = ref<Category[]>([]);
 const newStories = ref<Story[]>([]);
@@ -147,35 +162,13 @@ const completedStories = ref<Story[]>([]);
 
 const fetchAllData = async () => {
   try {
-    const categoriesData = await getAllCategories();
-    categories.value = categoriesData; // Fetch all for tag cloud (or limit if too many)
-
-    const newStoriesRes = await getPublicStories({ 
-      page: 1, 
-      limit: 10, 
-      sort_by: "thoi_gian_cap_nhat", 
-      order: "DESC" 
-    });
-    newStories.value = newStoriesRes.data;
-
-    const topViewData = await getTopViewStories(5); // Reduce if mostly for hero main
-    topViewStories.value = topViewData;
-
-    const topMonthData = await getTopMonthlyStories(5); // Fetch Top Month
-    topMonthlyStories.value = topMonthData;
-
-    const topRatedData = await getTopRatedStories(5);
-    topRatedStories.value = topRatedData;
-
-    const completedStoriesRes = await getPublicStories({
-      page: 1,
-      limit: 10,
-      trang_thai: "hoan_thanh",
-      sort_by: "thoi_gian_cap_nhat", 
-      order: "DESC" 
-    });
-    completedStories.value = completedStoriesRes.data;
-
+    // Use cached store methods instead of direct service calls
+    categories.value = await storyStore.fetchCategories();
+    newStories.value = await storyStore.fetchNewStories(10);
+    topViewStories.value = await storyStore.fetchTopViewStories(5);
+    topMonthlyStories.value = await storyStore.fetchTopMonthlyStories(5);
+    topRatedStories.value = await storyStore.fetchTopRatedStories(5);
+    completedStories.value = await storyStore.fetchCompletedStories(10);
   } catch (err) {
     console.error("Error fetching home page data:", err);
   }

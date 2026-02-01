@@ -1,5 +1,5 @@
 <template>
-  <router-link :to="`/truyen-chu/${story.slug}`" class="new-story-card">
+  <div @click="navigateToStory" class="new-story-card" role="link" tabindex="0">
     <div class="cover-wrapper">
       <img
         :src="story.anh_bia ? getImageUrl(story.anh_bia) : '/img/default-cover.png'"
@@ -34,14 +34,25 @@
         <span class="stat"><i class="fas fa-clock"></i> {{ timeAgo(story.thoi_gian_cap_nhat) }}</span>
       </div>
     </div>
-  </router-link>
+  </div>
 </template>
 
 <script setup>
 import { defineProps } from 'vue';
+import { useRouter } from 'vue-router';
 import { getImageUrl } from "@/config/constants";
 
 const props = defineProps({ story: Object });
+const router = useRouter();
+
+const navigateToStory = () => {
+    // FIX: Manually blur the active element (this card) to prevent
+    // browser focus-based scroll restoration on the destination page.
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+    }
+    router.push(`/truyen-chu/${props.story.slug}`);
+};
 
 // Local getImageUrl removed for global helper
 
@@ -97,6 +108,7 @@ const getStatusClass = (status) => {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.05);
   height: 100%;
+  cursor: pointer;
   
   /* For horizontal scroll handled by parent */
   flex-shrink: 0;

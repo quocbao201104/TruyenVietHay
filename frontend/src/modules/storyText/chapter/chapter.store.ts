@@ -28,21 +28,79 @@ export const useChapterStore = defineStore("chapter", () => {
 
     const { showSuccessToast, showErrorToast } = toast;
 
-    const fetchChapter = async (slug: string, storySlug: string) => {
-        loading.value = true;
-        error.value = null;
-        try {
-            currentChapter.value = await getChapterBySlug(slug, storySlug);
-            
-            // If we have story ID, let's fetch chapter list for navigation if not already loaded
-            if (currentChapter.value?.truyen_id && chapterList.value.length === 0) {
-                 await fetchChapterList(currentChapter.value.truyen_id);
-            }
-        } catch (err: any) {
-            error.value = err.message || "Failed to load chapter";
-        } finally {
-            loading.value = false;
+    // Cache
+    const contentCache = ref<Map<string, Chapter>>(new Map());
+
+    const cacheChapter = (slug: string, chapter: Chapter) => {
+        if (!contentCache.value.has(slug)) {
+             contentCache.value.set(slug, chapter);
+             // Optional: Limit cache size (LRU) or TTL if memory is a concern
+             // For text chapters, memory usage is usually low (10-50KB per chapter)
+             // Clean cache if too big
+             if (contentCache.value.size > 20) {
+                 const firstKey = contentCache.value.keys().next().value;
+                 if (firstKey) contentCache.value.delete(firstKey);
+             }
         }
+    };
+
+    const fetchChapter = async (slug: string, storySlug: string, isPreload = false) => {
+        // Don't set global loading state for preloads
+        if (!isPreload) {
+            loading.value = true;
+            error.value = null;
+        }
+
+        try {
+            // Check cache first
+            if (contentCache.value.has(slug)) {
+                // If this is the active chapter (not preload), update currentChapter
+                if (!isPreload) {
+                   console.log(`✅ Chapter Cache HIT: ${slug}`);
+                   currentChapter.value = contentCache.value.get(slug) || null;
+                }
+                return; // Done
+            }
+
+            // Fetch from API
+            console.log(`❌ Chapter Cache MISS: ${slug} - Fetching...`);
+            const data = await getChapterBySlug(slug, storySlug);
+            
+            // Validate data before caching
+            if (data) {
+                cacheChapter(slug, data);
+                if (!isPreload) {
+                    currentChapter.value = data;
+                }
+            }
+
+            // If we have story ID and nav list is empty, fetch nav list
+            if (data?.truyen_id && chapterList.value.length === 0) {
+                 await fetchChapterList(data.truyen_id);
+            }
+
+        } catch (err: any) {
+            if (!isPreload) {
+                 error.value = err.message || "Failed to load chapter";
+            } else {
+                console.warn(`Failed to preload chapter ${slug}:`, err.message);
+            }
+        } finally {
+            if (!isPreload) {
+                loading.value = false;
+            }
+        }
+    };
+
+    const preloadChapter = async (slug: string, storySlug: string) => {
+        // Use requestIdleCallback if available to avoid blocking main thread
+        // or just call fetchChapter with isPreload=true
+        if (contentCache.value.has(slug)) return; // Already cached
+
+        // Simple delay to let main render finish first
+        setTimeout(() => {
+             fetchChapter(slug, storySlug, true);
+        }, 1000);
     };
 
     const fetchChapterById = async (id: number) => {
@@ -93,6 +151,11 @@ export const useChapterStore = defineStore("chapter", () => {
         try {
             const res = await updateChapterApi(id, data);
             showSuccessToast("Cập nhật chương thành công!");
+            // Verify cache update logic (if we update a chapter, we should invalidate cache)
+            // But updateChapter usually happens in admin view
+            // If we have access to slug, we should delete from cache. 
+            // For now, clear entire cache to be safe
+            clearCache();
             return res;
         } catch (err: any) {
              const msg = err.response?.data?.message || err.message || "Failed to update chapter";
@@ -110,12 +173,13 @@ export const useChapterStore = defineStore("chapter", () => {
             showSuccessToast("Xóa chương thành công!");
             // Remove from local list if present
             chapterList.value = chapterList.value.filter(c => c.id !== id);
+            clearCache(); // Invalidate cache
         } catch (err: any) {
              const msg = err.response?.data?.message || err.message || "Failed to delete chapter";
             showErrorToast(msg);
             throw err;
         } finally {
-             loading.value = false;
+            loading.value = false;
         }
     };
 
@@ -169,6 +233,10 @@ export const useChapterStore = defineStore("chapter", () => {
         chapterList.value = [];
         currentChapter.value = null;
     };
+    
+    const clearCache = () => {
+        contentCache.value.clear();
+    };
 
     return {
         currentChapter,
@@ -176,6 +244,7 @@ export const useChapterStore = defineStore("chapter", () => {
         loading,
         error,
         fetchChapter,
+        preloadChapter, // New Action
         fetchChapterById,
         fetchChapterList,
         fetchAdminChapterList,
@@ -184,7 +253,8 @@ export const useChapterStore = defineStore("chapter", () => {
         deleteChapter,
         approveChapter,
         approveAllChapters,
-        clearChapterList
+        clearChapterList,
+        clearCache
     };
 
 

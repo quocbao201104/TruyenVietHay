@@ -197,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStoryStore } from '@/modules/storyText/story.store';
 import { useChapterStore } from '@/modules/storyText/chapter/chapter.store';
@@ -310,7 +310,6 @@ const handleRating = async (rating: number) => {
 const fetchData = async () => {
     const slug = route.params.slug as string;
     if (slug) {
-        // Clear previous data to avoid ID mismatch
         storyStore.clearData();
         chapterStore.clearChapterList();
         
@@ -318,13 +317,15 @@ const fetchData = async () => {
         
         if (story.value) {
            await chapterStore.fetchChapterList(story.value.id);
-           incrementViewCount(story.value.id); // Add view increment
-           await favoriteStore.fetchFavorites(); // Sync follow state
-           await storyStore.fetchLikeStatus(story.value.id); // Sync like state
-           await ratingStore.fetchRatings(story.value.id); // Fetch ratings
+           incrementViewCount(story.value.id);
+           await favoriteStore.fetchFavorites();
+           await storyStore.fetchLikeStatus(story.value.id);
+           await ratingStore.fetchRatings(story.value.id);
         }
     }
 };
+
+
 
 onMounted(() => {
     if (route.query.tab) {
@@ -866,3 +867,4 @@ watch(() => route.params.slug, (newSlug, oldSlug) => {
     }
 }
 </style>
+
