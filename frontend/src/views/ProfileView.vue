@@ -1,7 +1,6 @@
 <template>
   <div class="profile-page">
-    <AppHeader />
-
+    
     <main class="profile-container">
       <div v-if="userStore.isProfileLoading" class="loading-state-message">
         Đang tải thông tin hồ sơ...
@@ -139,7 +138,6 @@
         </section>
       </div>
     </main>
-    <AppFooter />
   </div>
 </template>
 
@@ -147,13 +145,10 @@
 import { computed, onMounted } from "vue";
 import { useAuthStore } from "@/modules/auth/auth.store";
 import { useUserStore } from "@/modules/user/user.store";
-import AppHeader from "@/components/layout/AppHeader.vue";
-import AppFooter from "@/components/layout/AppFooter.vue";
 import { getAvatarUrl } from "@/config/constants";
 
 export default {
   name: "ProfileView",
-  components: { AppHeader, AppFooter },
   setup() {
     const authStore = useAuthStore();
     const userStore = useUserStore();

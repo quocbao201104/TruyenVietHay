@@ -8,9 +8,9 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 50, // Fail fast if > 50 requests are waiting
-  acquireTimeout: 5000, // Error if obtaining connection takes > 5s
+  connectionLimit: 40, // Increased from 10 to 40 for higher concurrency
+  queueLimit: 0,       // Unlimited queue updates to prevent dropping requests during huge spikes
+  acquireTimeout: 10000, // Increased to 10s to handle momentary DB load
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
   ssl: {

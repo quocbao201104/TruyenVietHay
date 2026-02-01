@@ -1,6 +1,5 @@
 <template>
   <div class="author-chapter-management-page">
-    <AppHeader />
     <main class="author-chapter-management-container">
       <div class="header-section">
         <button @click="goBack" class="back-btn">
@@ -80,7 +79,6 @@
       </div>
 
     </main>
-    <AppFooter />
   </div>
 </template>
 
@@ -89,8 +87,6 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStoryStore } from '@/modules/storyText/story.store';
 import { useChapterStore } from '@/modules/storyText/chapter/chapter.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import { useAppToast } from '@/composables/useAppToast';
 
 const route = useRoute();

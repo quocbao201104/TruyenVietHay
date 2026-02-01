@@ -64,8 +64,8 @@ const notifyAuthorAboutStoryApproval = async (
   try {
     const message =
       action === "duyet"
-        ? `Truyện "${tenTruyen}" của bạn đã được duyệt.`
-        : `Truyện "${tenTruyen}" của bạn đã bị từ chối.`;
+        ? `Truyện ${tenTruyen} của bạn đã được duyệt.`
+        : `Truyện ${tenTruyen} của bạn đã bị từ chối.`;
 
     await sendNotification(userId, message, storyId);
   } catch (error) {

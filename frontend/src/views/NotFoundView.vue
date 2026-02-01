@@ -1,6 +1,6 @@
 <template>
   <div class="not-found-page">
-    <AppHeader />
+    
 
     <main class="not-found-container">
       <div class="not-found-card">
@@ -20,14 +20,10 @@
           </div>
       </div>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import { useRouter } from 'vue-router'; 
 
 // const router = useRouter();

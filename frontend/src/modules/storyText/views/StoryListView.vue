@@ -1,6 +1,5 @@
 <template>
   <div class="story-list-page">
-    <AppHeader />
     
     <main class="main-content">
       <!-- HERO GRID SECTION (Replaces Carousel) -->
@@ -123,7 +122,6 @@
 
     </main>
 
-    <AppFooter />
   </div>
 </template>
 
@@ -139,8 +137,6 @@ import type { Category } from "@/types/category";
 import NewStoryCard from "@/modules/storyText/components/NewStoryCard.vue";
 import HeroGrid from "@/components/home/HeroGrid.vue"; 
 import ContinueReadingStrip from "@/components/home/ContinueReadingStrip.vue";
-import AppHeader from "@/components/layout/AppHeader.vue";
-import AppFooter from "@/components/layout/AppFooter.vue";
 
 const categories = ref<Category[]>([]);
 const newStories = ref<Story[]>([]);
@@ -268,8 +264,8 @@ onMounted(() => {
 
 .stories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
 
 /* --- Sidebar Column --- */

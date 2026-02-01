@@ -65,10 +65,21 @@ const StoryModel = {
       countParams.push(trang_thai_kiem_duyet);
     }
 
-    if (keyword) {
-      whereClauses.push(`(tn.ten_truyen LIKE ? OR tn.tac_gia LIKE ?)`);
-      params.push(`%${keyword}%`, `%${keyword}%`);
-      countParams.push(`%${keyword}%`, `%${keyword}%`);
+    // OPTIMIZED SEARCH: Use FULLTEXT if keyword length >= 2
+    if (keyword && keyword.trim() !== '') {
+        const searchText = keyword.trim();
+        if (searchText.length >= 2) {
+             // Convert "foo bar" -> "+foo +bar" to require ALL terms (AND logic)
+             const searchTerms = searchText.split(/\s+/).map(term => `+${term}`).join(' ');
+             whereClauses.push(`MATCH(tn.ten_truyen, tn.tac_gia) AGAINST(? IN BOOLEAN MODE)`);
+             params.push(searchTerms);
+             countParams.push(searchTerms);
+        } else {
+             // Fallback to LIKE for very short queries
+             whereClauses.push(`(tn.ten_truyen LIKE ? OR tn.tac_gia LIKE ?)`);
+             params.push(`%${searchText}%`, `%${searchText}%`);
+             countParams.push(`%${searchText}%`, `%${searchText}%`);
+        }
     }
 
     if (author_id) {
@@ -125,7 +136,7 @@ const StoryModel = {
     // Lấy tất cả các cột từ truyen_new và noi_dung_chuong_mau từ bảng chuong
     const [rows] = await db.query(
       `SELECT tn.*, c.noi_dung_chuong_mau AS sample_chapter_content,
-        (SELECT COUNT(*) FROM chuong WHERE truyen_id = tn.id AND trang_thai = 'da_duyet') AS so_luong_chuong
+        tn.so_luong_chuong
        FROM truyen_new tn
        LEFT JOIN chuong c ON tn.id = c.truyen_id AND c.is_chuong_mau = 1
        WHERE tn.id = ?`,
@@ -137,7 +148,7 @@ const StoryModel = {
   getBySlug: async (slug) => {
     const [rows] = await db.query(
       `SELECT tn.*, 
-        (SELECT COUNT(*) FROM chuong WHERE truyen_id = tn.id AND trang_thai = 'da_duyet') AS so_luong_chuong
+        tn.so_luong_chuong
        FROM truyen_new tn 
        WHERE slug = ?`, 
       [slug]
@@ -247,7 +258,7 @@ const StoryModel = {
     const sortOrder = order.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
     let selectQuery = `SELECT tn.id, tn.ten_truyen, tn.tac_gia, tn.slug, tn.mo_ta, tn.anh_bia, tn.luot_xem, tn.thoi_gian_cap_nhat, tn.trang_thai,
-                       (SELECT COUNT(*) FROM chuong WHERE truyen_id = tn.id AND trang_thai = 'da_duyet') AS so_luong_chuong
+                       tn.so_luong_chuong
                        FROM truyen_new tn`;
     
     // Base count query needs to handle WHERE clauses, but HAVING clauses make simple COUNT(*) difficult.
@@ -259,8 +270,16 @@ const StoryModel = {
     
     // Only add keyword filter if keyword is provided
     if (keyword && keyword.trim() !== '') {
-      whereConditions.push(`tn.ten_truyen LIKE ?`);
-      params.push(`%${keyword}%`);
+        const searchText = keyword.trim();
+        // Use FULLTEXT if possible
+        if (searchText.length >= 2) {
+            const searchTerms = searchText.split(/\s+/).map(term => `+${term}`).join(' ');
+            whereConditions.push(`MATCH(tn.ten_truyen, tn.tac_gia) AGAINST(? IN BOOLEAN MODE)`);
+            params.push(searchTerms);
+        } else {
+             whereConditions.push(`(tn.ten_truyen LIKE ? OR tn.tac_gia LIKE ?)`);
+             params.push(`%${searchText}%`, `%${searchText}%`);
+        }
     }
     let havingConditions = [];
 
@@ -299,13 +318,13 @@ const StoryModel = {
         params.push(parseInt(max_views));
     }
 
-    // Filter by Chapter Count (HAVING)
+    // Filter by Chapter Count (Optimized: Use WHERE instead of HAVING)
     if (min_chapters !== null && min_chapters !== undefined && min_chapters !== "") {
-        havingConditions.push(`so_luong_chuong >= ?`);
+        whereConditions.push(`tn.so_luong_chuong >= ?`);
         params.push(parseInt(min_chapters));
     }
     if (max_chapters !== null && max_chapters !== undefined && max_chapters !== "") {
-        havingConditions.push(`so_luong_chuong <= ?`);
+        whereConditions.push(`tn.so_luong_chuong <= ?`);
         params.push(parseInt(max_chapters));
     }
 
@@ -336,22 +355,53 @@ const StoryModel = {
     let countQuery;
     let countParams;
 
+    // Simplified filtering logic now that so_luong_chuong is a real column
+    // We can move HAVING conditions to WHERE (mostly) or keep them simple.
+    // For `so_luong_chuong`, since it's a real column, we can use WHERE instead of HAVING!
+    if (min_chapters !== null || max_chapters !== null) {
+        // Move chapter filter to WHERE clauses for better performance
+        // Note: We need to handle this in `whereConditions` above, but since we are modifying code down here:
+        // Let's rely on the fact that `so_luong_chuong` is now in `tn`.
+        // So `havingConditions` can theoretically be used, but WHERE is faster.
+        // However, to minimize code rewrite impact just below, we can keep using havingConditions OR refactor properly.
+        // The best approach: `havingConditions` logic below works for aliases too in MySQL.
+        // BUT, `WHERE tn.so_luong_chuong >= ?` is standard and better.
+    }
+
     if (havingConditions.length > 0) {
-        // Complex count with HAVING (requires subquery and chapter count calculation)
+        const havingClauseStr = `HAVING ${havingConditions.join(" AND ")}`;
+        // Complex count with HAVING 
+             /*
+             Old complex subquery:
+            SELECT tn.id, (SELECT COUNT(*) ...) 
+            FROM truyen_new tn ... HAVING ...
+            */
+            // New simplified:
+            // Since so_luong_chuong is a column, we actually don't NEED the subquery in select anymore?
+            // Wait, if we use HAVING, we still need `SELECT COUNT(*)` to respect it?
+            // Actually, if we use WHERE for chapter count, we don't need HAVING at all!
+    }
+    
+    // REFACTORING: Since we can now filter chapters in WHERE, let's treat it as such.
+    // But wait, the loop above (lines 302-310) pushed to `havingConditions`.
+    // Let's CHANGE that behavior in a future step or just accept that HAVING works fine on columns too.
+    // Ideally, we move them to `whereConditions`. But for now, let's fix the `countQuery`.
+
+    if (havingConditions.length > 0) {
+        // Even with having, we don't need the expensive sub-select for chapter count anymore.
         const countSubQuery = `
-            SELECT tn.id, (SELECT COUNT(*) FROM chuong WHERE truyen_id = tn.id AND trang_thai = 'da_duyet') AS so_luong_chuong
+            SELECT tn.id
             FROM truyen_new tn
             ${whereClause}
             ${havingClause}
         `;
         countQuery = `SELECT COUNT(*) as total FROM (${countSubQuery}) as sub`;
-        countParams = [...params];
+        countParams = [...params]; // Params already include having values
     } else {
-        // Simple count (standard WHERE only) - much faster
+        // Simple count
         countQuery = `SELECT COUNT(*) as total FROM truyen_new tn ${whereClause}`;
         countParams = [...params];
     }
-
     const [countResult] = await db.query(countQuery, countParams);
 
     return {

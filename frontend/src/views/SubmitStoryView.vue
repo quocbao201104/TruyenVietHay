@@ -1,6 +1,5 @@
 <template>
   <div class="submit-story-page">
-    <AppHeader />
     <main class="submit-story-container">
       <section class="submit-story-card">
         <h1 class="submit-story-title">{{ route.params.id ? 'Cập Nhật Truyện' : 'Đăng Truyện Mới' }}</h1>
@@ -98,7 +97,6 @@
         </form>
       </section>
     </main>
-    <AppFooter />
   </div>
 </template>
 
@@ -109,8 +107,6 @@ import { useToast } from 'vue-toastification';
 import { useRouter, useRoute } from 'vue-router';
 import axios from '@/utils/axios'; 
 
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import StoryBasicInfoForm from '@/components/forms/StoryBasicInfoForm.vue';
 import StoryCategorySelector from '@/components/forms/StoryCategorySelector.vue';
 import StoryStatusSelects from '@/components/forms/StoryStatusSelects.vue';

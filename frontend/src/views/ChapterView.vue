@@ -1,6 +1,5 @@
 <template>
   <div class="chapter-view" :class="{ 'light-mode': !isDarkMode }">
-    <AppHeader />
 
     <!-- Reading Progress -->
     <div class="fixed top-0 left-0 w-full z-[1000]">
@@ -90,8 +89,6 @@
       </div>
     </main>
 
-    <AppFooter />
-
     <!-- Scroll to top -->
     <button v-show="isScrolled" class="fab" @click="scrollToTop">
       <i class="fas fa-chevron-up"></i>
@@ -106,8 +103,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useChapterStore } from "@/modules/storyText/chapter/chapter.store";
 import { saveReadingHistory } from "@/modules/history/history.service"; // Giả định path
 import { incrementViewCount } from "@/modules/storyText/story.service"; // Giả định path
-import AppHeader from "@/components/layout/AppHeader.vue";
-import AppFooter from "@/components/layout/AppFooter.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -204,7 +199,6 @@ const hasPrev = computed(() => currentIndex.value > 0);
 const hasNext = computed(() => currentIndex.value >= 0 && currentIndex.value < chapterList.value.length - 1);
 
 const navigateToChapter = (chapterSlug: string) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     router.push(`/truyen-chu/${route.params.storySlug}/${chapterSlug}`);
 };
 
@@ -218,7 +212,6 @@ const loadData = async () => {
   const storySlug = route.params.storySlug as string; // Get story slug from route
   if (chapterSlug && storySlug) {
     await store.fetchChapter(chapterSlug, storySlug);
-    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Load chapter list if needed
     if (chapter.value && (chapterList.value.length === 0 || chapterList.value[0].truyen_id !== chapter.value.truyen_id)) {
@@ -245,7 +238,6 @@ onBeforeUnmount(() => {
 watch(() => [route.params.chapterSlug, route.params.storySlug], async ([newSlug, newStorySlug]) => {
   if (newSlug && newStorySlug) {
       await loadData();
-      window.scrollTo({ top: 0, behavior: 'instant' });
   }
 });
 </script>

@@ -1,6 +1,5 @@
 <template>
   <div class="dangky-container">
-    <AppHeader />
     <main class="main-content">
       <div class="khuVucForm">
         <router-link to="/">
@@ -32,7 +31,6 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import AppHeader from "@/components/layout/AppHeader.vue";
 import RegisterForm from "@/modules/auth/RegisterForm.vue";
 const router = useRouter();
 const formKey = ref(0);

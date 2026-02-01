@@ -153,6 +153,10 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior(to, from, savedPosition) {
+        // Always scroll to top when navigating between routes
+        return { top: 0 };
+    },
 });
 
 router.beforeEach(async (to, from, next) => {
@@ -163,15 +167,16 @@ router.beforeEach(async (to, from, next) => {
         } catch (error) {
             console.error("Auth store initialization failed:", error);
             authStore.clearAuth(); 
-            alert("Phiên đăng nhập đã hết hạn hoặc có lỗi. Vui lòng đăng nhập lại.");
-            return next({ name: "Login" });
+            return next({ name: "Login", query: { toast: "session_expired" } });
         }
     }
 
     const isAuthPage = to.name === "Login" || to.name === "Register";
     if (isAuthPage && authStore.isLoggedIn) {
-        alert("Bạn đang đăng nhập. Vội thế nhà bạn có cỗ à.");
-        return next(from.fullPath === "/truyen-chu" ? { name: "StoryList" } : { path: from.fullPath });
+        return next({ 
+            name: from.fullPath === "/truyen-chu" ? "StoryList" : "Home", 
+            query: { toast: "already_logged_in" } 
+        });
     }
 
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
@@ -181,8 +186,7 @@ router.beforeEach(async (to, from, next) => {
         next({ name: "Login" });
     } else if (requiresAuth && authStore.isLoggedIn && requiredRoles) {
         if (!authStore.user || !requiredRoles.includes(authStore.user.role)) {
-            alert("Bạn không có quyền truy cập vào trang này."); 
-            next({ name: "Home" });
+            next({ name: "Home", query: { toast: "unauthorized" } });
         } else {
             next(); 
         }

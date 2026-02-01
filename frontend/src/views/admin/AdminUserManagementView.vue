@@ -1,6 +1,5 @@
 <template>
     <div class="user-management-page">
-        <AppHeader />
 
         <main class="user-management-container">
             <section class="admin-dashboard-card">
@@ -46,7 +45,6 @@
                 />
             </section>
         </main>
-        <AppFooter />
     </div>
 </template>
 
@@ -61,8 +59,6 @@ import {
     deleteUserApi,
     updateUserRoleApi,
 } from '@/modules/user/user.api';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 
 import UserStatsSection from '@/components/admin/UserStatsSection.vue';
 import UserFiltersSection from '@/components/admin/UserFiltersSection.vue';
@@ -90,7 +86,7 @@ const blockedUsersCount = ref(0);
 const authorUsersCount = ref(0);
 
 const sortColumn = ref('id');
-const sortDirection = ref('asc');
+const sortDirection = ref<'asc' | 'desc'>('asc');
 
 const fetchUsers = async () => {
     isLoading.value = true;

@@ -1,6 +1,5 @@
 <template>
   <div class="settings-page">
-    <AppHeader />
     <main class="settings-container">
       <div v-if="userStore.isProfileLoading" class="loading-state-message">
         Đang tải thông tin hồ sơ...
@@ -156,7 +155,6 @@
         </form>
       </section>
     </main>
-    <AppFooter />
   </div>
 </template>
 
@@ -165,9 +163,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/auth.store";
 import { useUserStore } from "@/modules/user/user.store";
-import AppHeader from "@/components/layout/AppHeader.vue";
 import CustomSelect from "@/components/common/CustomSelect.vue";
-import AppFooter from "@/components/layout/AppFooter.vue";
 import type { UpdateUserPayload, ChangePasswordPayload } from "@/types/user";
 import { useToast } from "vue-toastification";
 import { getAvatarUrl } from "@/config/constants";

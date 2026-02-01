@@ -1,12 +1,45 @@
 <!-- src/App.vue -->
 <template>
   <MainLayout>
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </MainLayout>
 </template>
 
 <script setup>
 import MainLayout from "./layouts/MainLayout.vue";
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useAppToast } from '@/composables/useAppToast';
+
+const route = useRoute();
+const router = useRouter();
+const { showSuccessToast, showErrorToast, showWarningToast } = useAppToast();
+
+watch(() => route.query.toast, (toastType) => {
+  if (!toastType) return;
+
+  const toastMap = {
+    'session_expired': { type: 'error', msg: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' },
+    'unauthorized': { type: 'error', msg: 'Bạn không có quyền truy cập trang này.' },
+    'already_logged_in': { type: 'warning', msg: 'Bạn đang đăng nhập. Vội thế nhà bạn có cỗ à.' },
+  };
+
+  const notification = toastMap[toastType];
+  if (notification) {
+     if (notification.type === 'error') showErrorToast(notification.msg);
+     else if (notification.type === 'warning') showWarningToast(notification.msg);
+     else showSuccessToast(notification.msg);
+     
+     // Remove query param to clean URL
+     const query = { ...route.query };
+     delete query.toast;
+     router.replace({ query }); 
+  }
+});
 </script>
 
 <!-- <style>
@@ -32,5 +65,16 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Global Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style> -->

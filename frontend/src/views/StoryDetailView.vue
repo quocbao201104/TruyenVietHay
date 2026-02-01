@@ -1,10 +1,29 @@
 <template>
   <div class="story-detail-page">
-    <AppHeader />
-
-    <main v-if="loading" class="loading-container">
-      <div class="spinner"></div>
-      <p>Đang tải thông tin truyện...</p>
+    <main v-if="loading" class="detail-container">
+      <section class="story-info-section">
+        <div class="cover-wrapper">
+          <SkeletonLoader width="100%" height="100%" borderRadius="8px" />
+        </div>
+        <div class="info-content">
+          <SkeletonLoader width="70%" height="40px" style="margin-bottom: 1rem" />
+          <div class="meta-row" style="margin-bottom: 20px">
+             <SkeletonLoader width="150px" height="20px" />
+             <SkeletonLoader width="100px" height="20px" />
+          </div>
+           <div class="stats-row" style="margin-bottom: 2rem">
+             <SkeletonLoader width="80px" height="50px" />
+             <SkeletonLoader width="80px" height="50px" />
+             <SkeletonLoader width="80px" height="50px" />
+             <SkeletonLoader width="120px" height="50px" />
+          </div>
+          <div class="actions-row">
+            <SkeletonLoader width="140px" height="48px" borderRadius="8px" />
+            <SkeletonLoader width="140px" height="48px" borderRadius="8px" />
+            <SkeletonLoader width="100px" height="48px" borderRadius="8px" />
+          </div>
+        </div>
+      </section>
     </main>
 
     <main v-else-if="error" class="error-container">
@@ -174,8 +193,6 @@
       </section>
 
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
@@ -186,9 +203,8 @@ import { useStoryStore } from '@/modules/storyText/story.store';
 import { useChapterStore } from '@/modules/storyText/chapter/chapter.store';
 import { useFavoriteStore } from '@/modules/favorite/favorite.store'; 
 import { useRatingStore } from '@/modules/rating/rating.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import CommentList from '@/modules/comment/CommentList.vue';
+import SkeletonLoader from '@/components/common/SkeletonLoader.vue';
 import { incrementViewCount } from "@/modules/storyText/story.service";
 import { getImageUrl } from "@/config/constants";
 

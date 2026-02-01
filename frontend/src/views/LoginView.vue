@@ -1,6 +1,5 @@
 <template>
   <div class="dangnhap-container">
-    <AppHeader />
     <main class="main-content">
       <LoginForm
         :key="formKey"
@@ -13,14 +12,12 @@
 <script>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import AppHeader from "@/components/layout/AppHeader.vue";
 import LoginForm from "@/modules/auth/LoginForm.vue";
 import { useAuthStore } from "../modules/auth/auth.store";
 
 export default {
   name: "LoginView",
   components: {
-    AppHeader,
     LoginForm,
   },
   setup() {

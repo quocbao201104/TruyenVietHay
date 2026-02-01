@@ -1,6 +1,5 @@
 <template>
   <div class="favorites-view-container">
-    <AppHeader />
     
     <main class="main-content">
       <div class="container">
@@ -41,34 +40,13 @@
         <!-- Favorites Grid -->
         <div v-else class="favorites-content">
           <div class="favorites-grid">
-            <div v-for="story in favoriteStore.favorites" :key="story.id" class="story-card">
-              <!-- Story Link -->
-              <router-link :to="`/truyen-chu/${story.slug}`" class="story-link">
-                <div class="story-image-wrapper">
-                  <img 
-                    :src="getImageUrl(story.anh_bia)" 
-                    :alt="story.ten_truyen"
-                    class="story-image"
-                    @error="handleImageError"
-                  />
-                  <div class="story-overlay">
-                    <i class="fas fa-book-open"></i>
-                  </div>
-                </div>
-                
-                <div class="story-info">
-                  <h3 class="story-title" :title="story.ten_truyen">{{ story.ten_truyen }}</h3>
-                  <p class="story-author">{{ story.tac_gia }}</p>
-                  <div class="story-meta">
-                    <span class="story-status">{{ story.trang_thai }}</span>
-                  </div>
-                </div>
-              </router-link>
-
-              <!-- Unfavorite Button -->
+            <div v-for="story in favoriteStore.favorites" :key="story.id" class="story-wrapper relative group">
+              <NewStoryCard :story="story" />
+              
+              <!-- Unfavorite Button - Absolute Overlay -->
               <button 
                 class="unfavorite-btn" 
-                @click="handleUnfollow(story.id, story.ten_truyen)"
+                @click.prevent.stop="handleUnfollow(story.id, story.ten_truyen)"
                 title="Bỏ theo dõi"
               >
                 <i class="fas fa-heart"></i>
@@ -103,17 +81,14 @@
         </div>
       </div>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useFavoriteStore } from '@/modules/favorite/favorite.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import { getImageUrl } from "@/config/constants";
+import NewStoryCard from '@/modules/storyText/components/NewStoryCard.vue';
 
 const favoriteStore = useFavoriteStore();
 
@@ -122,20 +97,15 @@ onMounted(() => {
   favoriteStore.fetchFavorites();
 });
 
-// Get image URL with proper path handling
-// Local getImageUrl removed for global helper
-
 // Handle image load error
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement;
   target.src = '/placeholder.jpg';
 };
 
-// Handle unfollow with confirmation
+// Handle unfollow click - Immediate Action
 const handleUnfollow = async (storyId: number, storyTitle: string) => {
-  if (confirm(`Bạn có chắc muốn bỏ theo dõi "${storyTitle}"?`)) {
-    await favoriteStore.toggleFollow(storyId);
-  }
+  await favoriteStore.toggleFollow(storyId);
 };
 </script>
 
@@ -314,140 +284,38 @@ const handleUnfollow = async (storyId: number, storyTitle: string) => {
   margin-bottom: 40px;
 }
 
-.story-card {
+.story-wrapper {
   position: relative;
-  background: #2a2d3a;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.story-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  border-color: #4caf50;
-}
-
-.story-link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-
-.story-image-wrapper {
-  position: relative;
-  width: 100%;
-  height: 280px;
-  overflow: hidden;
-  background: #1a1d29;
-}
-
-.story-image {
-  width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.story-card:hover .story-image {
-  transform: scale(1.05);
-}
-
-.story-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.story-card:hover .story-overlay {
-  opacity: 1;
-}
-
-.story-overlay i {
-  font-size: 2.5rem;
-  color: #4caf50;
-}
-
-.story-info {
-  padding: 16px;
-}
-
-.story-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-height: 1.4;
-  min-height: 2.8em;
-}
-
-.story-author {
-  font-size: 0.9rem;
-  color: #4caf50;
-  margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.story-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85rem;
-  color: #999;
-}
-
-.story-status {
-  padding: 4px 10px;
-  background: #3e4256;
-  border-radius: 4px;
-  font-size: 0.8rem;
 }
 
 /* ===== Unfavorite Button ===== */
 .unfavorite-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 40px;
-  height: 40px;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(244, 67, 54, 0.9);
+  background: rgba(239, 68, 68, 0.9); /* Red */
   border: none;
   color: #ffffff;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.story-card:hover .unfavorite-btn {
-  opacity: 1;
+  opacity: 1; /* Always visible */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 10; /* Ensure on top of card */
+  backdrop-filter: blur(4px);
 }
 
 .unfavorite-btn:hover {
-  background: #d32f2f;
+  background: #dc2626;
   transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(220, 38, 38, 0.4);
 }
 
 .unfavorite-btn:active {
@@ -564,4 +432,6 @@ const handleUnfollow = async (storyId: number, storyTitle: string) => {
     font-size: 3rem;
   }
 }
+
+
 </style>

@@ -1,6 +1,5 @@
 <template>
   <div class="chapter-editor-page">
-    <AppHeader />
     <main class="editor-container">
       <div class="header-section">
         <button @click="goBack" class="back-btn">
@@ -55,7 +54,6 @@
           </form>
       </div>
     </main>
-    <AppFooter />
   </div>
 </template>
 
@@ -63,8 +61,6 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useChapterStore } from '@/modules/storyText/chapter/chapter.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import { useAppToast } from '@/composables/useAppToast';
 
 const route = useRoute();

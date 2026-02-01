@@ -1,6 +1,5 @@
 <template>
   <div class="category-view-container">
-    <AppHeader />
     
     <main class="main-content">
       <div class="container">
@@ -163,16 +162,12 @@
         </section>
       </div>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import NewStoryCard from '@/modules/storyText/components/NewStoryCard.vue';
 import axios from '@/utils/axios';
 

@@ -1,6 +1,5 @@
 <template>
   <div class="history-view-container">
-    <AppHeader />
     
     <main class="main-content">
       <div class="container">
@@ -111,16 +110,12 @@
         </div>
       </div>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useHistoryStore } from '@/modules/history/history.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 
 const historyStore = useHistoryStore();
 
@@ -540,7 +535,10 @@ const timeAgo = (date: string) => {
     line-height: 1.3;
     min-height: auto;
     margin-bottom: 4px;
+    /* standard property for compatibility */
+    line-clamp: 2; 
     -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .chapter-info {

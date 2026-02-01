@@ -72,6 +72,9 @@ interface GetUsersParams {
     limit?: number;
     search?: string;
     role?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 /**

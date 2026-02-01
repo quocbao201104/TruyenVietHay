@@ -98,10 +98,9 @@ const getStatusClass = (status) => {
   border: 1px solid rgba(255, 255, 255, 0.05);
   height: 100%;
   
-  /* For horizontal scroll */
+  /* For horizontal scroll handled by parent */
   flex-shrink: 0;
-  width: 160px;
-  min-width: 160px;
+  width: 100%; /* Context-dependent */
 }
 
 .new-story-card:hover {

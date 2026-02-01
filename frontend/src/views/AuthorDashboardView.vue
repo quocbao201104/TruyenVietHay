@@ -1,6 +1,5 @@
 <template>
   <div class="author-dashboard-page">
-    <AppHeader />
     <main class="dashboard-container">
       <h1 class="page-title">Bảng Điều Khiển Tác Giả</h1>
 
@@ -56,15 +55,12 @@
       </div>
 
     </main>
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useStoryStore } from '@/modules/storyText/story.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 
 const storyStore = useStoryStore();
 

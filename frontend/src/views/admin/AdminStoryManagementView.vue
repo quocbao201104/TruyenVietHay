@@ -1,6 +1,5 @@
 <template>
   <div class="admin-story-management-page">
-    <AppHeader />
 
     <main class="admin-story-management-container">
       <h1 class="page-title">Quản lý Truyện</h1>
@@ -178,8 +177,6 @@
         </div>
       </BaseModal>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
@@ -189,8 +186,6 @@ import StoryFiltersSection from '@/components/admin/StoryFiltersSection.vue';
 import StoryTableSection from '@/components/admin/StoryTableSection.vue';
 import PaginationSection from '@/components/admin/PaginationSection.vue'; 
 import BaseModal from '@/components/common/BaseModal.vue';
-import AppHeader from "@/components/layout/AppHeader.vue"; // Import AppHeader
-import AppFooter from "@/components/layout/AppFooter.vue"; // Import AppFooter
 import { useStoryStore } from '@/modules/storyText/story.store';
 import { useChapterStore } from '@/modules/storyText/chapter/chapter.store'; // Import Chapter Store
 import { useCategoryStore } from '@/modules/category/category.store';

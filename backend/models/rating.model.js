@@ -46,7 +46,7 @@ const Rating = {
         t.luot_thich,
         t.trang_thai,
         t.thoi_gian_cap_nhat,
-        (SELECT COUNT(*) FROM chuong WHERE truyen_id = t.id) AS so_luong_chuong,
+        t.so_luong_chuong,
         AVG(r.rating) AS avg_rating,
         COUNT(r.id) AS total_ratings
        FROM truyen_new t

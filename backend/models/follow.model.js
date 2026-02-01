@@ -37,7 +37,7 @@ exports.getFollowedStories = (userId, offset, limit) => {
       t.luot_thich, 
       t.luot_theo_doi,
       t.thoi_gian_cap_nhat,
-      (SELECT COUNT(*) FROM chuong WHERE truyen_id = t.id) AS so_chuong,
+      t.so_luong_chuong AS so_chuong,
       td.ngay_theo_doi
     FROM truyen_new t
     JOIN theo_doi td ON t.id = td.truyen_id

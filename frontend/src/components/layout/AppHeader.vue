@@ -227,6 +227,7 @@
 <script>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useAppToast } from "@/composables/useAppToast";
 import { useAuthStore } from "@/modules/auth/auth.store";
 import axios from "@/utils/axios";
 import { useNotificationStore } from "@/modules/notification/notification.store";
@@ -299,10 +300,12 @@ export default {
       if (showDropdown.value) showNotifications.value = false;
     };
 
+    const { showSuccessToast } = useAppToast();
+
     const handleLogout = () => {
       authStore.logout();
       showDropdown.value = false;
-      alert("Đăng xuất thành công!");
+      showSuccessToast("Đăng xuất thành công!");
       router.push("/truyen-chu");
     };
 

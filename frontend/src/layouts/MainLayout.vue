@@ -1,15 +1,17 @@
 <!-- src/layouts/MainLayout.vue -->
 <template>
   <div class="main-layout">
+    <AppHeader />
     <main class="main-content">
       <slot />
     </main>
+    <AppFooter />
   </div>
 </template>
 
 <script setup>
-import Header from "../components/layout/AppHeader.vue";
-import Footer from "../components/layout/AppFooter.vue";
+import AppHeader from "@/components/layout/AppHeader.vue";
+import AppFooter from "@/components/layout/AppFooter.vue";
 </script>
 
 <style scoped>

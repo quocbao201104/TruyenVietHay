@@ -1,6 +1,5 @@
 <template>
   <div class="ranking-container">
-    <AppHeader />
     
     <main class="main-content">
       <div class="container">
@@ -101,16 +100,12 @@
         </div>
       </div>
     </main>
-
-    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useRankingStore } from '@/modules/ranking/ranking.store';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import AppFooter from '@/components/layout/AppFooter.vue';
 import { getImageUrl } from "@/config/constants";
 
 const rankingStore = useRankingStore();

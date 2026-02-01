@@ -1,5 +1,5 @@
 <template>
-  <div class="author-story-management-page"> <AppHeader /> <main class="author-story-management-container">
+  <div class="author-story-management-page"> <main class="author-story-management-container">
       <h1 class="page-title">Quản lý truyện của tôi</h1>
 
       <AuthorStoryFiltersSection
@@ -45,7 +45,7 @@
       </div>
     </main>
 
-    <AppFooter /> </div>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -57,8 +57,6 @@ import AuthorStoryTableSection from '@/components/author/AuthorStoryTableSection
 import AuthorStoryFiltersSection from '@/components/author/AuthorStoryFiltersSection.vue';
 import { useRouter } from 'vue-router';
 import { useAppToast } from '@/composables/useAppToast';
-import AppHeader from "@/components/layout/AppHeader.vue";
-import AppFooter from "@/components/layout/AppFooter.vue";
 
 const storyStore = useStoryStore();
 const categoryStore = useCategoryStore();

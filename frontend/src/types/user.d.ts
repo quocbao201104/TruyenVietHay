@@ -50,4 +50,10 @@ export interface UserPaginationResponse {
         limit: number;
         totalPages: number;
     };
+    stats?: {
+        totalUsers: number;
+        activeUsers: number;
+        blockedUsers: number;
+        authorUsers: number;
+    };
 }

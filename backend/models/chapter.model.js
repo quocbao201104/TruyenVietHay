@@ -87,7 +87,24 @@ const ChapterModel = {
   },
 
   deleteChapter: async (id) => {
+    // Get truyen_id before deleting to update count later
+    const [chapter] = await db.query(`SELECT truyen_id, trang_thai FROM chuong WHERE id = ?`, [id]);
+    if (!chapter || chapter.length === 0) return 0;
+    
+    const truyenId = chapter[0].truyen_id;
+    const isApproved = chapter[0].trang_thai === 'da_duyet';
+
     const [result] = await db.execute(`DELETE FROM chuong WHERE id = ?`, [id]);
+    
+    // Update count if an approved chapter was deleted
+    if (result.affectedRows > 0 && isApproved) {
+         await db.query(`
+            UPDATE truyen_new 
+            SET so_luong_chuong = so_luong_chuong - 1 
+            WHERE id = ?`, 
+            [truyenId]
+        );
+    }
     return result.affectedRows;
   },
 
@@ -116,9 +133,19 @@ const ChapterModel = {
       [truyen_id]
     );
 
-    // Update story timestamp
+    // 1. Update story timestamp
     if (result.affectedRows > 0) {
         await db.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
+        
+        // 2. Update chapter count
+        // Recalculate to be safe and accurate
+        await db.query(`
+            UPDATE truyen_new t
+            SET so_luong_chuong = (
+                SELECT COUNT(*) FROM chuong WHERE truyen_id = ? AND trang_thai = 'da_duyet'
+            )
+            WHERE id = ?
+        `, [truyen_id, truyen_id]);
     }
     
     return result.affectedRows;
