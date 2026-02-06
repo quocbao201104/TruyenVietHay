@@ -33,6 +33,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.options("*", cors());
 
+
+// Healthcheck route - Lightweight and no DB query
+app.get("/healthcheck", (req, res) => {
+    res.status(200).send("OK");
+});
+
 // Serving static files (Simplified: Global CORS handles headers)
 const publicPath = path.resolve(__dirname, "public");
 app.use(express.static(publicPath));
