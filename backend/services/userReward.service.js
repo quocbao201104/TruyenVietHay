@@ -17,6 +17,7 @@ const grantReward = async ({ userId, rewardId, source, metadata = {} }, connecti
         if (rewards.length === 0) throw new Error(`Reward ID ${rewardId} does not exist`);
         
         const reward = rewards[0];
+
         if (!reward.is_active) {
             console.log(`[Reward] Skipped disabled reward ${rewardId}`);
             if (!connection) await conn.commit();
@@ -29,6 +30,7 @@ const grantReward = async ({ userId, rewardId, source, metadata = {} }, connecti
                 [userId, rewardId]
             );
             if (existing.length > 0) {
+                console.log(`[GrantReward] User ${userId} already has reward ${rewardId}`);
                 if (!connection) await conn.commit();
                 return null; 
             }

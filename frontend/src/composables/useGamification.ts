@@ -95,6 +95,29 @@ export function useGamification() {
     }
   };
 
+  const userCurrency = ref(0); // State for Linh Thach
+
+  const fetchUserCurrency = async () => {
+    try {
+        const response = await axios.get('/api/currency/balance');
+        userCurrency.value = response.data.data.balance;
+    } catch (error) {
+        console.error('Error fetching currency:', error);
+    }
+  };
+
+  const buyReward = async (rewardId: number, userId: number) => {
+      try {
+          await axios.post('/api/user-rewards/buy', { rewardId });
+          showSuccessToast('Mua vật phẩm thành công!');
+          await fetchUserCurrency(); // Update balance
+          await fetchUserRewards(userId); // Update inventory
+      } catch (error: any) {
+          showErrorToast(error.response?.data?.message || 'Lỗi khi mua vật phẩm');
+          throw error;
+      }
+  };
+
   const levelProgress = computed(() => {
     if (!userPoints.value || !currentLevel.value) return 0;
     // This logic might need adjustment based on how we determine "next level" requirements
@@ -108,6 +131,7 @@ export function useGamification() {
     tasks,
     rewards,
     userRewards,
+    userCurrency, // Export currency
     loading,
     fetchUserPoints,
     fetchCurrentLevel,
@@ -115,7 +139,9 @@ export function useGamification() {
     completeTask,
     fetchRewards,
     fetchUserRewards,
-    claimReward,
+    fetchUserCurrency, // Export fetch function
+    buyReward, // Export buy function
+    claimReward, // Catalog claim (milestone)
     levelProgress
   };
 }

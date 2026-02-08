@@ -58,7 +58,7 @@ const autoUpgrade = async (user_id) => {
 
     // Get current points with pessimistic lock
     const [userPoints] = await connection.execute(
-      "SELECT total_points FROM user_points WHERE user_id = ? FOR UPDATE",
+      "SELECT total_exp FROM user_points WHERE user_id = ? FOR UPDATE",
       [user_id]
     );
 
@@ -66,7 +66,7 @@ const autoUpgrade = async (user_id) => {
       throw new Error("Không tìm thấy thông tin điểm của người dùng");
     }
 
-    const { total_points } = userPoints[0];
+    const { total_exp } = userPoints[0];
 
     // H3: Get current level from user_levels_history (source of truth)
     const [history] = await connection.execute(
@@ -113,7 +113,7 @@ const autoUpgrade = async (user_id) => {
 
     // --- CONSTRAINTS CHECK ---
     // Rule: User role must match the target level type
-    const [users] = await connection.execute("SELECT role FROM users WHERE id = ?", [user_id]);
+    const [users] = await connection.execute("SELECT role FROM users_new WHERE id = ?", [user_id]);
     const userRole = users[0]?.role;
 
     if (nextLevel.type !== userRole && userRole !== 'admin') {
@@ -130,7 +130,7 @@ const autoUpgrade = async (user_id) => {
     }
 
     // Check points requirement
-    if (total_points < nextLevel.required_points) {
+    if (total_exp < nextLevel.required_points) {
       throw new Error(`Chưa đủ điểm. Cần ${nextLevel.required_points} điểm để thăng cấp.`);
     }
 

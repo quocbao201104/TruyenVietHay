@@ -89,6 +89,18 @@ exports.login = async (req, res) => {
             { expiresIn: "1h" }
         );
 
+        // GAMIFICATION TRIGGER: Daily Login
+        try {
+            const taskService = require("../services/task.service");
+            // Auto-complete task "Đăng nhập hàng ngày"
+            // Note: fire-and-forget, don't await blocking response
+            taskService.completeTaskByName(user.id, "Đăng nhập hàng ngày").catch(err => {
+                 console.error("Gamification Login Error:", err.message);
+            });
+        } catch (e) {
+            console.error("Gamification Setup Error:", e.message);
+        }
+
         res.json({
             message: "Đăng nhập thành công",
             token,

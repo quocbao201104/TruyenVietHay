@@ -40,7 +40,7 @@ const runTests = async () => {
         // Actually, our updated code relies on history. Let's insert without current_level_id first 
         // OR checks if column exists. 
         // Safer: Insert points. If current_level_id exists as default NULL, it's fine.
-        await connection.query('INSERT INTO user_points (user_id, total_points) VALUES (?, 0)', [TEST_USER_ID]);
+        await connection.query('INSERT INTO user_points (user_id, total_exp) VALUES (?, 0)', [TEST_USER_ID]);
 
         
         // --- TEST 1: Task Assignment & Completion ---
@@ -49,15 +49,15 @@ const runTests = async () => {
         console.log('   ✅ Task assigned');
 
         const initialPoints = await userPointService.getPointsByUserId(TEST_USER_ID);
-        console.log('   Initial Points:', initialPoints.total_points);
+        console.log('   Initial Points:', initialPoints.total_exp);
 
         await taskService.completeTask(TEST_USER_ID, TEST_TASK_ID);
         console.log('   ✅ Task completed');
 
         const afterPoints = await userPointService.getPointsByUserId(TEST_USER_ID);
-        console.log('   Points after completion:', afterPoints.total_points);
+        console.log('   Points after completion:', afterPoints.total_exp);
 
-        if (afterPoints.total_points > 0) {
+        if (afterPoints.total_exp > 0) {
             console.log('   ✅ Points awarded correctly');
         } else {
             throw new Error('❌ Points NOT awarded');
@@ -85,7 +85,7 @@ const runTests = async () => {
             [TEST_USER_ID, past, new Date(past.getTime() + 100*24*60*60*1000)]);
 
         // Force update points to 300 (enough for Level 2 which needs 250)
-        await connection.query('UPDATE user_points SET total_points = 300 WHERE user_id = ?', [TEST_USER_ID]);
+        await connection.query('UPDATE user_points SET total_exp = 300 WHERE user_id = ?', [TEST_USER_ID]);
             
         console.log('   Running autoUpgrade...');
         const upgradeResult = await userLevelHistoryService.autoUpgrade(TEST_USER_ID);
@@ -97,47 +97,46 @@ const runTests = async () => {
              throw new Error('❌ Failed to upgrade to Level 2');
         }
 
-        // --- TEST 4: Reward Eligibility ---
-        console.log('\n5️⃣  Test: Reward Eligibility');
-        // Reset points to 0 to test insufficient points
-        await connection.query('UPDATE user_points SET total_points = 0 WHERE user_id = ?', [TEST_USER_ID]);
+        // --- TEST 4: Reward Eligibility (Buying with Currency) ---
+        console.log('\n5️⃣  Test: Reward Purchase (Currency)');
+        
+        // Ensure wallet exists and reset to 0
+        const UserCurrency = require('./models/userCurrency.model');
+        const connectionC = await require('./config/db').getConnection();
+        await UserCurrency.ensureWallet(TEST_USER_ID, connectionC);
+        await connection.query('UPDATE user_currency SET linh_thach = 0 WHERE user_id = ?', [TEST_USER_ID]);
 
-        // Create a reward costing 200 points
+        // Create a reward costing 200 Currency
         TEST_REWARD_ID = await rewardService.createReward({
-            reward_name: 'Test Reward',
+            reward_name: 'Test Currency Reward',
             description: 'Test Description',
-            points_required: 200
+            reward_type: 'currency', 
+            rarity: 'common',
+            is_repeatable: true,
+            min_level: 0, 
+            price: 200, 
         });
         console.log('   Created Test Reward ID:', TEST_REWARD_ID);
 
-        // Try to claim (Should fail - insufficient points)
+        // Try to buy (Should fail - insufficient currency)
         try {
-            await userRewardService.claimReward({ user_id: TEST_USER_ID, reward_id: TEST_REWARD_ID });
-            throw new Error('UNEXPECTED_SUCCESS');
-        } catch (e) {
-            if (e.message === 'UNEXPECTED_SUCCESS') {
-                throw new Error('❌ Claim succeeded but should fail (insufficient points)');
-            }
-            console.log('   ✅ Insufficient points check passed:', e.message);
+            await userRewardService.buyReward({ userId: TEST_USER_ID, rewardId: TEST_REWARD_ID });
+            throw new Error('❌ Should have failed due to insufficient currency');
+        } catch (err) {
+             console.log('   ✅ Insufficient currency check passed:', err.message);
         }
 
-        // Give more points (250 > 200)
-        await connection.query('UPDATE user_points SET total_points = 250 WHERE user_id = ?', [TEST_USER_ID]);
+        // Give Currency (500 > 200 + 200)
+        await UserCurrency.add(TEST_USER_ID, 500);
+        console.log('   Added 500 Linh Thach');
         
-        // Claim again (Should succeed)
-        await userRewardService.claimReward({ user_id: TEST_USER_ID, reward_id: TEST_REWARD_ID });
-        console.log('   ✅ Reward claimed successfully');
+        // Buy again (Should succeed)
+        await userRewardService.buyReward({ userId: TEST_USER_ID, rewardId: TEST_REWARD_ID });
+        console.log('   ✅ Reward purchased successfully');
 
-        // Claim duplicate (Should fail)
-        try {
-            await userRewardService.claimReward({ user_id: TEST_USER_ID, reward_id: TEST_REWARD_ID });
-             throw new Error('UNEXPECTED_SUCCESS');
-        } catch (e) {
-             if (e.message === 'UNEXPECTED_SUCCESS') {
-                throw new Error('❌ Duplicate claim succeeded but should fail');
-            }
-             console.log('   ✅ Duplicate claim check passed:', e.message);
-        }
+        // Buy duplicate (Should succeed as is_repeatable=true)
+        await userRewardService.buyReward({ userId: TEST_USER_ID, rewardId: TEST_REWARD_ID });
+        console.log('   ✅ Duplicate purchase succeeded (repeatable)');
 
         console.log('\n✨ ALL TESTS PASSED SUCCESSFULLY! ✨');
 

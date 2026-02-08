@@ -1,27 +1,39 @@
 <template>
-  <div class="reward-item" :class="{ 'disabled': userPoints < reward.points_required }">
+  <div class="reward-item" :class="{ 'disabled': !canClaim }">
     <div class="reward-icon">
-      <i class="fas fa-gift"></i>
+      <i class="fas fa-gift" v-if="!reward.icon"></i>
+      <img v-else :src="reward.icon" alt="icon" class="icon-img" />
     </div>
     <div class="reward-info">
       <h4 class="reward-name">{{ reward.reward_name }}</h4>
       <p class="reward-desc">{{ reward.description || 'Không có mô tả' }}</p>
-      <div class="reward-cost" :class="{ 'affordable': userPoints >= reward.points_required }">
-        <i class="fas fa-coins"></i> {{ reward.points_required }} điểm
+      
+      <!-- Cost / Requirement Display -->
+      <div class="reward-cost" :class="{ 'affordable': canClaim }">
+        <span v-if="reward.price > 0">
+           <i class="fas fa-gem text-blue-400"></i> {{ reward.price }} Linh Thạch
+        </span>
+        <span v-else-if="reward.min_level > 1">
+           <i class="fas fa-crown text-yellow-400"></i> Yêu cầu Cấp {{ reward.min_level }}
+        </span>
+        <span v-else class="text-green-400">Miễn phí</span>
       </div>
     </div>
+
     <button 
       class="btn-redeem" 
       @click="$emit('claim', reward.reward_id)"
-      :disabled="userPoints < reward.points_required || loading"
+      :disabled="!canClaim || loading"
     >
       <span v-if="loading"><i class="fas fa-spinner fa-spin"></i></span>
-      <span v-else>Đổi quà</span>
+      <span v-else>{{ buttonText }}</span>
     </button>
   </div>
 </template>
 
 <script>
+import { computed } from 'vue';
+
 export default {
   name: 'RewardItem',
   props: {
@@ -29,16 +41,38 @@ export default {
       type: Object,
       required: true
     },
-    userPoints: {
+    userCurrency: {
       type: Number,
       default: 0
+    },
+    userLevelId: {
+      type: Number,
+      default: 1
     },
     loading: {
       type: Boolean,
       default: false
     }
   },
-  emits: ['claim']
+  emits: ['claim'],
+  setup(props) {
+    const canClaim = computed(() => {
+       if (props.reward.price > 0) {
+           return props.userCurrency >= props.reward.price;
+       }
+       if (props.reward.min_level > 1) {
+           return props.userLevelId >= props.reward.min_level;
+       }
+       return true;
+    });
+
+    const buttonText = computed(() => {
+       if (props.reward.price > 0) return 'Mua ngay';
+       return 'Nhận quà';
+    });
+
+    return { canClaim, buttonText };
+  }
 }
 </script>
 
@@ -76,6 +110,13 @@ export default {
   font-size: 1.5rem;
   color: #4caf50;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .reward-info {
@@ -97,12 +138,12 @@ export default {
 
 .reward-cost {
   font-size: 0.9rem;
-  color: #f44336; /* Default red for expensive */
+  color: #f44336; /* Default red */
   font-weight: bold;
 }
 
 .reward-cost.affordable {
-  color: #4caf50; /* Green if affordable */
+  color: #4caf50; /* Green */
 }
 
 .btn-redeem {

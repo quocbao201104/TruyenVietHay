@@ -15,7 +15,11 @@
           </div>
           <div class="current-points">
             <span class="label">Điểm rèn luyện:</span>
-            <span class="value">{{ userPoints?.total_points || 0 }}</span>
+            <span class="value">{{ userPoints?.total_exp || 0 }}</span>
+          </div>
+          <div class="current-currency">
+            <span class="label text-blue-400">Linh Thạch:</span>
+            <span class="value text-blue-200">{{ userCurrency || 0 }}</span>
           </div>
         </div>
         
@@ -23,7 +27,7 @@
           <div class="progress-info">
             <span>Tiến độ thăng cấp</span>
             <span class="progress-numbers">
-                {{ userPoints?.total_points || 0 }} / {{ currentLevel?.next_level_points || 'MAX' }}
+                {{ userPoints?.total_exp || 0 }} / {{ currentLevel?.next_level_points || 'MAX' }}
             </span>
           </div>
           <ProgressBar 
@@ -92,7 +96,8 @@
               v-for="reward in rewards" 
               :key="reward.reward_id" 
               :reward="reward"
-              :userPoints="userPoints?.total_points || 0"
+              :userCurrency="userCurrency || 0"
+              :userLevelId="currentLevel?.level_id || 1"
               :loading="processingReward === reward.reward_id"
               @claim="handleClaimReward"
             />
@@ -125,37 +130,35 @@ export default {
       currentLevel, 
       tasks, 
       rewards,
+      userCurrency, // New
       fetchUserPoints,
       fetchCurrentLevel,
       fetchTasks,
-      fetchRewards, // Make sure fetchRewards is exported from useGamification
+      fetchRewards, 
+      fetchUserCurrency, // New
       completeTask,
-      claimReward
+      claimReward,
+      buyReward // New
     } = useGamification();
 
     const processingTask = ref(null);
     const processingReward = ref(null);
     const loading = ref({ tasks: false, rewards: false });
 
-    // Assuming useGamification exports simple refs, if it has internal loading, use provided. 
-    // If not, we manage local loading for granular control or rely on the composable's loading state.
-    // Based on previous step, useGamification has a generic 'loading' ref.
-    // Let's refine loading state here or reuse generic if sufficient.
-
     onMounted(async () => {
       if (authStore.user?.id) {
         // Parallel fetch for speed
         const p1 = fetchUserPoints(authStore.user.id);
         const p2 = fetchCurrentLevel(authStore.user.id);
+        const p5 = fetchUserCurrency(); // New
         
         loading.value.tasks = true;
         const p3 = fetchTasks().finally(() => loading.value.tasks = false);
         
         loading.value.rewards = true;
-        // Check if fetchRewards is available in useGamification, if not I need to fix composable or assume it is there (it was in my create step)
         const p4 = fetchRewards(1, 100).finally(() => loading.value.rewards = false);
 
-        await Promise.all([p1, p2, p3, p4]);
+        await Promise.all([p1, p2, p3, p4, p5]);
       }
     });
 
@@ -164,8 +167,8 @@ export default {
 
     const levelProgress = computed(() => {
         if (!userPoints.value || !currentLevel.value) return 0;
-        const current = userPoints.value.total_points || 0;
-        const next = currentLevel.value.next_level_points || 1000; // avoid div by 0
+        const current = userPoints.value.total_exp || 0; // Fix: total_exp
+        const next = currentLevel.value.next_level_points || 1000; 
         const percent = (current / next) * 100;
         return Math.min(Math.max(percent, 0), 100);
     });
@@ -174,9 +177,9 @@ export default {
       processingTask.value = taskId;
       try {
         await completeTask(taskId);
-        // Points and level data are usually stale after this, refresh them
         if (authStore.user?.id) {
            await fetchUserPoints(authStore.user.id);
+           await fetchCurrentLevel(authStore.user.id); // Refresh level too
         }
       } finally {
         processingTask.value = null;
@@ -187,15 +190,22 @@ export default {
       if (!authStore.user?.id) return;
       processingReward.value = rewardId;
       try {
-        await claimReward(rewardId, authStore.user.id);
-        // Refresh points after claim
+        // Distinguish Buy vs Claim
+        const reward = rewards.value.find(r => r.reward_id === rewardId);
+        if (reward && reward.price > 0) {
+             await buyReward(rewardId, authStore.user.id);
+             await fetchUserCurrency(); // Refresh currency
+        } else {
+             await claimReward(rewardId, authStore.user.id);
+        }
+        
         await fetchUserPoints(authStore.user.id);
       } finally {
         processingReward.value = null;
       }
     };
     
-    // Badge class helper (duplicated from LevelCard for now, could be utility)
+    // Badge class helper
     const getBadgeClass = (id) => {
         if (!id) return '';
         if (id <= 5) return 'badge-bronze';
@@ -210,6 +220,7 @@ export default {
       currentLevel,
       tasks,
       rewards,
+      userCurrency, // Return to template
       activeTasks,
       completedTasks,
       levelProgress,

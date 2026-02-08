@@ -4,7 +4,7 @@ const UserPoint = {
   getPointsByUserId: async (userId) => {
     try {
       const [rows] = await db.execute(
-        "SELECT total_points, expiry_date FROM user_points WHERE user_id = ?",
+        "SELECT total_exp, expiry_date FROM user_points WHERE user_id = ?",
         [userId]
       );
       if (rows.length === 0) {
@@ -21,9 +21,9 @@ const UserPoint = {
 
     // Prevent negative points from reducing total below 0 (C6 fix)
     const [rows] = await db.execute(
-      `INSERT INTO user_points (user_id, total_points) 
-       VALUES (?, GREATEST(0, ?))
-       ON DUPLICATE KEY UPDATE total_points = GREATEST(0, total_points + ?)`,
+      `INSERT INTO user_points (user_id, total_exp) 
+       VALUES (?, ?) 
+       ON DUPLICATE KEY UPDATE total_exp = GREATEST(0, total_exp + ?)`,
       [user_id, points, points]
     );
 

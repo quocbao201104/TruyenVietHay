@@ -26,11 +26,11 @@ const UserReward = {
 
     // 2. Check user has enough points
     const [userPoints] = await db.query(
-      "SELECT total_points FROM user_points WHERE user_id = ?",
+      "SELECT total_exp FROM user_points WHERE user_id = ?",
       [user_id]
     );
 
-    if (!userPoints[0] || userPoints[0].total_points < requiredPoints) {
+    if (!userPoints[0] || userPoints[0].total_exp < requiredPoints) {
       throw new Error("Bạn chưa đủ điểm để nhận phần thưởng này");
     }
 

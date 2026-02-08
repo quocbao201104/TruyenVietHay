@@ -134,6 +134,8 @@ const getChapterBySlug = async (req, res) => {
             // Using "Đọc chương đầu tiên" as the key task name from seeds.
             // Note: This matches the seed data task_name.
             await taskService.completeTaskByName(req.user.id, "Đọc chương đầu tiên");
+            // Trigger "Read Story" (Infinite) task
+            await taskService.completeTaskByName(req.user.id, "Đọc truyện");
          } catch (e) {
              console.error("AutoTask Error:", e.message);
          }

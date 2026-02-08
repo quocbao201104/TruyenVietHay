@@ -21,30 +21,69 @@ const getAllTasks = async (userId) => {
     // Let's execute raw SQL here for transaction safety or use the service logic refactored?
     // Be safer to use direct query inside transaction for the "Provisioning" step
     
-    // Fetch Task Definitions
+    // Fetch Task Definitions (Current Level OR Global)
     const [taskDefs] = await connection.execute(
-        "SELECT * FROM tasks WHERE level_id = ?",
+        "SELECT * FROM tasks WHERE level_id = ? OR level_id IS NULL",
         [currentLevelId]
     );
 
-    // 3. For each task, check if exists for TODAY
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    // 3. Optimized Provisioning (Batch Check)
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Fetch ALL assigned tasks for this user (to check 'once' and 'daily')
+    // We only care about Task IDs and Dates
+    const [existingRows] = await connection.execute(
+        "SELECT task_id, assigned_at, status FROM user_tasks WHERE user_id = ?",
+        [userId]
+    );
+
+    // Map: task_id -> { hasToday, hasEver }
+    const taskStatusMap = new Map();
+    for (const row of existingRows) {
+        const tId = row.task_id;
+        const rowDate = new Date(row.assigned_at).toISOString().slice(0, 10);
+        
+        if (!taskStatusMap.has(tId)) {
+            taskStatusMap.set(tId, { hasToday: false, hasEver: true });
+        }
+        if (rowDate === today) {
+            taskStatusMap.get(tId).hasToday = true;
+        }
+    }
+
+    const tasksToInsert = [];
 
     for (const task of taskDefs) {
-        // Check if user_task row exists for today
-        // Note: assigned_at is DATETIME. We compare date part.
-        const [existing] = await connection.execute(
-            "SELECT id FROM user_tasks WHERE user_id = ? AND task_id = ? AND DATE(assigned_at) = ?",
-            [userId, task.task_id, today]
-        );
+        const repeatType = task.repeat_type || 'daily';
+        let shouldProvision = false;
+        const status = taskStatusMap.get(task.task_id);
 
-        if (existing.length === 0) {
-            // Provision (Auto-assign)
-            await connection.execute(
-                "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES (?, ?, 'pending', NOW())",
-                [userId, task.task_id]
-            );
+        if (repeatType === 'once') {
+             // Provision if NEVER exists
+             if (!status || !status.hasEver) shouldProvision = true;
+        } else if (repeatType === 'daily') {
+             // Provision if NOT exists TODAY
+             if (!status || !status.hasToday) shouldProvision = true;
+        } else if (repeatType === 'infinite') {
+             // No provisioning for infinite (actions)
+             shouldProvision = false;
         }
+
+        if (shouldProvision) {
+            tasksToInsert.push([userId, task.task_id, 'pending', new Date()]);
+        }
+    }
+
+    if (tasksToInsert.length > 0) {
+        // Bulk Insert (MySQL2 helper needed or raw SQL)
+        // connection.query with nested array works for bulk insert
+        // But execute doesn't support bulk well with simple syntax?
+        // Use query instead of execute for bulk
+        // "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES ?"
+        await connection.query(
+            "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES ?",
+            [tasksToInsert]
+        );
     }
 
     await connection.commit();
@@ -97,34 +136,51 @@ const completeTask = async (userId, taskId) => {
     // ensureUserLevel might create a new level, using pool. Safe here.
     const currentLevelId = await levelHistoryService.ensureUserLevel(userId);
     
-    if (Number(currentLevelId) !== Number(task.level_id)) {
+    if (task.level_id !== null && Number(currentLevelId) !== Number(task.level_id)) {
         throw new Error("Bạn chưa đạt cấp độ để thực hiện nhiệm vụ này");
     }
 
-    // 3. Check existing status for TODAY
-    const today = new Date().toISOString().slice(0, 10);
-    const [userTasks] = await connection.execute(
-        "SELECT * FROM user_tasks WHERE user_id = ? AND task_id = ? AND DATE(assigned_at) = ?",
-        [userId, taskId, today]
-    );
+    // 3. Check existing status based on repeat_type
+    const repeatType = task.repeat_type || 'daily';
+    let userTasks = [];
 
-    let alreadyCompleted = false;
-    if (userTasks.length > 0) {
-        if (userTasks[0].status === 'completed') {
-            alreadyCompleted = true; 
-            throw new Error("Nhiệm vụ đã hoàn thành");
-        }
-        
-        // Update existing pending task for TODAY
-        await connection.execute(
-            "UPDATE user_tasks SET status = 'completed', completed_at = NOW() WHERE user_id = ? AND task_id = ? AND DATE(assigned_at) = ?",
-            [userId, taskId, today]
+    if (repeatType === 'once') {
+        [userTasks] = await connection.execute(
+             "SELECT * FROM user_tasks WHERE user_id = ? AND task_id = ? FOR UPDATE",
+             [userId, taskId]
+        );
+    } else if (repeatType === 'daily') {
+        const today = new Date().toISOString().slice(0, 10);
+        [userTasks] = await connection.execute(
+             "SELECT * FROM user_tasks WHERE user_id = ? AND task_id = ? AND DATE(assigned_at) = ? FOR UPDATE",
+             [userId, taskId, today]
         );
     } else {
-        // Implicit Assign & Complete
-        await connection.execute(
+        // Infinite: We don't check for existing completion to block.
+        // We always allow.
+        userTasks = []; 
+    }
+
+    if (userTasks.length > 0 && userTasks[0].status === 'completed') {
+        // For 'once' and 'daily', if completed, stop.
+        if (repeatType !== 'infinite') {
+             throw new Error("Nhiệm vụ đã hoàn thành");
+        }
+    }
+    
+    // For Infinite: Always Insert New Completed Record?
+    // Or Update the 'pending' one if exists?
+    // Let's Insert New for history tracking.
+    if (repeatType === 'infinite' || userTasks.length === 0) {
+         await connection.execute(
             "INSERT INTO user_tasks (user_id, task_id, status, assigned_at, completed_at) VALUES (?, ?, 'completed', NOW(), NOW())",
             [userId, taskId]
+        );
+    } else {
+        // Update existing pending (for Daily/Once)
+        await connection.execute(
+            "UPDATE user_tasks SET status = 'completed', completed_at = NOW() WHERE id = ?",
+            [userTasks[0].id]
         );
     }
 
@@ -132,7 +188,7 @@ const completeTask = async (userId, taskId) => {
     const pointsReward = task.points_awarded ?? 0;
     if (pointsReward > 0) {
         await connection.execute(
-            "INSERT INTO user_points (user_id, total_points) VALUES (?, ?) ON DUPLICATE KEY UPDATE total_points = total_points + ?",
+            "INSERT INTO user_points (user_id, total_exp) VALUES (?, ?) ON DUPLICATE KEY UPDATE total_exp = total_exp + ?",
             [userId, pointsReward, pointsReward]
         );
     }
@@ -153,26 +209,22 @@ const completeTask = async (userId, taskId) => {
 };
 
 const completeTaskByName = async (userId, taskName) => {
+    // FIX: Removed redundant DB connection (Issue #9)
+    // We don't need a transaction just to lookup the task ID
+    // completeTask() handles its own transaction
     const db = require("../config/db");
-    const connection = await db.getConnection();
     
     try {
-        // Find task by name AND user's current level (to ensure we complete the right version if duplicates exists, though seeds shouldn't have dups)
-        // Actually, just finding by name is risky if multiple levels have same name. 
-        // For now, assuming names are unique enough or we prioritize the one matching user level.
-        
         const levelHistoryService = require("./userLevelHistory.service");
-        // We use ensureUserLevel to get current level ID
         let currentLevelId = await levelHistoryService.ensureUserLevel(userId);
 
-        const [tasks] = await connection.execute(
-            "SELECT task_id, level_id FROM tasks WHERE task_name = ? AND level_id = ?",
+        // Simple query without transaction overhead
+        const [tasks] = await db.execute(
+            "SELECT task_id, level_id FROM tasks WHERE task_name = ? AND (level_id = ? OR level_id IS NULL)",
             [taskName, currentLevelId]
         );
 
         if (tasks.length === 0) {
-            // Task not found for this level. 
-            // Silent return is better for auto-triggers to avoid breaking main flow if task doesn't exist.
             console.log(`[AutoTask] Task '${taskName}' not found for User ${userId} (Level ${currentLevelId})`);
             return null;
         }
@@ -180,17 +232,12 @@ const completeTaskByName = async (userId, taskName) => {
         const taskId = tasks[0].task_id;
         console.log(`[AutoTask] Triggering '${taskName}' (ID: ${taskId}) for User ${userId}`);
         
-        // Return result of completion
-        // We release THIS connection and let completeTask handle its own transaction/connection.
-        // completeTask creates its own connection pool usage.
+        // Call the service method which manages its own connection/transaction
         return await completeTask(userId, taskId);
 
     } catch (error) {
         console.error(`[AutoTask] Error completing '${taskName}':`, error.message);
-        // Don't throw to avoid blocking main user action (e.g. reading story)
-        return null;
-    } finally {
-        connection.release();
+        return null; // Don't throw to avoid blocking main user flow
     }
 };
 

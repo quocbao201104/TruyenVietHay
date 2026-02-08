@@ -44,14 +44,29 @@ const Task = {
 
   getTasksByLevel: async (levelId, userId) => {
     const sql = `
-      SELECT t.*, ut.status, ut.id as user_task_id
-      FROM tasks t
-      LEFT JOIN user_tasks ut ON t.task_id = ut.task_id 
+      SELECT t.*, 
+        (SELECT status FROM user_tasks ut 
+         WHERE ut.task_id = t.task_id 
            AND ut.user_id = ? 
-           AND DATE(ut.assigned_at) = CURDATE()
-      WHERE t.level_id = ?
+           AND (
+                (t.repeat_type = 'daily' AND DATE(ut.assigned_at) = CURDATE())
+                OR (t.repeat_type = 'once')
+           )
+         ORDER BY ut.assigned_at DESC LIMIT 1
+        ) as status,
+        (SELECT id FROM user_tasks ut 
+         WHERE ut.task_id = t.task_id 
+           AND ut.user_id = ? 
+           AND (
+                (t.repeat_type = 'daily' AND DATE(ut.assigned_at) = CURDATE())
+                OR (t.repeat_type = 'once')
+           )
+         ORDER BY ut.assigned_at DESC LIMIT 1
+        ) as user_task_id
+      FROM tasks t
+      WHERE (t.level_id = ? OR t.level_id IS NULL)
     `;
-    const [rows] = await db.execute(sql, [userId, levelId]);
+    const [rows] = await db.execute(sql, [userId, userId, levelId]);
     return rows;
   }
 };

@@ -29,20 +29,25 @@ const UserCurrency = {
   },
 
   deduct: async (userId, amount, connection) => {
-     const conn = connection || db;
-     // Helper specifically for spending, ensures non-negative
-     const [result] = await conn.execute(
-        "UPDATE user_currency SET linh_thach = linh_thach - ? WHERE user_id = ? AND linh_thach >= ?",
-        [amount, userId, amount]
-     );
-     
-     if (result.affectedRows === 0) {
-         // Could be user check or balance check.
-         const balance = await UserCurrency.getBalance(userId);
-         if (balance < amount) throw new Error("Không đủ Linh Thạch");
-         // If balance was enough but row not updated, user might not exist?
-         throw new Error("Lỗi giao dịch tài chính");
-     }
+    if (!connection) {
+        throw new Error("deduct() must be called within a transaction");
+    }
+
+    // Pessimistic Lock: Ensure user has enough balance and lock row
+    const [balance] = await connection.execute(
+        "SELECT linh_thach FROM user_currency WHERE user_id = ? FOR UPDATE",
+        [userId]
+    );
+
+    if (balance.length === 0 || balance[0].linh_thach < amount) {
+        throw new Error("Không đủ Linh Thạch");
+    }
+
+    // Safe Update
+    await connection.execute(
+        "UPDATE user_currency SET linh_thach = linh_thach - ? WHERE user_id = ?",
+        [amount, userId]
+    );
   }
 };
 
