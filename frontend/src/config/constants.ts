@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 // Helper to construct full image URLs
 // If usage prefers a separate base for images (e.g., CDN), it can be configured here.

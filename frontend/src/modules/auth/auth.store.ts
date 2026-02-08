@@ -102,11 +102,27 @@ export const useAuthStore = defineStore("auth", {
           const response = await getMeApi();
           this.setUser(response.user);
         } catch (error: any) {
-          console.error("Lỗi xác thực:", error);
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-             this.clearAuth();
+          const toast = useToast();
+          console.error("Lỗi xác thực (Initialize):", error);
+          
+          let errorMsg = "Lỗi không xác định";
+          if (error.response) {
+              console.error("Status:", error.response.status);
+              console.error("Data:", error.response.data);
+              errorMsg = `Lỗi ${error.response.status}: ${error.response.data?.message || 'Server Error'}`;
+
+              if (error.response.status === 401 || error.response.status === 403) {
+                 this.clearAuth();
+                 toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+                 return;
+              }
+          } else {
+              console.error("Network Error or other:", error.message);
+              errorMsg = `Lỗi mạng: ${error.message}`;
           }
-           // Don't clear auth on network errors or 500s, let the user retry or see error state
+          
+           // Show toast for non-auth errors to debug
+           toast.error(`Khôi phục phiên thất bại: ${errorMsg}`);
         }
       } else {
           this.setUser(null);

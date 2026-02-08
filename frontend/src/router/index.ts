@@ -223,7 +223,7 @@ router.beforeEach(async (to, from, next) => {
     const requiredRoles = to.meta.requiredRole as string[] | undefined;
 
     if (requiresAuth && !authStore.isLoggedIn) {
-        next({ name: "Login" });
+        next({ name: "Login", query: { toast: "session_expired" } });
     } else if (requiresAuth && authStore.isLoggedIn && requiredRoles) {
         if (!authStore.user || !requiredRoles.includes(authStore.user.role)) {
             next({ name: "Home", query: { toast: "unauthorized" } });

@@ -3,100 +3,102 @@ const Task = require("../models/userTask.model");
 const UserLevelsHistory = require("../models/userLevelHistory.model");
 const pointService = require("./userPoint.service");
 const UserLevel = require("../models/userLevels.model"); // Needed to verify level existence if default logic fails, but history is source of truth
+const { getOrSet, invalidate } = require("../utils/cache");
 
 const getAllTasks = async (userId) => {
-  const db = require("../config/db");
-  const connection = await db.getConnection();
+  const today = new Date().toISOString().slice(0, 10);
+  const cacheKey = `tasks:${userId}:${today}`;
 
-  try {
-    await connection.beginTransaction();
+  return await getOrSet(cacheKey, 300, async () => {
+      const db = require("../config/db");
+      const connection = await db.getConnection();
 
-    // 1. Get current level of user (Ensure exists)
-    // We use the service method to auto-create if missing based on role
-    const levelHistoryService = require("./userLevelHistory.service");
-    let currentLevelId = await levelHistoryService.ensureUserLevel(userId); 
+      try {
+        await connection.beginTransaction();
 
-    // 2. Fetch all generic tasks for this level
-    // We need connection here to be safe if we were doing more, but Task.getAllTasksByLevel uses pool.
-    // Let's execute raw SQL here for transaction safety or use the service logic refactored?
-    // Be safer to use direct query inside transaction for the "Provisioning" step
-    
-    // Fetch Task Definitions (Current Level OR Global)
-    const [taskDefs] = await connection.execute(
-        "SELECT * FROM tasks WHERE level_id = ? OR level_id IS NULL",
-        [currentLevelId]
-    );
+        // 1. Get current level of user (Ensure exists)
+        // We use the service method to auto-create if missing based on role
+        const levelHistoryService = require("./userLevelHistory.service");
+        let currentLevelId = await levelHistoryService.ensureUserLevel(userId); 
 
-    // 3. Optimized Provisioning (Batch Check)
-    const today = new Date().toISOString().slice(0, 10);
-
-    // Fetch ALL assigned tasks for this user (to check 'once' and 'daily')
-    // We only care about Task IDs and Dates
-    const [existingRows] = await connection.execute(
-        "SELECT task_id, assigned_at, status FROM user_tasks WHERE user_id = ?",
-        [userId]
-    );
-
-    // Map: task_id -> { hasToday, hasEver }
-    const taskStatusMap = new Map();
-    for (const row of existingRows) {
-        const tId = row.task_id;
-        const rowDate = new Date(row.assigned_at).toISOString().slice(0, 10);
+        // 2. Fetch all generic tasks for this level
         
-        if (!taskStatusMap.has(tId)) {
-            taskStatusMap.set(tId, { hasToday: false, hasEver: true });
-        }
-        if (rowDate === today) {
-            taskStatusMap.get(tId).hasToday = true;
-        }
-    }
-
-    const tasksToInsert = [];
-
-    for (const task of taskDefs) {
-        const repeatType = task.repeat_type || 'daily';
-        let shouldProvision = false;
-        const status = taskStatusMap.get(task.task_id);
-
-        if (repeatType === 'once') {
-             // Provision if NEVER exists
-             if (!status || !status.hasEver) shouldProvision = true;
-        } else if (repeatType === 'daily') {
-             // Provision if NOT exists TODAY
-             if (!status || !status.hasToday) shouldProvision = true;
-        } else if (repeatType === 'infinite') {
-             // No provisioning for infinite (actions)
-             shouldProvision = false;
-        }
-
-        if (shouldProvision) {
-            tasksToInsert.push([userId, task.task_id, 'pending', new Date()]);
-        }
-    }
-
-    if (tasksToInsert.length > 0) {
-        // Bulk Insert (MySQL2 helper needed or raw SQL)
-        // connection.query with nested array works for bulk insert
-        // But execute doesn't support bulk well with simple syntax?
-        // Use query instead of execute for bulk
-        // "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES ?"
-        await connection.query(
-            "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES ?",
-            [tasksToInsert]
+        // Fetch Task Definitions (Current Level OR Global)
+        const [taskDefs] = await connection.execute(
+            "SELECT * FROM tasks WHERE level_id = ? OR level_id IS NULL",
+            [currentLevelId]
         );
-    }
 
-    await connection.commit();
+        // 3. Optimized Provisioning (Batch Check)
 
-    // 4. Return formatted data using the model which now needs to filter by today
-    return await Task.getTasksByLevel(currentLevelId, userId);
+        // Fetch ALL assigned tasks for this user (to check 'once' and 'daily')
+        // We only care about Task IDs and Dates
+        const [existingRows] = await connection.execute(
+            "SELECT task_id, assigned_at, status FROM user_tasks WHERE user_id = ?",
+            [userId]
+        );
 
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
+        // Map: task_id -> { hasToday, hasEver }
+        const taskStatusMap = new Map();
+        for (const row of existingRows) {
+            const tId = row.task_id;
+            const rowDate = new Date(row.assigned_at).toISOString().slice(0, 10);
+            
+            if (!taskStatusMap.has(tId)) {
+                taskStatusMap.set(tId, { hasToday: false, hasEver: true });
+            }
+            if (rowDate === today) {
+                taskStatusMap.get(tId).hasToday = true;
+            }
+        }
+
+        const tasksToInsert = [];
+
+        for (const task of taskDefs) {
+            const repeatType = task.repeat_type || 'daily';
+            let shouldProvision = false;
+            const status = taskStatusMap.get(task.task_id);
+
+            if (repeatType === 'once') {
+                 // Provision if NEVER exists
+                 if (!status || !status.hasEver) shouldProvision = true;
+            } else if (repeatType === 'daily') {
+                 // Provision if NOT exists TODAY
+                 if (!status || !status.hasToday) shouldProvision = true;
+            } else if (repeatType === 'infinite') {
+                 // No provisioning for infinite (actions)
+                 shouldProvision = false;
+            }
+
+            if (shouldProvision) {
+                tasksToInsert.push([userId, task.task_id, 'pending', new Date()]);
+            }
+        }
+
+        if (tasksToInsert.length > 0) {
+            // Bulk Insert (MySQL2 helper needed or raw SQL)
+            // connection.query with nested array works for bulk insert
+            // But execute doesn't support bulk well with simple syntax?
+            // Use query instead of execute for bulk
+            // "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES ?"
+            await connection.query(
+                "INSERT INTO user_tasks (user_id, task_id, status, assigned_at) VALUES ?",
+                [tasksToInsert]
+            );
+        }
+
+        await connection.commit();
+
+        // 4. Return formatted data using the model which now needs to filter by today
+        return await Task.getTasksByLevel(currentLevelId, userId);
+
+      } catch (error) {
+        await connection.rollback();
+        throw error;
+      } finally {
+        connection.release();
+      }
+  });
 };
 
 const assignTask = async (userId, taskId) => {
@@ -194,6 +196,10 @@ const completeTask = async (userId, taskId) => {
     }
 
     await connection.commit();
+    
+    // Invalidate Cache for this user
+    await invalidate(`tasks:${userId}`);
+
     return { 
         status: 'completed', 
         pointsAwarded: pointsReward,
