@@ -37,14 +37,11 @@
     </form>
 
     <div class="social-login">
-      <p>Hoặc đăng nhập bằng:</p>
-      <div class="social-buttons">
-        <button class="social-btn facebook-btn ripple">
-          <i class="fab fa-facebook-f"></i> Facebook
-        </button>
-        <button class="social-btn google-btn ripple">
-          <i class="fab fa-google"></i> Google
-        </button>
+      <div class="divider">
+        <span>Hoặc đăng nhập bằng</span>
+      </div>
+      <div class="google-signin-container">
+        <GoogleLogin :callback="onGoogleCallback" />
       </div>
     </div>
 
@@ -57,12 +54,8 @@
 <script setup>
 import { ref, reactive } from "vue";
 import BaseInput from "@/components/common/BaseInput.vue";
-import { defineProps, defineEmits } from "vue";
 
-// Loại bỏ props serverError và successMessage
-const props = defineProps({});
-
-const emit = defineEmits(["submit-login"]);
+const emit = defineEmits(["submit-login", "submit-google-login"]);
 
 const formData = reactive({
   username: "",
@@ -95,10 +88,15 @@ const handleLogin = () => {
     emit("submit-login", { ...formData });
   }
 };
+
+const onGoogleCallback = (response) => {
+  if (response.credential) {
+    emit("submit-google-login", response.credential);
+  }
+};
 </script>
 
 <style scoped>
-/* Giữ nguyên toàn bộ CSS cũ và thêm/chỉnh sửa CSS cho thông báo */
 .khuVucForm {
   width: 100%;
   max-width: 400px;
@@ -206,31 +204,29 @@ const handleLogin = () => {
   color: #cccccc;
 }
 
-.social-buttons {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  margin-top: 10px;
-}
-
-.social-btn {
-  flex-grow: 1;
-  padding: 10px;
-  border-radius: 8px;
+.divider {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid #4caf50;
-  background: transparent;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  margin-bottom: 15px;
 }
 
-.social-btn:hover {
-  background: #4caf50;
-  color: #1a1a1a;
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #444;
+}
+
+.divider span {
+  padding: 0 12px;
+  font-size: 0.85rem;
+  color: #999;
+  white-space: nowrap;
+}
+
+.google-signin-container {
+  display: flex;
+  justify-content: center;
 }
 
 .login-link {
@@ -250,30 +246,11 @@ const handleLogin = () => {
   color: #388e3c;
 }
 
-/* Các class .loi và .thanh-cong không còn được sử dụng trực tiếp trong template này */
-.loi {
-  color: #d32f2f;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  margin-bottom: 15px;
-  display: block;
-  text-align: center;
-}
-
 .loi-nho {
   color: #ff5252;
   font-size: 0.8rem;
   display: block;
   margin-top: 5px;
-}
-
-.thanh-cong {
-  color: #4caf50;
-  font-size: 0.9rem;
-  margin-top: 4px;
-  margin-bottom: 15px;
-  display: block;
-  text-align: center;
 }
 
 @keyframes slideUp {
@@ -291,31 +268,5 @@ const handleLogin = () => {
 .ripple {
   position: relative;
   overflow: hidden;
-}
-
-.ripple::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.5);
-  opacity: 0;
-  border-radius: 50%;
-  transform: scale(1) translate(-50%, -50%);
-  transform-origin: 50% 50%;
-}
-
-@keyframes rippleEffect {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(30);
-    opacity: 0;
-  }
 }
 </style>

@@ -9,14 +9,11 @@
 
         <RegisterForm :key="formKey" />
         <div class="social-login">
-          <p>Hoặc đăng ký bằng:</p>
-          <div class="social-buttons">
-            <button class="social-btn facebook-btn ripple">
-              <i class="fab fa-facebook-f"></i> Facebook
-            </button>
-            <button class="social-btn google-btn ripple">
-              <i class="fab fa-google"></i> Google
-            </button>
+          <div class="divider">
+            <span>Hoặc đăng ký bằng</span>
+          </div>
+          <div class="google-signin-container">
+            <GoogleLogin :callback="onGoogleCallback" />
           </div>
         </div>
         <p class="login-link">
@@ -32,8 +29,24 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import RegisterForm from "@/modules/auth/RegisterForm.vue";
+import { useAuthStore } from "@/modules/auth/auth.store";
+
 const router = useRouter();
+const authStore = useAuthStore();
 const formKey = ref(0);
+
+const onGoogleCallback = async (response) => {
+    if (response.credential) {
+        try {
+            await authStore.googleLogin(response.credential);
+            setTimeout(() => {
+                router.push("/truyen-chu");
+            }, 1500);
+        } catch (error) {
+            console.error("Google Login Failed (Register Page)", error);
+        }
+    }
+};
 </script>
 
 <style>
@@ -192,15 +205,28 @@ const formKey = ref(0);
   text-align: center;
 }
 
-.social-login p {
-  font-size: 0.9rem;
-  color: #cccccc;
-  margin-bottom: 10px;
+.divider {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-.social-buttons {
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #444;
+}
+
+.divider span {
+  padding: 0 12px;
+  font-size: 0.85rem;
+  color: #999;
+  white-space: nowrap;
+}
+
+.google-signin-container {
   display: flex;
-  gap: 10px;
   justify-content: center;
 }
 

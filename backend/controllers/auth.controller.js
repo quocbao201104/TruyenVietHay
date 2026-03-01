@@ -2,6 +2,9 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const slugify = require("slugify");
 
 exports.register = async (req, res) => {
     const {
@@ -263,5 +266,85 @@ exports.changePassword = async (req, res) => {
             message: "Lỗi server khi đổi mật khẩu",
             error: err.message,
         });
+    }
+};
+
+exports.googleLogin = async (req, res) => {
+    const { token } = req.body;
+    
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const { sub: googleId, email, name, picture } = payload;
+
+        // 1. Check by Google ID
+        let users = await User.findByGoogleId(googleId);
+        let user = users[0];
+
+        if (!user) {
+            // 2. Check by Email
+            users = await User.findByEmail(email);
+            user = users[0];
+
+            if (user) {
+                // Link account
+                await User.linkGoogleAccount(user.id, googleId);
+            } else {
+                // 3. Create New User
+                const username = slugify(name, { lower: true, strict: true }) + Math.floor(Math.random() * 10000);
+                const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+                const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+                const newUser = {
+                    username,
+                    password: hashedPassword,
+                    email,
+                    full_name: name,
+                    phone: "", 
+                    role: "user",
+                    avatar: picture,
+                    gender: "other",
+                    google_id: googleId
+                };
+
+                const result = await User.create(newUser);
+                const createdUsers = await User.findById(result.insertId);
+                user = createdUsers[0];
+            }
+        }
+
+        if (user.status === "blocked") {
+             return res.status(403).json({ message: "Tài khoản đã bị khóa" });
+        }
+
+        const jwtToken = jwt.sign(
+            { id: user.id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        try {
+            const taskService = require("../services/task.service");
+            taskService.completeTaskByName(user.id, "Đăng nhập hàng ngày").catch(err => console.error("AGL Error:", err.message));
+        } catch (e) {}
+
+        res.json({
+            message: "Đăng nhập Google thành công",
+            token: jwtToken,
+            user: {
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                full_name: user.full_name,
+                avatar: user.avatar
+            },
+        });
+
+    } catch (err) {
+        console.error("Google Login Error:", err);
+        res.status(400).json({ message: "Xác thực Google thất bại", error: err.message });
     }
 };

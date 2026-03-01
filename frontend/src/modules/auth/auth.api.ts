@@ -54,3 +54,8 @@ export async function getMe(): Promise<User> {
   const res = await axios.get<User>("/api/auth/me");
   return res.data;
 }
+
+export async function googleLoginApi(token: string): Promise<LoginResponse> {
+  const res = await axios.post<LoginResponse>("/api/auth/google", { token });
+  return res.data;
+}

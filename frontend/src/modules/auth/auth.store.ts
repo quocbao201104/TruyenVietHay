@@ -74,6 +74,24 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    async googleLogin(token: string): Promise<LoginResponse> {
+      const toast = useToast();
+      try {
+        const response = await authApi.googleLoginApi(token);
+        this.setToken(response.token);
+        this.setUser(response.user);
+        this.isInitialized = true;
+        toast.success("Đăng nhập Google thành công!");
+        return response;
+      } catch (error: unknown) {
+        const err = error as AxiosError<{ message?: string }>;
+        const errorMessage =
+          err.response?.data?.message || err.message || "Đăng nhập Google thất bại";
+        toast.error(errorMessage);
+        throw { message: errorMessage, raw: err };
+      }
+    },
+
     async register(data: RegisterPayload): Promise<void> {
       const toast = useToast();
       try {

@@ -11,6 +11,7 @@ const { authenticateToken } = require("../middleware/auth");
 
 router.post("/dang-ky", authController.register); 
 router.post("/dang-nhap", authController.login); 
+router.post("/google", authController.googleLogin);
 router.get("/me", authenticateToken, authController.getMe); 
 
 router.put("change-password", authenticateToken, authController.changePassword); 

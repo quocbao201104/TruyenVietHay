@@ -37,8 +37,8 @@ const UserModel = {
     create: async (userData) => {
         const avatar = userData.avatar || "/uploads_img/avatar/default-avatar.jpg";
         const sql = `
-            INSERT INTO users_new (username, password, email, full_name, phone, role, avatar, gender)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users_new (username, password, email, full_name, phone, role, avatar, gender, google_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         const values = [
             userData.username,
@@ -49,6 +49,7 @@ const UserModel = {
             userData.role || "user",
             avatar,
             userData.gender || "other",
+            userData.google_id || null
         ];
         const [result] = await db.query(sql, values);
         return result;
@@ -70,6 +71,21 @@ const UserModel = {
             email,
         ]);
         return rows;
+    },
+
+    findByGoogleId: async (googleId) => {
+        const [rows] = await db.query("SELECT * FROM users_new WHERE google_id = ?", [
+            googleId,
+        ]);
+        return rows;
+    },
+
+    linkGoogleAccount: async (userId, googleId) => {
+        const [result] = await db.query(
+            "UPDATE users_new SET google_id = ? WHERE id = ?",
+            [googleId, userId]
+        );
+        return result.affectedRows;
     },
 
     updatePassword: async (id, hashedPassword) => {

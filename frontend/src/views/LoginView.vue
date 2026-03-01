@@ -4,6 +4,7 @@
       <LoginForm
         :key="formKey"
         @submit-login="handleApiLogin"
+        @submit-google-login="handleApiGoogleLogin"
       />
     </main>
   </div>
@@ -39,8 +40,20 @@ export default {
       }
     };
 
+    const handleApiGoogleLogin = async (token) => {
+        try {
+            await authStore.googleLogin(token);
+            setTimeout(() => {
+                router.push("/truyen-chu");
+            }, 1500);
+        } catch (error) {
+            console.error("Google Login Failed", error);
+        }
+    };
+
     return {
       handleApiLogin,
+      handleApiGoogleLogin,
       formKey,
     };
   },
