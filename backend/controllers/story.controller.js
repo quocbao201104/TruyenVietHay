@@ -171,7 +171,6 @@ const updateStory = async (req, res) => {
     const affectedRows = await StoryModel.update(storyId, updatedData);
     
     // Update categories (genres) if provided
-    // Update categories (genres) if provided
     let theloaiIds = req.body.theloai_ids || req.body['theloai_ids[]'];
     
     if (theloaiIds) {
