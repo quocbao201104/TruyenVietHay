@@ -30,9 +30,10 @@
 
     <!-- DESKTOP: Main Highlight (Left) -->
     <div class="main-highlight desktop-only">
-      <div class="highlight-content">
-        <img 
-          :src="getImageUrl(mainStory.anh_bia)" 
+      <transition name="fade" mode="out-in">
+        <div class="highlight-content" :key="mainStory.id || 'default'">
+          <img 
+            :src="getImageUrl(mainStory.anh_bia)" 
           class="main-cover-bg" 
           alt="Background" 
         />
@@ -66,8 +67,9 @@
             :alt="mainStory.ten_truyen" 
             class="book-cover-3d"
           />
-        </div>
-      </div>
+        </div> <!-- end floating-cover -->
+        </div> <!-- end highlight-content -->
+      </transition>
     </div>
 
     <!-- DESKTOP: Side Trending List (Right) -->
@@ -104,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getImageUrl } from "@/config/constants";
 
@@ -130,7 +132,24 @@ const props = defineProps({
   }
 });
 
-const mainStory = computed(() => props.stories[0] || {});
+const currentIndex = ref(0);
+let intervalId: any = null;
+
+onMounted(() => {
+  intervalId = setInterval(() => {
+    if (props.stories && props.stories.length > 1) {
+      // Loop through up to top 5 stories
+      const maxItems = Math.min(5, props.stories.length);
+      currentIndex.value = (currentIndex.value + 1) % maxItems;
+    }
+  }, 5000); // Change banner every 5 seconds
+});
+
+onUnmounted(() => {
+  if (intervalId) clearInterval(intervalId);
+});
+
+const mainStory = computed(() => props.stories[currentIndex.value] || {});
 
 // Logic: If specific trending list provided, it starts from Rank 1. 
 // If fall backing to main list (offset 1), it starts from Rank 2.
@@ -324,6 +343,17 @@ const truncateText = (text: string, length: number) => {
 
 .main-highlight:hover .book-cover-3d {
   transform: perspective(1000px) rotateY(0deg) scale(1.05);
+}
+
+/* Banner Fade Transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 

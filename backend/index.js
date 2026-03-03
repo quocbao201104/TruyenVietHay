@@ -77,6 +77,7 @@
     app.use("/api/ratings", require("./routes/rating.routes"));
     app.use("/api/notifications", require("./routes/notification.routes"));
     app.use("/api/currency", require("./routes/currency.routes")); // New Currency Route
+    app.use("/api/badges", require("./routes/badge.routes"));       // Level Badge System
     app.use("/api/admin", require("./routes/admin.cache.routes")); // Cache monitoring endpoints
 
     app.get("/", (req, res) => {

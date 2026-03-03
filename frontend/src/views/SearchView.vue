@@ -97,15 +97,6 @@
                   />
                   <span>Hoàn thành</span>
                 </label>
-                <label class="status-item">
-                  <input
-                    type="radio"
-                    value="de_xuat"
-                    v-model="filters.status"
-                    @change="applyFilters"
-                  />
-                  <span>Đề xuất</span>
-                </label>
               </div>
             </div>
 

@@ -1,4 +1,5 @@
 // frontend/src/types/user.d.ts
+import type { Badge } from './badge';
 
 /**
  * Định nghĩa cấu trúc dữ liệu đầy đủ của một User
@@ -16,6 +17,8 @@ export interface User {
     created_at: string; 
     status: 'active' | 'blocked'; 
     ban_until: string | null;
+    level_id?: number | null;
+    badge?: Badge | null;
 }
 
 /**

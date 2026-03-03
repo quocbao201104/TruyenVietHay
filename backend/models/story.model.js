@@ -5,31 +5,24 @@ const StoryModel = {
   create: async (storyData) => {
     const [result] = await db.query(
       `INSERT INTO truyen_new (
-        ten_truyen, slug, tac_gia, mo_ta, trang_thai, tinh_trang, trang_thai_viet,
-        yeu_to_nhay_cam, link_nguon, muc_tieu, doi_tuong_doc_gia,
-        thoi_gian_cap_nhat, anh_bia, trang_thai_kiem_duyet, user_id,
-        ghi_chu_admin, danh_gia_noi_dung, danh_gia_van_phong, danh_gia_sang_tao
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ten_truyen, slug, tac_gia, mo_ta, trang_thai, link_nguon, age_rating,
+        thoi_gian_tao, thoi_gian_cap_nhat, anh_bia, trang_thai_kiem_duyet, user_id,
+        ghi_chu_admin
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         storyData.ten_truyen,
         storyData.slug,
         storyData.tac_gia,
         storyData.mo_ta,
         storyData.trang_thai,
-        storyData.tinh_trang,
-        storyData.trang_thai_viet,
-        storyData.yeu_to_nhay_cam,
         storyData.link_nguon,
-        storyData.muc_tieu,
-        storyData.doi_tuong_doc_gia,
+        storyData.age_rating,
+        storyData.thoi_gian_tao,
         storyData.thoi_gian_cap_nhat,
         storyData.anh_bia,
         storyData.trang_thai_kiem_duyet,
         storyData.user_id,
         storyData.ghi_chu_admin,
-        storyData.danh_gia_noi_dung,
-        storyData.danh_gia_van_phong,
-        storyData.danh_gia_sang_tao,
       ]
     );
     return result.insertId;
@@ -173,11 +166,8 @@ const StoryModel = {
         mo_ta = ?, 
         trang_thai = ?, 
         anh_bia = ?, 
-        tinh_trang = ?,
-        trang_thai_viet = ?,
         link_nguon = ?,
-        muc_tieu = ?,
-        doi_tuong_doc_gia = ?,
+        age_rating = ?,
         thoi_gian_cap_nhat = NOW()
       WHERE id = ?`,
       [
@@ -186,11 +176,8 @@ const StoryModel = {
         storyData.mo_ta,
         storyData.trang_thai,
         storyData.anh_bia,
-        storyData.tinh_trang,
-        storyData.trang_thai_viet,
         storyData.link_nguon,
-        storyData.muc_tieu,
-        storyData.doi_tuong_doc_gia,
+        storyData.age_rating,
         id,
       ]
     );
@@ -213,22 +200,26 @@ const StoryModel = {
     );
     return rows;
   },
-  delete: async (id) => {
-    // Delete dependent records first to avoid Foreign Key Constraint errors
-    await db.query(`DELETE FROM thong_bao WHERE truyen_id = ?`, [id]);
+ delete: async (id) => {
+    // 1. Xóa thông báo liên quan (Cập nhật tên cột sang target_id và lọc theo type truyện)
+    await db.query(`DELETE FROM thong_bao WHERE target_id = ? AND type = 2`, [id]);
+
+    // 2. Xóa các bản ghi ở bảng trung gian và bảng phụ (Vẫn giữ truyen_id nếu bạn chưa đổi tên các bảng này)
     await db.query(`DELETE FROM truyen_theloai WHERE truyen_id = ?`, [id]);
     await db.query(`DELETE FROM chuong WHERE truyen_id = ?`, [id]);
     await db.query(`DELETE FROM theo_doi WHERE truyen_id = ?`, [id]);
-    await db.query(`DELETE FROM ratings WHERE truyen_id = ?`, [id]);
-    // Note: If comments exist and are linked to story, delete them too.
-    // Assuming 'comments' table might be linked via truyen_id or chapter.
-    // Safe to try delete if table exists and column matches, but for now matching the user's error specifically.
     
-    const [result] = await db.query(`DELETE FROM truyen_new WHERE id = ?`, [
-      id,
-    ]);
+    // 3. Xóa dữ liệu đánh giá (Bảng này dùng để tính hot_score)
+    await db.query(`DELETE FROM ratings WHERE truyen_id = ?`, [id]);
+
+    // 4. Xóa bình luận (Nếu có bảng bình luận trỏ trực tiếp đến truyện)
+    // await db.query(`DELETE FROM binh_luan WHERE truyen_id = ?`, [id]);
+
+    // 5. Cuối cùng mới xóa truyện chính
+    const [result] = await db.query(`DELETE FROM truyen_new WHERE id = ?`, [id]);
+    
     return result.affectedRows;
-  },
+},
   addGenresForStory: async (truyenId, theloaiIds) => {
     const values = theloaiIds.map((id) => [truyenId, id]);
     await db.query(
@@ -259,7 +250,7 @@ const StoryModel = {
     const sortOrder = order.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
     let selectQuery = `SELECT tn.id, tn.ten_truyen, tn.tac_gia, tn.slug, tn.mo_ta, tn.anh_bia, tn.luot_xem, tn.thoi_gian_cap_nhat, tn.trang_thai,
-                       tn.so_luong_chuong
+                       tn.so_luong_chuong, tn.chuong_moi
                        FROM truyen_new tn`;
     
     // Base count query needs to handle WHERE clauses, but HAVING clauses make simple COUNT(*) difficult.
@@ -416,14 +407,16 @@ const StoryModel = {
   },
 
   incrementViewCount: async (storyId) => {
-    // 1. Update total views
+    // 1. Update total views and recalculate hot_score
     await db.query(
-      "UPDATE truyen_new SET luot_xem = luot_xem + 1 WHERE id = ?",
+      `UPDATE truyen_new 
+       SET luot_xem = luot_xem + 1,
+           hot_score = (rating * 0.4) + (rating_count * 0.3) + ((luot_xem + 1) * 0.3)
+       WHERE id = ?`,
       [storyId]
     );
 
     // 2. Upsert daily views
-    // Use MySQL's CURDATE() for date
     await db.query(
       `INSERT INTO truyen_views (truyen_id, ngay_xem, so_luot_xem) 
        VALUES (?, CURDATE(), 1) 
@@ -439,7 +432,7 @@ const StoryModel = {
     
     return getOrSet(
       cacheKey,
-      600, // 10 minutes TTL (expensive aggregation query)
+      600,
       async () => {
         const [rows] = await db.query(
           `SELECT tn.*, IFNULL(SUM(tv.so_luot_xem), 0) as luot_xem_thang
@@ -449,6 +442,27 @@ const StoryModel = {
              AND tn.trang_thai_kiem_duyet = 'duyet'
            GROUP BY tn.id
            ORDER BY luot_xem_thang DESC
+           LIMIT ?`,
+          [parseInt(limit)]
+        );
+        return rows;
+      }
+    );
+  },
+
+  // Lấy truyện hot nhất theo hot_score (dùng cho Banner/HeroGrid)
+  getHotStories: async (limit = 5) => {
+    const cacheKey = `hotStories:${limit}`;
+    return getOrSet(
+      cacheKey,
+      300, // 5 phút cache
+      async () => {
+        const [rows] = await db.query(
+          `SELECT id, ten_truyen, slug, anh_bia, tac_gia, mo_ta,
+                  luot_xem, luot_thich, luot_theo_doi, rating, rating_count, hot_score
+           FROM truyen_new
+           WHERE trang_thai_kiem_duyet = 'duyet'
+           ORDER BY hot_score DESC
            LIMIT ?`,
           [parseInt(limit)]
         );

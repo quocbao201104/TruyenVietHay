@@ -4,12 +4,43 @@ const { getOrSet } = require("../utils/cache");
 const Rating = {
   // Tạo hoặc cập nhật đánh giá
   upsertRating: async (userId, truyenId, rating) => {
+    // Check if user already rated
+    const [existing] = await db.query(
+      `SELECT rating FROM ratings WHERE user_id = ? AND truyen_id = ?`,
+      [userId, truyenId]
+    );
+
+    const isNew = existing.length === 0;
+    const oldRating = isNew ? 0 : existing[0].rating;
+
     const [result] = await db.query(
       `INSERT INTO ratings (user_id, truyen_id, rating)
        VALUES (?, ?, ?)
        ON DUPLICATE KEY UPDATE rating = ?, updated_at = CURRENT_TIMESTAMP`,
       [userId, truyenId, rating, rating]
     );
+
+    // Update truyen_new table mathematically
+    if (isNew) {
+      await db.query(
+        `UPDATE truyen_new 
+         SET rating = ((rating * rating_count) + ?) / (rating_count + 1),
+             rating_count = rating_count + 1,
+             hot_score = (((rating * rating_count) + ?) / (rating_count + 1) * 0.4) + ((rating_count + 1) * 0.3) + (luot_xem * 0.3)
+         WHERE id = ?`,
+        [rating, rating, truyenId]
+      );
+    } else if (oldRating !== rating) {
+      // Only recalculate if rating actually changed
+      await db.query(
+        `UPDATE truyen_new 
+         SET rating = ((rating * rating_count) - ? + ?) / rating_count,
+             hot_score = (((rating * rating_count) - ? + ?) / rating_count * 0.4) + (rating_count * 0.3) + (luot_xem * 0.3)
+         WHERE id = ? AND rating_count > 0`,
+        [oldRating, rating, oldRating, rating, truyenId]
+      );
+    }
+
     return result;
   },
 
@@ -24,11 +55,11 @@ const Rating = {
     return rows;
   },
 
-  // Tính trung bình sao
+  // Lấy trung bình sao từ truyen_new
   getAverageRating: async (truyenId) => {
     const [rows] = await db.query(
-      `SELECT AVG(rating) AS avg_rating, COUNT(*) AS total_ratings
-       FROM ratings WHERE truyen_id = ?`,
+      `SELECT rating AS avg_rating, rating_count AS total_ratings
+       FROM truyen_new WHERE id = ?`,
       [truyenId]
     );
     return rows[0];
@@ -54,14 +85,11 @@ const Rating = {
             t.trang_thai,
             t.thoi_gian_cap_nhat,
             t.so_luong_chuong,
-            AVG(r.rating) AS avg_rating,
-            COUNT(r.id) AS total_ratings
+            t.rating AS avg_rating,
+            t.rating_count AS total_ratings
            FROM truyen_new t
-           INNER JOIN ratings r ON t.id = r.truyen_id
-           WHERE t.trang_thai_kiem_duyet = 'duyet'
-           GROUP BY t.id
-           HAVING COUNT(r.id) > 0
-           ORDER BY avg_rating DESC, total_ratings DESC
+           WHERE t.trang_thai_kiem_duyet = 'duyet' AND t.rating_count > 0
+           ORDER BY t.rating DESC, t.rating_count DESC
            LIMIT ?`,
           [limit]
         );

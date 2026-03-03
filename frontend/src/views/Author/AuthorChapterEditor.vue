@@ -95,10 +95,10 @@ const handleSubmit = async () => {
 
         if (isEditMode.value) {
             await chapterStore.updateChapter(chapterId, payload);
-            showSuccessToast('Cập nhật chương thành công!');
+            // showSuccessToast('Cập nhật chương thành công!');
         } else {
             await chapterStore.createChapter(payload);
-            showSuccessToast('Thêm chương mới thành công!');
+            // showSuccessToast('Thêm chương mới thành công!');
         }
         goBack();
     } catch (error: any) {

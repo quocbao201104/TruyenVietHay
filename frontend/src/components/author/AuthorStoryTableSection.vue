@@ -50,7 +50,7 @@
                {{ formatDate(story.thoi_gian_cap_nhat) }}
             </td>
              <td class="text-center font-bold">
-               {{ story.so_luong_chuong || story.so_chuong || 0 }}
+               {{ story.chuong_moi || story.so_luong_chuong || 0 }}
              </td>
             <td class="actions-cell">
                <div class="action-buttons">
@@ -88,6 +88,7 @@ interface Story {
   thoi_gian_cap_nhat: string;
   so_chuong: number;
   so_luong_chuong?: number;
+  chuong_moi?: string;
 }
 
 const props = defineProps({

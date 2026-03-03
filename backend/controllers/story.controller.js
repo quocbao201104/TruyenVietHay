@@ -115,10 +115,7 @@ const updateStory = async (req, res) => {
     tac_gia, 
     mo_ta, 
     trang_thai,
-    tinh_trang,
-    trang_thai_viet,
     link_nguon,
-    muc_tieu,
     doi_tuong_doc_gia,
     delete_cover_image 
   } = req.body;
@@ -165,11 +162,8 @@ const updateStory = async (req, res) => {
       updatedData.anh_bia = existingStory.anh_bia || null; // Keep existing
     }
 
-    // Add missing fields with sanitization to avoid undefined
-    updatedData.tinh_trang = tinh_trang || null;
-    updatedData.trang_thai_viet = trang_thai_viet || null;
+    // Add remaining fields
     updatedData.link_nguon = link_nguon || null;
-    updatedData.muc_tieu = muc_tieu || null;
     updatedData.doi_tuong_doc_gia = doi_tuong_doc_gia || null;
 
     // console.log("Updating story data:", updatedData); // Removed for production
@@ -343,6 +337,17 @@ const getTopMonthlyStories = async (req, res) => {
   }
 };
 
+const getHotStories = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+    const stories = await StoryModel.getHotStories(limit);
+    res.json(stories);
+  } catch (error) {
+    console.error("getHotStories error:", error);
+    res.status(500).json({ message: "Lỗi server khi lấy hot stories" });
+  }
+};
+
 module.exports = {
   getAllStories,
   getStoryById,
@@ -356,4 +361,5 @@ module.exports = {
   getPublicStories,
   incrementViewCount,
   getTopMonthlyStories,
+  getHotStories,
 };

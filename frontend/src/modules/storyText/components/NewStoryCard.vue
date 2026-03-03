@@ -12,7 +12,7 @@
         <span class="read-more-icon">Đọc ngay</span>
       </div>
       <div class="chapter-badge">
-        Chương {{ story.so_luong_chuong || story.so_chuong || 0 }}
+        {{ story.chuong_moi || `Chương ${story.so_luong_chuong || 0}` }}
       </div>
       <span :class="['status-tag', getStatusClass(story.trang_thai)]">
         <i v-if="getStatusClass(story.trang_thai) === 'status-completed'" class="fas fa-check-circle"></i>
@@ -80,8 +80,7 @@ const timeAgo = (date) => {
 const getStatusText = (status) => {
   if (!status) return 'Đang ra';
   const s = status.toLowerCase().trim();
-  if (s === 'hoan_thanh' || s.includes('hoàn') || s === 'completed') return 'Đã Full';
-  if (s === 'de_xuat' || s.includes('đề xuất') || s === 'suggested') return 'Đề xuất';
+  if (s === 'hoan_thanh' || s.includes('hoàn thành')) return 'Đã Full';
   if (s === 'dang_ra' || s.includes('đang ra')) return 'Đang ra';
   return 'Đang ra';
 };
@@ -89,8 +88,7 @@ const getStatusText = (status) => {
 const getStatusClass = (status) => {
   if (!status) return 'status-on-going';
   const s = status.toLowerCase().trim();
-  if (s === 'hoan_thanh' || s.includes('hoàn') || s === 'completed') return 'status-completed';
-  if (s === 'de_xuat' || s.includes('đề xuất') || s === 'suggested') return 'status-suggested';
+  if (s === 'hoan_thanh' || s.includes('hoàn thành')) return 'status-completed';
   return 'status-on-going';
 };
 </script>

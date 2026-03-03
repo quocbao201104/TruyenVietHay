@@ -35,33 +35,21 @@
             >
           </div>
 
-          <div class="form-group">
-            <label for="mucTieu" class="form-label"><i class="fas fa-bullseye icon"></i> Mục tiêu (Tối đa 50 ký tự)</label>
-            <input 
-              type="text"
-              id="mucTieu" 
-              v-model="story.muc_tieu" 
-              maxlength="50"
-              class="form-input" 
-              placeholder="Ví dụ: Giải trí, Giáo dục..."
-            />
-            <span v-if="submitted && (!story.muc_tieu || story.muc_tieu.trim() === '')" class="error-message-inline">Mục tiêu không được để trống.</span>
-          </div>
+
 
           <div class="form-group">
-            <label for="doiTuongDocGia" class="form-label"><i class="fas fa-users icon"></i> Đối tượng độc giả</label>
+            <label for="ageRating" class="form-label"><i class="fas fa-users icon"></i> Đối tượng độc giả</label>
             <select 
-              id="doiTuongDocGia" 
-              v-model="story.doi_tuong_doc_gia" 
+              id="ageRating" 
+              v-model="story.age_rating" 
               class="form-input"
             >
               <option value="" disabled>-- Chọn đối tượng --</option>
-              <option value="duoi_13">Dưới 13 tuổi</option>
-              <option value="13_16">13 - 16 tuổi</option>
-              <option value="16_18">16 - 18 tuổi</option>
-              <option value="18_plus">Trên 18 tuổi</option>
+              <option :value="1">Mọi lứa tuổi (1)</option>
+              <option :value="2">13+</option>
+              <option :value="3">18+</option>
             </select>
-            <span v-if="submitted && (!story.doi_tuong_doc_gia || story.doi_tuong_doc_gia.trim() === '')" class="error-message-inline">Vui lòng chọn đối tượng độc giả.</span>
+            <span v-if="submitted && !story.age_rating" class="error-message-inline">Vui lòng chọn đối tượng độc giả.</span>
           </div>
 
 
@@ -125,14 +113,11 @@ const story = ref({
   mo_ta: '',
   the_loai_ids: [], 
   trang_thai: 'dang_ra', 
-  tinh_trang: 'Đang viết', 
-  trang_thai_viet: 'dang_tien_hanh', 
-  link_nguon: '', // Khởi tạo trường mới
-  muc_tieu: '',    // Khởi tạo trường mới
-  doi_tuong_doc_gia: 'duoi_13', // Default ENUM value
+  link_nguon: '',
+  age_rating: 1,
   chuong_mau: '', 
   anh_bia: null, 
-  anh_bia_url: null, // Thêm trường url ảnh cũ
+  anh_bia_url: null,
   user_id: authStore.user?.id,
 });
 
@@ -204,11 +189,7 @@ const validateForm = () => {
         isValid = false;
         errorMessage.value = 'Vui lòng chọn ít nhất một thể loại.';
       }
-      if (!story.value.muc_tieu || story.value.muc_tieu.trim() === '') {
-        isValid = false;
-        errorMessage.value = 'Mục tiêu không được để trống.';
-      }
-      if (!story.value.doi_tuong_doc_gia || story.value.doi_tuong_doc_gia.trim() === '') {
+      if (!story.value.age_rating) {
         isValid = false;
         errorMessage.value = 'Đối tượng độc giả không được để trống.';
       }
@@ -261,11 +242,8 @@ const handleSubmit = async () => {
   formData.append('tac_gia', story.value.tac_gia);
   formData.append('mo_ta', story.value.mo_ta);
   formData.append('trang_thai', story.value.trang_thai);
-  formData.append('tinh_trang', story.value.tinh_trang);
-  formData.append('trang_thai_viet', story.value.trang_thai_viet);
-  formData.append('link_nguon', story.value.link_nguon); // NEW
-  formData.append('muc_tieu', story.value.muc_tieu);     // NEW
-  formData.append('doi_tuong_doc_gia', story.value.doi_tuong_doc_gia); // NEW
+  formData.append('link_nguon', story.value.link_nguon);
+  formData.append('age_rating', story.value.age_rating);
   formData.append('chuong_mau', story.value.chuong_mau);
   formData.append('user_id', story.value.user_id);
   
@@ -328,11 +306,8 @@ onMounted(() => {
                 mo_ta: data.mo_ta || '',
                 the_loai_ids: data.genres ? data.genres.map(g => g.id_theloai) : [],
                 trang_thai: data.trang_thai || 'dang_ra',
-                tinh_trang: data.tinh_trang || 'Đang viết',
-                trang_thai_viet: data.trang_thai_viet || 'Bản nháp',
                 link_nguon: data.link_nguon || '',
-                muc_tieu: data.muc_tieu || '',
-                doi_tuong_doc_gia: data.doi_tuong_doc_gia || '',
+                age_rating: data.age_rating || 1,
                 chuong_mau: data.sample_chapter_content || '', // Corrected field name
                 anh_bia: null,
                 anh_bia_url: data.anh_bia ? getImageUrl(data.anh_bia) : null, // Load url ảnh cũ

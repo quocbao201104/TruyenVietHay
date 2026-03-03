@@ -1,4 +1,5 @@
 import axios from "@/utils/axios";
+import type { Badge } from '@/types/badge';
 
 export interface Comment {
     id: number;
@@ -8,8 +9,11 @@ export interface Comment {
     truyen_id: number;
     parent_id?: number | null;
     is_deleted?: number;
-    author_name: string; // Updated to match aliased column
-    username?: string; // Keep for compatibility if needed
+    author_name: string;
+    author_avatar?: string | null;
+    username?: string;
+    author_level_id?: number | null;
+    author_badge?: Badge | null;
     replies?: Comment[];
 }
 
@@ -31,7 +35,9 @@ export const createComment = async (payload: CreateCommentPayload): Promise<{ su
     return response.data;
 };
 
-export const deleteComment = async (commentId: number): Promise<{ success: boolean }> => {
-    const response = await axios.delete(`/api/comments/${commentId}`);
+export const deleteComment = async (commentId: number, truyenId?: number): Promise<{ success: boolean }> => {
+    const response = await axios.delete(`/api/comments/${commentId}`, {
+        params: truyenId ? { truyen_id: truyenId } : undefined,
+    });
     return response.data;
 };

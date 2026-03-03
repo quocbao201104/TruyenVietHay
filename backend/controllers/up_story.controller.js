@@ -2,6 +2,8 @@ const slugify = require("../utils/slugify");
 const StoryModel = require("../models/story.model");
 const ChapterModel = require("../models/chapter.model");
 const notificationService = require("../services/notification.services");
+const { NOTIF_TYPE, NOTIF_TEMPLATE } = require("../services/notification.services");
+const { sanitizeFields } = require("../utils/sanitize");
 
 const uploadStory = async (req, res) => {
   try {
@@ -26,7 +28,6 @@ const uploadStory = async (req, res) => {
       return res.status(400).json({ message: "Ảnh bìa là bắt buộc" });
     }
 
-    // Cập nhật logic validation để bao gồm các trường mới
     if (
       !data.ten_truyen ||
       data.ten_truyen.trim() === "" ||
@@ -34,10 +35,6 @@ const uploadStory = async (req, res) => {
       data.tac_gia.trim() === "" ||
       !data.mo_ta ||
       data.mo_ta.trim() === "" ||
-      !data.muc_tieu ||
-      data.muc_tieu.trim() === "" || // Thêm validation cho muc_tieu
-      !data.doi_tuong_doc_gia ||
-      data.doi_tuong_doc_gia.trim() === "" || // Thêm validation cho doi_tuong_doc_gia
       !data.chuong_mau ||
       data.chuong_mau.trim() === "" ||
       data.chuong_mau.trim() === "<p></p>" ||
@@ -51,10 +48,6 @@ const uploadStory = async (req, res) => {
       else if (!data.tac_gia || data.tac_gia.trim() === "")
         missingField = "Tác giả";
       else if (!data.mo_ta || data.mo_ta.trim() === "") missingField = "Mô tả";
-      else if (!data.muc_tieu || data.muc_tieu.trim() === "")
-        missingField = "Mục tiêu"; // Message cho muc_tieu
-      else if (!data.doi_tuong_doc_gia || data.doi_tuong_doc_gia.trim() === "")
-        missingField = "Đối tượng độc giả"; // Message cho doi_tuong_doc_gia
       else if (
         !data.chuong_mau ||
         data.chuong_mau.trim() === "" ||
@@ -72,6 +65,9 @@ const uploadStory = async (req, res) => {
         .status(400)
         .json({ message: `Vui lòng điền đầy đủ thông tin: ${missingField}` });
     }
+
+    // Sanitize user input fields against XSS
+    sanitizeFields(data, ['ten_truyen', 'tac_gia', 'mo_ta', 'chuong_mau']);
 
     const anh_bia = file.path;
     const now = new Date();
@@ -91,20 +87,14 @@ const uploadStory = async (req, res) => {
       tac_gia: data.tac_gia,
       mo_ta: data.mo_ta,
       trang_thai: data.trang_thai || "dang_ra",
-      tinh_trang: data.tinh_trang || "Đang viết",
-      trang_thai_viet: data.trang_thai_viet || "Bản nháp",
-      yeu_to_nhay_cam: data.yeu_to_nhay_cam || 0,
-      link_nguon: data.link_nguon || null, // Truyền link_nguon
-      muc_tieu: data.muc_tieu || null, // Truyền muc_tieu
-      doi_tuong_doc_gia: data.doi_tuong_doc_gia || null, // Truyền doi_tuong_doc_gia
+      link_nguon: data.link_nguon || null,
+      doi_tuong_doc_gia: data.doi_tuong_doc_gia || null,
+      thoi_gian_tao: now,
       thoi_gian_cap_nhat: now,
       anh_bia,
       trang_thai_kiem_duyet,
       user_id,
       ghi_chu_admin: null,
-      danh_gia_noi_dung: 0,
-      danh_gia_van_phong: 0,
-      danh_gia_sang_tao: 0,
     });
 
     if (Array.isArray(data.theloai_ids) && data.theloai_ids.length > 0) {
@@ -119,13 +109,14 @@ const uploadStory = async (req, res) => {
 
     if (trang_thai_kiem_duyet === "cho_duyet") {
       try {
+        const adminContent = NOTIF_TEMPLATE.STORY_PENDING_REVIEW(data.ten_truyen, data.tac_gia);
         await notificationService.sendNotificationToAdmins(
-          `Truyện "${data.ten_truyen}" của tác giả ${data.tac_gia} cần được kiểm duyệt.`,
-          `/admin/quan-ly-truyen/duyet/${storyId}`
+          adminContent,
+          NOTIF_TYPE.APPROVAL,
+          storyId
         );
       } catch (notifyErr) {
         console.warn("Failed to send admin notification:", notifyErr);
-        // Do not fail the request, just log it
       }
     }
 

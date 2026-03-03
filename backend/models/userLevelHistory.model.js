@@ -36,6 +36,36 @@ const UserLevelHistory = {
     );
     return rows[0] ? rows[0].level_id : null;
   },
+
+  /**
+   * Batch-fetch the latest level_id for multiple users in ONE query.
+   * Uses a MAX(start_date) subquery to get the most-recent history row per user.
+   *
+   * @param {number[]} userIds
+   * @returns {Promise<Map<number, number>>} Map<user_id, level_id>
+   */
+  getCurrentLevelsForUsers: async (userIds) => {
+    if (!userIds || userIds.length === 0) return new Map();
+
+    const placeholders = userIds.map(() => "?").join(",");
+    const [rows] = await db.query(
+      `SELECT h.user_id, h.level_id
+       FROM user_levels_history h
+       INNER JOIN (
+         SELECT user_id, MAX(start_date) AS max_start
+         FROM user_levels_history
+         WHERE user_id IN (${placeholders})
+         GROUP BY user_id
+       ) latest ON h.user_id = latest.user_id AND h.start_date = latest.max_start`,
+      userIds
+    );
+
+    const map = new Map();
+    for (const row of rows) {
+      map.set(row.user_id, row.level_id);
+    }
+    return map;
+  },
 };
 
 module.exports = UserLevelHistory;

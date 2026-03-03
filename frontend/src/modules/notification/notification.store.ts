@@ -52,8 +52,8 @@ export const useNotificationStore = defineStore('notification', {
       try {
         await markAsReadApi(id);
         const notification = this.notifications.find(n => n.id === id);
-        if (notification && notification.status === 'unread') {
-          notification.status = 'read';
+        if (notification && notification.is_read === 0) {
+          notification.is_read = 1;
           this.unreadCount = Math.max(0, this.unreadCount - 1);
         }
       } catch (error) {
@@ -64,7 +64,7 @@ export const useNotificationStore = defineStore('notification', {
     async markAllAsRead() {
       try {
         await markAllAsReadApi();
-        this.notifications.forEach(n => n.status = 'read');
+        this.notifications.forEach(n => n.is_read = 1);
         this.unreadCount = 0;
       } catch (error) {
         console.error('Error marking all as read:', error);

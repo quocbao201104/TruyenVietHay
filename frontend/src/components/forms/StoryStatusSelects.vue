@@ -11,30 +11,6 @@
       />
       <span v-if="submitted && !modelValue.trang_thai" class="error-message-inline">Vui lòng chọn trạng thái.</span>
     </div>
-    
-    <div class="form-group">
-      <label class="form-label"><i class="fas fa-edit icon"></i> Tình trạng</label>
-      <CustomSelect
-        :modelValue="modelValue.tinh_trang"
-        @update:modelValue="updateField('tinh_trang', $event)"
-        :options="tinhTrangOptions"
-        :is-invalid="submitted && !modelValue.tinh_trang"
-        placeholder="-- Chọn tình trạng --"
-      />
-      <span v-if="submitted && !modelValue.tinh_trang" class="error-message-inline">Vui lòng chọn tình trạng.</span>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label"><i class="fas fa-clipboard-list icon"></i> Trạng thái viết</label>
-      <CustomSelect
-        :modelValue="modelValue.trang_thai_viet"
-        @update:modelValue="updateField('trang_thai_viet', $event)"
-        :options="trangThaiVietOptions"
-        :is-invalid="submitted && !modelValue.trang_thai_viet"
-        placeholder="-- Chọn trạng thái viết --"
-      />
-      <span v-if="submitted && !modelValue.trang_thai_viet" class="error-message-inline">Vui lòng chọn trạng thái viết.</span>
-    </div>
   </div>
 </template>
 
@@ -48,8 +24,6 @@ interface SelectOption {
 
 interface StoryStatusFields {
   trang_thai: string;
-  tinh_trang: string;
-  trang_thai_viet: string;
 }
 
 const props = defineProps<{
@@ -62,17 +36,6 @@ const emit = defineEmits(['update:modelValue']);
 const statusOptions: SelectOption[] = [
   { value: 'dang_ra', label: 'Đang ra' },
   { value: 'hoan_thanh', label: 'Hoàn thành' },
-  { value: 'de_xuat', label: 'Đề xuất' },
-];
-
-const tinhTrangOptions: SelectOption[] = [
-  { value: 'Đang viết', label: 'Đang viết' },
-  { value: 'Chưa hoàn thành', label: 'Chưa hoàn thành' },
-];
-
-const trangThaiVietOptions: SelectOption[] = [
-  { value: 'dang_tien_hanh', label: 'Bản nháp (Đang tiến hành)' },
-  { value: 'hoan_thanh', label: 'Đã hoàn thành' },
 ];
 
 const updateField = (field: keyof StoryStatusFields, value: string) => {
@@ -81,7 +44,6 @@ const updateField = (field: keyof StoryStatusFields, value: string) => {
 </script>
 
 <style scoped>
-/* CSS đồng bộ với SubmitStoryView.vue và mẫu của bạn */
 .form-group {
   margin-bottom: 0.5rem; 
   display: flex;
@@ -113,8 +75,6 @@ const updateField = (field: keyof StoryStatusFields, value: string) => {
   font-weight: 500;
   display: block;
 }
-
-/* CustomSelect's internal styles are handled by CustomSelect.vue, just ensure its global styles match */
 
 @media (max-width: 768px) {
   .form-label {

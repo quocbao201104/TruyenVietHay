@@ -10,7 +10,8 @@ const NotificationController = {
       const offset = (page - 1) * limit;
 
       const [notifications] = await db.query(
-        `SELECT * FROM thong_bao 
+        `SELECT id, user_id, content, is_read, type, target_id, created_at
+         FROM thong_bao 
          WHERE user_id = ? 
          ORDER BY created_at DESC 
          LIMIT ? OFFSET ?`,
@@ -23,7 +24,7 @@ const NotificationController = {
       );
       
       const [unreadResult] = await db.query(
-        `SELECT COUNT(*) as unread FROM thong_bao WHERE user_id = ? AND status = 'unread'`,
+        `SELECT COUNT(*) as unread FROM thong_bao WHERE user_id = ? AND is_read = 0`,
         [userId]
       );
 
@@ -50,8 +51,18 @@ const NotificationController = {
       const userId = req.user.id;
       const notificationId = req.params.id;
 
+      // Access control: only mark own notifications
+      const [rows] = await db.query(
+        `SELECT id FROM thong_bao WHERE id = ? AND user_id = ?`,
+        [notificationId, userId]
+      );
+
+      if (rows.length === 0) {
+        return res.status(403).json({ message: "Không có quyền truy cập thông báo này" });
+      }
+
       await db.query(
-        `UPDATE thong_bao SET status = 'read' WHERE id = ? AND user_id = ?`,
+        `UPDATE thong_bao SET is_read = 1 WHERE id = ? AND user_id = ?`,
         [notificationId, userId]
       );
 
@@ -68,7 +79,7 @@ const NotificationController = {
       const userId = req.user.id;
 
       await db.query(
-        `UPDATE thong_bao SET status = 'read' WHERE user_id = ? AND status = 'unread'`,
+        `UPDATE thong_bao SET is_read = 1 WHERE user_id = ? AND is_read = 0`,
         [userId]
       );
 

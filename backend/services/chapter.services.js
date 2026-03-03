@@ -1,6 +1,8 @@
 const notificationService = require("./notification.services");
+const { NOTIF_TYPE, NOTIF_TEMPLATE } = require("./notification.services");
 const db = require("../config/db");
 const StoryModel = require("../models/story.model");
+
 // Duyệt chương và gửi thông báo
 const approveChapter = async (chapter_id, action) => {
   try {
@@ -34,22 +36,22 @@ const approveChapter = async (chapter_id, action) => {
 
     // Nếu duyệt, cập nhật thời gian cập nhật của truyện
     if (action === "duyet") {
-        await db.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
+      await db.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
     }
 
-    // Gửi thông báo cho tác giả
-    const contentForAuthor =
-      action === "duyet"
-        ? `Chương của bạn trong truyện ${ten_truyen} đã được duyệt thành công.`
-        : `Chương của bạn trong truyện ${ten_truyen} đã bị từ chối.`;
+    // Gửi thông báo cho tác giả (type: APPROVAL, target: story)
+    const contentForAuthor = action === "duyet"
+      ? NOTIF_TEMPLATE.CHAPTER_APPROVED_AUTHOR(ten_truyen)
+      : NOTIF_TEMPLATE.CHAPTER_REJECTED_AUTHOR(ten_truyen);
 
     await notificationService.sendNotification(
       user_id,
       contentForAuthor,
+      NOTIF_TYPE.APPROVAL,
       truyen_id
     );
 
-    // Gửi thông báo
+    // Gửi thông báo cho followers (type: NEW_CHAPTER, target: story)
     await notificationService.notifyFollowersAboutChapterUpdate(
       truyen_id,
       ten_truyen,

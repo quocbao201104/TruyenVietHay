@@ -1,5 +1,6 @@
 // auth.api.ts
 import axios from "@/utils/axios";
+import type { Badge } from '@/types/badge';
 
 // Kiểu dữ liệu gửi khi đăng nhập
 export interface LoginPayload {
@@ -18,6 +19,8 @@ export interface User {
   role: string;
   gender: string;
   created_at: string;
+  level_id?: number | null;
+  badge?: Badge | null;
 }
 
 // Login trả về: có thể là { token, user }

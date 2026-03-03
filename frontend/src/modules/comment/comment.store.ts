@@ -38,7 +38,7 @@ export const useCommentStore = defineStore("comment", () => {
 
     const removeComment = async (commentId: number, storyId: number) => {
         try {
-            await deleteComment(commentId);
+            await deleteComment(commentId, storyId);
             // Refresh comments after deletion
             await fetchComments(storyId);
         } catch (err: any) {

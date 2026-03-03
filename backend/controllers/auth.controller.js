@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const slugify = require("slugify");
+const UserLevelHistory = require("../models/userLevelHistory.model");
+const badgeService = require("../services/badge.service");
 
 exports.register = async (req, res) => {
     const {
@@ -104,6 +106,10 @@ exports.login = async (req, res) => {
             console.error("Gamification Setup Error:", e.message);
         }
 
+        // Attach badge to login response
+        const levelId = await UserLevelHistory.getCurrentLevelOfUser(user.id);
+        const badge   = await badgeService.getUserBadge(levelId);
+
         res.json({
             message: "Đăng nhập thành công",
             token,
@@ -112,6 +118,8 @@ exports.login = async (req, res) => {
                 username: user.username,
                 role: user.role,
                 full_name: user.full_name,
+                level_id: levelId ?? null,
+                badge,
             },
         });
     } catch (err) {
@@ -129,6 +137,11 @@ exports.getMe = async (req, res) => {
         }
 
         const user = results[0];
+
+        // Attach badge to profile response
+        const levelId = await UserLevelHistory.getCurrentLevelOfUser(userId);
+        const badge   = await badgeService.getUserBadge(levelId);
+
         res.json({
             message: "Thông tin người dùng",
             user: {
@@ -141,6 +154,8 @@ exports.getMe = async (req, res) => {
                 role: user.role,
                 gender: user.gender,
                 created_at: user.created_at,
+                level_id: levelId ?? null,
+                badge,
             },
         });
     } catch (err) {
@@ -331,6 +346,10 @@ exports.googleLogin = async (req, res) => {
             taskService.completeTaskByName(user.id, "Đăng nhập hàng ngày").catch(err => console.error("AGL Error:", err.message));
         } catch (e) {}
 
+        // Attach badge to Google login response
+        const glLevelId = await UserLevelHistory.getCurrentLevelOfUser(user.id);
+        const glBadge   = await badgeService.getUserBadge(glLevelId);
+
         res.json({
             message: "Đăng nhập Google thành công",
             token: jwtToken,
@@ -339,7 +358,9 @@ exports.googleLogin = async (req, res) => {
                 username: user.username,
                 role: user.role,
                 full_name: user.full_name,
-                avatar: user.avatar
+                avatar: user.avatar,
+                level_id: glLevelId ?? null,
+                badge: glBadge,
             },
         });
 

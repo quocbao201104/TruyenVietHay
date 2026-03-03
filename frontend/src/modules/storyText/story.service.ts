@@ -126,3 +126,8 @@ export const toggleLike = async (storyId: number) => {
     const response = await axios.post<{ success: boolean; liked: boolean; luot_thich: number }>(`/api/like/${storyId}`);
     return response.data;
 };
+
+export const getHotStories = async (limit: number = 5) => {
+    const response = await axios.get(`/api/truyen/hot-stories`, { params: { limit } });
+    return response.data;
+};

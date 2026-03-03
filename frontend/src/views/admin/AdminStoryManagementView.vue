@@ -49,16 +49,9 @@
 
             <div class="story-info-grid">
               <div class="info-item"><strong>ID:</strong> <span>{{ currentStoryDetails.id }}</span></div>
-              <div class="info-item"><strong>Tên truyện:</strong> <span>{{ currentStoryDetails.ten_truyen }}</span></div>
-              <div class="info-item"><strong>Tác giả:</strong> <span>{{ currentStoryDetails.tac_gia }}</span></div>
-              <div class="info-item"><strong>Slug:</strong> <span>{{ currentStoryDetails.slug }}</span></div>
               <div class="info-item"><strong>Trạng thái:</strong> <span>{{ currentStoryDetails.trang_thai }}</span></div>
-              <div class="info-item"><strong>Tình trạng:</strong> <span>{{ currentStoryDetails.tinh_trang }}</span></div>
-              <div class="info-item"><strong>Trạng thái viết:</strong> <span>{{ currentStoryDetails.trang_thai_viet }}</span></div>
-              <div class="info-item"><strong>Yếu tố nhạy cảm:</strong> <span>{{ currentStoryDetails.yeu_to_nhay_cam ? 'Có' : 'Không' }}</span></div>
               <div class="info-item"><strong>Link nguồn:</strong> <a :href="currentStoryDetails.link_nguon" target="_blank">{{ currentStoryDetails.link_nguon || 'N/A' }}</a></div>
-              <div class="info-item"><strong>Mục tiêu:</strong> <span>{{ currentStoryDetails.muc_tieu }}</span></div>
-              <div class="info-item"><strong>Đối tượng độc giả:</strong> <span>{{ currentStoryDetails.doi_tuong_doc_gia }}</span></div>
+              <div class="info-item"><strong>Đối tượng độc giả:</strong> <span>{{ formatAgeRating(currentStoryDetails.age_rating) }}</span></div>
               <div class="info-item"><strong>Thời gian cập nhật:</strong> <span>{{ formatDate(currentStoryDetails.thoi_gian_cap_nhat) }}</span></div>
               <div class="info-item"><strong>Trạng thái kiểm duyệt:</strong> <span :class="['status-badge', getStatusClass(currentStoryDetails.trang_thai_kiem_duyet)]">{{ formatStatus(currentStoryDetails.trang_thai_kiem_duyet) }}</span></div>
             </div>
@@ -71,15 +64,6 @@
             <div class="admin-notes">
               <h3>Ghi chú Admin:</h3>
               <textarea v-model="currentStoryDetails.ghi_chu_admin" rows="3" placeholder="Thêm ghi chú của admin..."></textarea>
-            </div>
-
-            <div class="story-ratings">
-              <h3>Đánh giá nội dung:</h3>
-              <input type="number" v-model.number="currentStoryDetails.danh_gia_noi_dung" min="0" max="10" class="rating-input" />
-              <h3>Đánh giá văn phong:</h3>
-              <input type="number" v-model.number="currentStoryDetails.danh_gia_van_phong" min="0" max="10" class="rating-input" />
-              <h3>Đánh giá sáng tạo:</h3>
-              <input type="number" v-model.number="currentStoryDetails.danh_gia_sang_tao" min="0" max="10" class="rating-input" />
             </div>
 
             <div class="chapters-preview-section">
@@ -428,6 +412,15 @@ const formatStatus = (status: string) => {
     case 'cho_duyet': return 'Chờ duyệt';
     case 'tu_choi': return 'Từ chối';
     default: return status;
+  }
+};
+
+const formatAgeRating = (val: number) => {
+  switch (val) {
+    case 1: return "Mọi lứa tuổi";
+    case 2: return "13+";
+    case 3: return "18+";
+    default: return val ? val.toString() : "Mọi lứa tuổi";
   }
 };
 

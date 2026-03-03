@@ -1,5 +1,31 @@
 const db = require("../config/db");
 
+const updateChuongMoiNhat = async (truyen_id) => {
+  // Update so_luong_chuong and chuong_moi
+  const [latestChuong] = await db.query(
+    `SELECT so_chuong, tieu_de 
+     FROM chuong 
+     WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet'
+     ORDER BY so_chuong DESC LIMIT 1`,
+    [truyen_id]
+  );
+  
+  let chuongMoiString = "Hiện tại chưa có chương tương ứng";
+  if (latestChuong.length > 0) {
+    const chuong = latestChuong[0];
+    chuongMoiString = `Chương ${chuong.so_chuong}`;
+  }
+
+  await db.query(`
+    UPDATE truyen_new 
+    SET 
+        chuong_moi = ?, 
+        so_luong_chuong = (SELECT COUNT(*) FROM chuong WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet')
+    WHERE id = ?`, 
+    [chuongMoiString, truyen_id, truyen_id]
+  );
+};
+
 const ChapterModel = {
   createChapter: async ({ truyen_id, so_chuong, tieu_de, noi_dung, slug }) => {
     const thoi_gian_dang = new Date();
@@ -77,12 +103,20 @@ const ChapterModel = {
   },
 
   updateChapter: async (id, { tieu_de, noi_dung, so_chuong, slug }) => {
+    // Need truyen_id to update chuong_moi if needed
+    const [chapter] = await db.query(`SELECT truyen_id, trang_thai FROM chuong WHERE id = ?`, [id]);
+    
     const [result] = await db.execute(
       `UPDATE chuong 
         SET tieu_de = ?, noi_dung = ?, so_chuong = ?, slug = ? 
         WHERE id = ?`,
       [tieu_de, noi_dung, so_chuong, slug, id]
     );
+    
+    if (chapter && chapter.length > 0 && chapter[0].trang_thai === 'da_duyet') {
+      await updateChuongMoiNhat(chapter[0].truyen_id);
+    }
+    
     return result.affectedRows;
   },
 
@@ -98,12 +132,7 @@ const ChapterModel = {
     
     // Update count if an approved chapter was deleted
     if (result.affectedRows > 0 && isApproved) {
-         await db.query(`
-            UPDATE truyen_new 
-            SET so_luong_chuong = so_luong_chuong - 1 
-            WHERE id = ?`, 
-            [truyenId]
-        );
+         await updateChuongMoiNhat(truyenId);
     }
     return result.affectedRows;
   },
@@ -137,15 +166,8 @@ const ChapterModel = {
     if (result.affectedRows > 0) {
         await db.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
         
-        // 2. Update chapter count
-        // Recalculate to be safe and accurate
-        await db.query(`
-            UPDATE truyen_new t
-            SET so_luong_chuong = (
-                SELECT COUNT(*) FROM chuong WHERE truyen_id = ? AND trang_thai = 'da_duyet'
-            )
-            WHERE id = ?
-        `, [truyen_id, truyen_id]);
+        // 2. Update chapter count and newest chapter text
+        await updateChuongMoiNhat(truyen_id);
     }
     
     return result.affectedRows;

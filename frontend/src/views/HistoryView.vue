@@ -286,11 +286,15 @@ const timeAgo = (date: string) => {
   margin: 20px 0;
 }
 
-.empty-state i {
+.empty-state > i {
   font-size: 4rem;
   color: #4caf50;
   margin-bottom: 20px;
   opacity: 0.7;
+}
+
+.explore-btn i {
+  font-size: 1.2rem;
 }
 
 .empty-state h3 {

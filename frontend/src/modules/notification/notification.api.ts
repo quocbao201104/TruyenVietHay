@@ -1,11 +1,19 @@
 import axios from "@/utils/axios";
 
+// Notification type constants (matches backend NOTIF_TYPE)
+export const NOTIF_TYPE = {
+  SYSTEM: 1,
+  NEW_CHAPTER: 2,
+  APPROVAL: 3,
+} as const;
+
 export interface Notification {
   id: number;
   user_id: number;
   content: string;
-  truyen_id: number | null;
-  status: 'read' | 'unread';
+  is_read: 0 | 1;
+  type: number;
+  target_id: number | null;
   created_at: string;
 }
 

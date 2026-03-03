@@ -38,13 +38,21 @@
         <!-- Main Comment -->
         <div class="comment-item">
           <div class="comment-avatar">
-            <div class="avatar-circle">
+            <img
+              v-if="comment.author_avatar"
+              :src="comment.author_avatar"
+              :alt="comment.author_name"
+              class="avatar-img"
+              @error="onAvatarError"
+            />
+            <div v-else class="avatar-circle">
               {{ (comment.author_name || '?').charAt(0).toUpperCase() }}
             </div>
           </div>
           <div class="comment-content">
             <div class="comment-header">
               <span class="comment-author">{{ comment.author_name || 'Người dùng ẩn danh' }}</span>
+              <UserBadge :badge="comment.author_badge" size="xs" />
               <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
             </div>
             <p class="comment-text">{{ comment.content }}</p>
@@ -69,13 +77,21 @@
         <div v-if="comment.replies && comment.replies.length > 0" class="replies-list">
              <div v-for="reply in comment.replies" :key="reply.id" class="comment-item reply-item">
                 <div class="comment-avatar small">
-                    <div class="avatar-circle small">
+                    <img
+                      v-if="reply.author_avatar"
+                      :src="reply.author_avatar"
+                      :alt="reply.author_name"
+                      class="avatar-img small"
+                      @error="onAvatarError"
+                    />
+                    <div v-else class="avatar-circle small">
                         {{ (reply.author_name || '?').charAt(0).toUpperCase() }}
                     </div>
                 </div>
                 <div class="comment-content">
                     <div class="comment-header">
                         <span class="comment-author">{{ reply.author_name || 'Người dùng ẩn danh' }}</span>
+                        <UserBadge :badge="reply.author_badge" size="xs" />
                         <span class="comment-date">{{ formatDate(reply.created_at) }}</span>
                     </div>
                     <p class="comment-text">{{ reply.content }}</p>
@@ -121,7 +137,8 @@
 import { ref, onMounted, computed, watch } from "vue";
 import { useCommentStore } from "./comment.store";
 import { useAuthStore } from "@/modules/auth/auth.store";
-import type { Comment } from "./comment.service"; 
+import type { Comment } from "./comment.service";
+import UserBadge from "@/components/gamification/UserBadge.vue";
 
 const props = defineProps<{
   storyId: number;
@@ -207,6 +224,14 @@ const handleDelete = async (commentId: number) => {
 const formatDate = (dateString: string) => {
   if (!dateString) return "";
   return new Date(dateString).toLocaleString("vi-VN");
+};
+
+const onAvatarError = (e: Event) => {
+  const img = e.target as HTMLImageElement;
+  img.style.display = 'none';
+  // Show the sibling fallback letter circle
+  const sibling = img.nextElementSibling as HTMLElement | null;
+  if (sibling) sibling.style.display = 'flex';
 };
 </script>
 
@@ -335,6 +360,20 @@ const formatDate = (dateString: string) => {
 
 .comment-avatar {
   flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(74, 222, 128, 0.4);
+  flex-shrink: 0;
+}
+
+.avatar-img.small {
+  width: 30px;
+  height: 30px;
 }
 
 .avatar-circle {

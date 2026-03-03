@@ -36,6 +36,7 @@
               </h1>
               <p class="profile-username">
                 @{{ user?.username || "username" }}
+                <UserBadge :badge="authStore.user?.badge" size="md" show-name />
               </p>
             </div>
           </div>
@@ -156,6 +157,7 @@ import { useAuthStore } from "@/modules/auth/auth.store";
 import { useUserStore } from "@/modules/user/user.store";
 import { getAvatarUrl } from "@/config/constants";
 import LevelCard from "@/components/gamification/LevelCard.vue";
+import UserBadge from "@/components/gamification/UserBadge.vue";
 import { useGamification } from "@/composables/useGamification";
 import { watch } from "vue";
 
@@ -235,7 +237,8 @@ export default {
     };
   },
   components: {
-      LevelCard
+      LevelCard,
+      UserBadge,
   }
 };
 </script>

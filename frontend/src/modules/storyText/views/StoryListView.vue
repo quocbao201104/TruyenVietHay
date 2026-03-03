@@ -4,7 +4,7 @@
     <main class="main-content">
       <!-- HERO GRID SECTION (Replaces Carousel) -->
       <HeroGrid 
-        :stories="topViewStories.slice(0, 1)" 
+        :stories="hotStories.slice(0, 5)" 
         :trendingStories="topMonthlyStories"
       />
 
@@ -131,7 +131,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { getAllCategories } from "@/modules/category/category.service";
-import { getPublicStories, Story } from "@/modules/storyText/story.service";
+import { getPublicStories, Story, getHotStories } from "@/modules/storyText/story.service";
 import { getTopViewStories } from "@/modules/topview/topview.service";
 import { getTopRatedStories } from "@/modules/ranking/ranking.service";
 import { getTopMonthlyStories } from "@/modules/storyText/story.service";
@@ -156,16 +156,17 @@ const navigateToStory = (slug: string) => {
 const categories = ref<Category[]>([]);
 const newStories = ref<Story[]>([]);
 const topViewStories = ref<Story[]>([]);
+const hotStories = ref<Story[]>([]); // Hot stories for HeroGrid
 const topMonthlyStories = ref<Story[]>([]); // New ref
 const topRatedStories = ref<Story[]>([]);
 const completedStories = ref<Story[]>([]);
 
 const fetchAllData = async () => {
   try {
-    // Use cached store methods instead of direct service calls
     categories.value = await storyStore.fetchCategories();
     newStories.value = await storyStore.fetchNewStories(10);
     topViewStories.value = await storyStore.fetchTopViewStories(5);
+    hotStories.value = await getHotStories(5); // Lấy hot stories riêng
     topMonthlyStories.value = await storyStore.fetchTopMonthlyStories(5);
     topRatedStories.value = await storyStore.fetchTopRatedStories(5);
     completedStories.value = await storyStore.fetchCompletedStories(10);

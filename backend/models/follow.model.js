@@ -12,12 +12,14 @@ exports.toggleFollow = async (userId, truyenId) => {
       userId,
       truyenId,
     ]);
+    await db.query(`UPDATE truyen_new SET luot_theo_doi = GREATEST(luot_theo_doi - 1, 0) WHERE id = ?`, [truyenId]);
     return { followed: false };
   } else {
     await db.query(
       `INSERT INTO theo_doi (user_id, truyen_id, ngay_theo_doi) VALUES (?, ?, NOW())`,
       [userId, truyenId]
     );
+    await db.query(`UPDATE truyen_new SET luot_theo_doi = luot_theo_doi + 1 WHERE id = ?`, [truyenId]);
     return { followed: true };
   }
 };
@@ -72,7 +74,8 @@ exports.isFollowing = (userId, truyenId) => {
 };
 
 // Thêm truyện vào danh sách theo dõi
-exports.addFollow = (userId, truyenId) => {
+exports.addFollow = async (userId, truyenId) => {
+  await db.query(`UPDATE truyen_new SET luot_theo_doi = luot_theo_doi + 1 WHERE id = ?`, [truyenId]);
   return db.query(
     `
     INSERT INTO theo_doi (user_id, truyen_id, ngay_theo_doi) VALUES (?, ?, NOW())
@@ -82,7 +85,8 @@ exports.addFollow = (userId, truyenId) => {
 };
 
 // Xóa truyện khỏi danh sách theo dõi
-exports.removeFollow = (userId, truyenId) => {
+exports.removeFollow = async (userId, truyenId) => {
+  await db.query(`UPDATE truyen_new SET luot_theo_doi = GREATEST(luot_theo_doi - 1, 0) WHERE id = ?`, [truyenId]);
   return db.query(
     `
     DELETE FROM theo_doi WHERE user_id = ? AND truyen_id = ?

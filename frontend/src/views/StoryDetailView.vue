@@ -48,7 +48,7 @@
           
           <div class="meta-row">
             <span class="author"><i class="fas fa-user-pen"></i> {{ story.tac_gia }}</span>
-            <span class="status-badge">{{ story.trang_thai }}</span>
+            <span :class="['status-badge', statusClass]">{{ formatStatus(story.trang_thai) }}</span>
             
             <div class="story-genres" v-if="story.genres && story.genres.length">
                 <i class="fas fa-tags"></i>
@@ -65,7 +65,7 @@
 
           <div class="stats-row">
             <div class="stat-item">
-              <span class="value">{{ story.so_luong_chuong || 0 }}</span>
+              <span class="value">{{story.so_luong_chuong || 0 }}</span>
               <span class="label">Chương</span>
             </div>
             <div class="stat-item">
@@ -301,6 +301,24 @@ const handleImageError = (e: Event) => {
     (e.target as HTMLImageElement).src = '/img/default-cover.png';
 };
 
+const formatStatus = (status: string) => {
+  const map: Record<string, string> = {
+    'dang_ra': 'Đang ra',
+    'hoan_thanh': 'Hoàn thành',
+    'suspended': 'Tạm ngưng',
+  };
+  return map[status] || status;
+};
+
+const statusClass = computed(() => {
+  if (!story.value) return '';
+  const s = story.value.trang_thai;
+  if (s === 'hoan_thanh') return 'status-completed';
+  if (s === 'dang_ra') return 'status-ongoing';
+  if (s === 'suspended') return 'status-suspended';
+  return '';
+});
+
 // Local getImageUrl removed, using global helper
 
 const handleRating = async (rating: number) => {
@@ -409,9 +427,33 @@ watch(() => route.params.slug, (newSlug, oldSlug) => {
 
 .status-badge {
     padding: 2px 10px;
-    background: #374151;
     border-radius: 4px;
     font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.status-badge.status-ongoing {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-badge.status-completed {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-badge.status-draft {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+    border: 1px solid rgba(156, 163, 175, 0.3);
+}
+
+.status-badge.status-suspended {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .story-genres {

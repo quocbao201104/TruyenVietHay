@@ -89,14 +89,14 @@
 
       <div class="header-right">
         <nav class="nav-menu">
-          <router-link to="/the-loai" class="nav-link">Thể loại</router-link>
+          <router-link to="/the-loai" class="nav-link">Thể Loại</router-link>
 
           <router-link to="/xep-hang" class="nav-link">Xếp Hạng</router-link>
           
           <router-link to="/truyen-hot" class="nav-link"
             >Truyện Hot</router-link
           >
-          <router-link to="/tim-kiem" class="nav-link">Tìm kiếm</router-link>
+          <router-link to="/tim-kiem" class="nav-link">Tìm Kiếm</router-link>
 
         </nav>
 
@@ -141,7 +141,7 @@
                 v-for="notif in notifications"
                 :key="notif.id"
                 class="notification-item"
-                :class="{ unread: notif.status === 'unread' }"
+                :class="{ unread: notif.is_read === 0 }"
                 @click="handleNotificationClick(notif)"
               >
                 <div class="notif-icon">
@@ -154,7 +154,7 @@
                   }}</span>
                 </div>
                 <div
-                  v-if="notif.status === 'unread'"
+                  v-if="notif.is_read === 0"
                   class="notif-status"
                 ></div>
               </div>
@@ -420,8 +420,35 @@ export default {
     };
     
     const handleNotificationClick = async (notif) => {
-        if (notif.status === 'unread') {
+        if (notif.is_read === 0) {
             await notificationStore.markAsRead(notif.id);
+        }
+        // Deep linking based on notification type and target_id
+        if (notif.target_id) {
+          showNotifications.value = false;
+          try {
+            if (notif.type === 3) {
+              // Approval notification → admin goes to management, author to story detail
+              const user = authStore.user;
+              if (user && user.role === 'admin') {
+                router.push('/admin/quan-ly-truyen');
+              } else {
+                // Fetch story slug for navigation
+                const res = await axios.get(`/api/truyen/${notif.target_id}`);
+                if (res.data && res.data.slug) {
+                  router.push(`/truyen-chu/${res.data.slug}`);
+                }
+              }
+            } else if (notif.type === 2) {
+              // New chapter → fetch story slug and navigate
+              const res = await axios.get(`/api/truyen/${notif.target_id}`);
+              if (res.data && res.data.slug) {
+                router.push(`/truyen-chu/${res.data.slug}`);
+              }
+            }
+          } catch (err) {
+            console.error('Deep link navigation error:', err);
+          }
         }
     };
 

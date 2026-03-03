@@ -3,7 +3,7 @@ const db = require("../config/db"); // Kết nối DB
 exports.getCommentsByTruyen = async (truyenId, limit, offset) => {
   const [rows] = await db.query(
     `
-      SELECT c.*, u.username AS author_name, u.avatar AS author_avatar
+      SELECT c.*, COALESCE(NULLIF(u.full_name, ''), u.username) AS author_name, u.avatar AS author_avatar
       FROM comments c
       JOIN users_new u ON c.user_id = u.id
       WHERE c.truyen_id = ? AND c.parent_id IS NULL
@@ -18,7 +18,7 @@ exports.getCommentsByTruyen = async (truyenId, limit, offset) => {
 exports.getReplies = async (parentId) => {
   const [rows] = await db.query(
     `
-    SELECT c.*, u.username AS author_name, u.avatar AS author_avatar
+    SELECT c.*, COALESCE(NULLIF(u.full_name, ''), u.username) AS author_name, u.avatar AS author_avatar
     FROM comments c
     JOIN users_new u ON c.user_id = u.id
     WHERE c.parent_id = ? AND c.is_deleted = 0

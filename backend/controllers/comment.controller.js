@@ -40,7 +40,8 @@ exports.getComments = async (req, res) => {
 exports.deleteComment = async (req, res) => {
   try {
     const { id } = req.params;
-    await commentService.removeComment(id);
+    const truyenId = req.query.truyen_id || req.body.truyen_id || null;
+    await commentService.removeComment(id, truyenId);
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: err.message });

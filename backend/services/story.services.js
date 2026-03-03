@@ -1,4 +1,5 @@
 const notificationService = require("./notification.services");
+const { NOTIF_TYPE } = require("./notification.services");
 const db = require("../config/db");
 
 // Duyệt truyện và gửi thông báo cho tác giả
@@ -29,12 +30,14 @@ const approveStory = async (story_id, action) => {
       [newStatus, story_id]
     );
 
+    // Notify author with type=APPROVAL and target_id=story_id for deep linking
     await notificationService.notifyAuthorAboutStoryApproval(
       user_id,
       story_id,
       ten_truyen,
       action
     );
+
     return {
       success: true,
       message: `Truyện đã ${action === "duyet" ? "được duyệt" : "bị từ chối"}.`,

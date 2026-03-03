@@ -13,6 +13,9 @@ router.get("/public", storyController.getPublicStories);
 // Top tháng
 router.get("/top-thang", storyController.getTopMonthlyStories);
 
+// Hot stories (dùng cho Banner/HeroGrid - order by hot_score)
+router.get("/hot-stories", storyController.getHotStories);
+
 // Admin xem truyện theo userId
 router.get(
   "/theo-user/:userId",

@@ -16,7 +16,7 @@ const pool = mysql.createPool({
   ssl: {
     rejectUnauthorized: false // Bắt buộc cho Aiven
   },
-  timezone: '+07:00' // Sử dụng múi giờ Việt Nam
+  timezone: 'Z' // UTC - khớp với múi giờ server Aiven MySQL
 });
 
 // Test connection
