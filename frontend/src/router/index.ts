@@ -21,9 +21,9 @@ import TasksView from "@/views/TasksView.vue";
 import { useAuthStore } from "@/modules/auth/auth.store";
 import StoryDetailView from "@/views/StoryDetailView.vue";
 import ChapterView from "@/views/ChapterView.vue";
-import AuthorChapterManagementView from "@/views/author/AuthorChapterManagementView.vue";
-import AuthorChapterEditor from "@/views/author/AuthorChapterEditor.vue";
-import AuthorDashboardView from "@/views/author/AuthorDashboardView.vue";
+import AuthorChapterManagementView from "@/views/Author/AuthorChapterManagementView.vue";
+import AuthorChapterEditor from "@/views/Author/AuthorChapterEditor.vue";
+import AuthorDashboardView from "@/views/Author/AuthorDashboardView.vue";
 const routes: Array<RouteRecordRaw> = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/dang-nhap", name: "Login", component: LoginView },
