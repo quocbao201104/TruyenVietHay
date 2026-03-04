@@ -3,7 +3,13 @@ const router = express.Router();
 const userRewardController = require("../controllers/userReward.controller");
 const { authenticateToken } = require("../middleware/auth");
 
-// 1. Get User Rewards
+// GET  /api/rewards/mailbox           → Hộp thư (quà chưa nhận, status='unlocked')
+router.get("/mailbox", authenticateToken, userRewardController.getMailbox);
+
+// POST /api/rewards/claim             → Nhận quà từ hộp thư { userRewardId }
+router.post("/claim", authenticateToken, userRewardController.claimRewardFromBody);
+
+// 1. Get User Rewards (by userId)
 router.get("/:userId", authenticateToken, userRewardController.getUserRewards);
 
 // 2. Buy Reward (Spend Spirit Stones)

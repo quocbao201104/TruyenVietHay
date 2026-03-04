@@ -8,15 +8,24 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
-  connectionLimit: 40, // Increased from 10 to 40 for higher concurrency
-  queueLimit: 0,       // Unlimited queue updates to prevent dropping requests during huge spikes
-  acquireTimeout: 10000, // Increased to 10s to handle momentary DB load
+  connectionLimit: 25, // Reduced from 40 to 25 to stay within Aiven limits
+  queueLimit: 0,
+  acquireTimeout: 10000,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
+  keepAliveInitialDelay: 10000, // Sync with server expectations
+  dateStrings: true, // Prevent involuntary date conversions
   ssl: {
-    rejectUnauthorized: false // Bắt buộc cho Aiven
+    rejectUnauthorized: false
   },
-  timezone: 'Z' // UTC - khớp với múi giờ server Aiven MySQL
+  timezone: 'Z'
+});
+
+// Error handling to prevent ECONNRESET from crashing app
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  if (err.code === 'PROTOCOL_CONNECTION_LOST' || err.code === 'ECONNRESET') {
+    console.log('Reconnecting to database...');
+  }
 });
 
 // Test connection

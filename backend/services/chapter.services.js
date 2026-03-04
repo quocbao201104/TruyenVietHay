@@ -2,6 +2,7 @@ const notificationService = require("./notification.services");
 const { NOTIF_TYPE, NOTIF_TEMPLATE } = require("./notification.services");
 const db = require("../config/db");
 const StoryModel = require("../models/story.model");
+const ChapterModel = require("../models/chapter.model");
 
 // Duyệt chương và gửi thông báo
 const approveChapter = async (chapter_id, action) => {
@@ -37,6 +38,8 @@ const approveChapter = async (chapter_id, action) => {
     // Nếu duyệt, cập nhật thời gian cập nhật của truyện
     if (action === "duyet") {
       await db.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
+      // Update newest chapter text and count
+      await ChapterModel.updateChuongMoiNhat(truyen_id);
     }
 
     // Gửi thông báo cho tác giả (type: APPROVAL, target: story)

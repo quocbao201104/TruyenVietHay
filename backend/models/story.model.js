@@ -250,7 +250,7 @@ const StoryModel = {
     const sortOrder = order.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
     let selectQuery = `SELECT tn.id, tn.ten_truyen, tn.tac_gia, tn.slug, tn.mo_ta, tn.anh_bia, tn.luot_xem, tn.thoi_gian_cap_nhat, tn.trang_thai,
-                       tn.so_luong_chuong, tn.chuong_moi
+                       tn.so_luong_chuong, tn.so_luong_chuong AS so_chuong, tn.chuong_moi
                        FROM truyen_new tn`;
     
     // Base count query needs to handle WHERE clauses, but HAVING clauses make simple COUNT(*) difficult.
@@ -459,7 +459,8 @@ const StoryModel = {
       async () => {
         const [rows] = await db.query(
           `SELECT id, ten_truyen, slug, anh_bia, tac_gia, mo_ta,
-                  luot_xem, luot_thich, luot_theo_doi, rating, rating_count, hot_score
+                  luot_xem, luot_thich, luot_theo_doi, rating, rating_count, hot_score,
+                  so_luong_chuong, so_luong_chuong AS so_chuong, chuong_moi
            FROM truyen_new
            WHERE trang_thai_kiem_duyet = 'duyet'
            ORDER BY hot_score DESC

@@ -80,22 +80,40 @@ const ChapterModel = {
   },
 
   getChapterBySlug: async (chapterSlug, storySlug) => {
-    const [rows] = await db.execute(
-      `SELECT c.*, t.ten_truyen, t.slug as truyen_slug 
-       FROM chuong c 
-       JOIN truyen_new t ON c.truyen_id = t.id 
-       WHERE c.slug = ? AND t.slug = ? LIMIT 1`,
-      [chapterSlug, storySlug]
-    );
+    // Thêm 2 subquery để lấy prev_slug và next_slug
+    // Giả sử bạn đang dùng cột `id` để xác định thứ tự trước/sau của chương.
+    // Nếu bạn có cột `so_chuong` (chương 1, 2, 3...) thì thay chữ `id` thành `so_chuong` nhé.
+    const query = `
+      SELECT 
+        c.*, 
+        t.ten_truyen, 
+        t.slug as truyen_slug,
+        (SELECT slug FROM chuong WHERE truyen_id = c.truyen_id AND id < c.id ORDER BY id DESC LIMIT 1) as prev_chapter_slug,
+        (SELECT slug FROM chuong WHERE truyen_id = c.truyen_id AND id > c.id ORDER BY id ASC LIMIT 1) as next_chapter_slug
+      FROM chuong c 
+      JOIN truyen_new t ON c.truyen_id = t.id 
+      WHERE c.slug = ? AND t.slug = ? 
+      AND c.trang_thai = 'da_duyet'
+      LIMIT 1
+    `;
+
+    const [rows] = await db.execute(query, [chapterSlug, storySlug]);
+    
     if (rows.length > 0) {
         const row = rows[0];
-        // Format to match the frontend expectation of chapter.truyen.slug
+        
+        // Format to match the frontend expectation
         return {
             ...row,
             truyen: {
                 id: row.truyen_id,
                 ten_truyen: row.ten_truyen,
                 slug: row.truyen_slug
+            },
+            // Đóng gói thêm Next/Prev để Frontend dễ gọi
+            navigation: {
+                prev_slug: row.prev_chapter_slug || null, // null nếu là chương đầu tiên
+                next_slug: row.next_chapter_slug || null  // null nếu là chương mới nhất
             }
         };
     }
@@ -172,6 +190,7 @@ const ChapterModel = {
     
     return result.affectedRows;
   },
+  updateChuongMoiNhat,
 };
 
 module.exports = ChapterModel;

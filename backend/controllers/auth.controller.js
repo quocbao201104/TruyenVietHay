@@ -6,7 +6,7 @@ const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const slugify = require("slugify");
 const UserLevelHistory = require("../models/userLevelHistory.model");
-const badgeService = require("../services/badge.service");
+const InventoryModel = require("../models/inventory.model");
 
 exports.register = async (req, res) => {
     const {
@@ -106,9 +106,10 @@ exports.login = async (req, res) => {
             console.error("Gamification Setup Error:", e.message);
         }
 
-        // Attach badge to login response
+        // Attach equipped badge to login response
         const levelId = await UserLevelHistory.getCurrentLevelOfUser(user.id);
-        const badge   = await badgeService.getUserBadge(levelId);
+        const equippedBadgesMap = await InventoryModel.getEquippedBadgesForUsers([user.id]);
+        const badge = equippedBadgesMap.get(user.id) || null;
 
         res.json({
             message: "Đăng nhập thành công",
@@ -138,9 +139,10 @@ exports.getMe = async (req, res) => {
 
         const user = results[0];
 
-        // Attach badge to profile response
+        // Attach equipped badge to profile response
         const levelId = await UserLevelHistory.getCurrentLevelOfUser(userId);
-        const badge   = await badgeService.getUserBadge(levelId);
+        const equippedBadgesMap = await InventoryModel.getEquippedBadgesForUsers([userId]);
+        const badge = equippedBadgesMap.get(userId) || null;
 
         res.json({
             message: "Thông tin người dùng",
@@ -346,9 +348,10 @@ exports.googleLogin = async (req, res) => {
             taskService.completeTaskByName(user.id, "Đăng nhập hàng ngày").catch(err => console.error("AGL Error:", err.message));
         } catch (e) {}
 
-        // Attach badge to Google login response
+        // Attach equipped badge to Google login response
         const glLevelId = await UserLevelHistory.getCurrentLevelOfUser(user.id);
-        const glBadge   = await badgeService.getUserBadge(glLevelId);
+        const glEquippedBadgesMap = await InventoryModel.getEquippedBadgesForUsers([user.id]);
+        const glBadge = glEquippedBadgesMap.get(user.id) || null;
 
         res.json({
             message: "Đăng nhập Google thành công",

@@ -26,4 +26,7 @@ router.patch("/:id", controller.updateBadge);
 // DELETE /api/badges/:id — soft-delete
 router.delete("/:id", controller.deleteBadge);
 
+// POST /api/badges/:id/upload-icon — upload & process badge image (sharp → WebP 64×64)
+router.post("/:id/upload-icon", controller.uploadMiddleware, controller.uploadBadgeIcon);
+
 module.exports = router;

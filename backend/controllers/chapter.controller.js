@@ -126,6 +126,17 @@ const getChapterBySlug = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chương!" });
     }
 
+    // VIEW TRACKING: Ghi nhận lượt xem (buffer trong cache, sync DB qua cronjob)
+    // Chỉ tracking cho chương đã duyệt (không phải chương mẫu)
+    if (chapter.trang_thai === "da_duyet" && chapter.is_chuong_mau !== 1) {
+      try {
+        const viewTrackingService = require("../services/viewTracking.service");
+        viewTrackingService.recordChapterView(req, chapter.truyen_id, chapter.id);
+      } catch (e) {
+        console.error("ViewTracking Error:", e.message);
+      }
+    }
+
     // GAMIFICATION TRIGGER
     if (req.user && req.user.id) {
          try {

@@ -1,6 +1,7 @@
 const UserLevelHistory = require("../models/userLevelHistory.model");
 const UserLevel = require("../models/userLevels.model");
 const UserPoints = require("../models/userPoint.model");
+const { triggerLevelUpRewards } = require("../models/reward.model");
 
 const getHistoryByUserId = async (userId, pagination = {}) => {
   try {
@@ -169,14 +170,31 @@ const autoUpgrade = async (user_id) => {
     );
 
     await connection.commit();
-    return { 
-        new_level_id: next_level_id, 
-        message: `Chúc mừng! Bạn đã thăng lên cấp ${next_level_id} (${nextLevel.name}). Hạn sử dụng tài khoản đến ${end_date_history.toLocaleDateString('vi-VN')}` 
+    connection.release(); // Giải phóng connection sau khi commit
+
+    // --- Gửi quà vào Hộp Thư (Inbox) ---
+    // Thực hiện SAU khi commit để không block transaction lên cấp
+    // Quà sẽ có status='pending', user cần vào hộp thư để nhận thủ công
+    let grantedRewards = [];
+    try {
+        grantedRewards = await triggerLevelUpRewards(user_id, next_level_id);
+        if (grantedRewards.length > 0) {
+            console.log(`[LevelUp] Đã gửi ${grantedRewards.length} quà vào hộp thư của user ${user_id} (Cấp ${next_level_id})`);
+        }
+    } catch (rewardErr) {
+        // Không để lỗi quest/reward phá vỡ trải nghiệm lên cấp
+        console.error(`[LevelUp] Lỗi khi gửi quà cho user ${user_id}:`, rewardErr.message);
+    }
+
+    return {
+        new_level_id: next_level_id,
+        rewards_sent: grantedRewards.length,
+        message: `Chúc mừng! Bạn đã thăng lên cấp ${next_level_id} (${nextLevel.name})! Bạn có ${grantedRewards.length} phần thưởng mới trong Hộp Thư.`,
     };
   } catch (error) {
     await connection.rollback();
-    throw error;
     connection.release();
+    throw error;
   }
 };
 

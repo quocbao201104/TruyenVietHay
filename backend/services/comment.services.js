@@ -1,6 +1,6 @@
 const commentModel = require("../models/comment.model");
-const badgeService  = require("./badge.service");
 const UserLevelHistory = require("../models/userLevelHistory.model");
+const InventoryModel = require("../models/inventory.model");
 const { getOrSet, invalidate } = require("../utils/cache");
 
 const LIMIT = 10;
@@ -15,21 +15,20 @@ const fetchComments = async (truyenId, page) => {
   const offset   = (page - 1) * LIMIT;
   const comments = await commentModel.getCommentsByTruyen(truyenId, LIMIT, offset);
 
-  // Load badge map ONCE for this request (O(1) from in-memory cache)
-  const badgeMap = await badgeService.loadBadgeMap();
-
-  // Collect all unique author user_ids so we can batch-fetch their level_ids
+  // Collect all unique author user_ids so we can batch-fetch their level_ids & badges
   const userIds = [...new Set(
     comments.flatMap((c) => [c.user_id, ...(c.replies ?? []).map((r) => r.user_id)])
   )];
 
   // Batch fetch current level_id for all authors in one query
   const levelMap = await UserLevelHistory.getCurrentLevelsForUsers(userIds);
+  
+  // Batch fetch currently equipped badge for all authors in one query
+  const badgeMap = await InventoryModel.getEquippedBadgesForUsers(userIds);
 
   const enrichComment = (obj) => {
-    const lvlId = levelMap.get(obj.user_id) ?? null;
-    obj.author_level_id = lvlId;
-    obj.author_badge    = lvlId ? (badgeMap.get(Number(lvlId)) ?? null) : null;
+    obj.author_level_id = levelMap.get(obj.user_id) ?? null;
+    obj.author_badge    = badgeMap.get(obj.user_id) ?? null;
     return obj;
   };
 

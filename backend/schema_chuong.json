@@ -41,8 +41,8 @@
   },
   {
     "Field": "noi_dung",
-    "Type": "text",
-    "Null": "NO",
+    "Type": "longtext",
+    "Null": "YES",
     "Key": "",
     "Default": null,
     "Extra": ""

@@ -4,6 +4,14 @@
     const port = process.env.PORT || 3000;
     require("dotenv").config();
     require("./config/db"); // Keep for side-effect (DB connection logging) but remove unused 'db' variable
+
+    // View Tracking: Cronjob sync view counts từ node-cache sang MySQL mỗi 5 phút
+    const { startViewSyncCron } = require("./jobs/viewSyncCronjob");
+    startViewSyncCron();
+
+    // Daily Stats: Cronjob aggregate daily_stats (views, comments) cuối mỗi ngày
+    const { startDailyStatsCron } = require("./jobs/dailyStatsCronjob");
+    startDailyStatsCron();
     const path = require("path");
 
     const cors = require("cors");
@@ -78,7 +86,9 @@
     app.use("/api/notifications", require("./routes/notification.routes"));
     app.use("/api/currency", require("./routes/currency.routes")); // New Currency Route
     app.use("/api/badges", require("./routes/badge.routes"));       // Level Badge System
-    app.use("/api/admin", require("./routes/admin.cache.routes")); // Cache monitoring endpoints
+    app.use("/api/inventory", require("./routes/inventory.routes")); // User Inventory (Badges, Items)
+    app.use("/api/author", require("./routes/author.routes"));      // Author Dashboard
+    app.use("/api/admin", require("./routes/admin.cache.routes"));  // Admin Dashboard + Cache monitoring
 
     app.get("/", (req, res) => {
         res.send("Server is awake!");

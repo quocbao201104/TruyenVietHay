@@ -1,5 +1,7 @@
 const userRewardService = require("../services/userReward.service");
+const { claimReward } = require("../models/reward.model");
 const { successResponse, errorResponse } = require("../utils/apiResponse");
+const db = require("../config/db");
 
 const getUserRewards = async (req, res) => {
   try {
@@ -80,10 +82,58 @@ const useReward = async (req, res) => {
     }
 };
 
+/**
+ * GET /api/rewards/mailbox
+ * Lấy danh sách quà trong Hộp Thư của user (status = 'unlocked')
+ */
+const getMailbox = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [rows] = await db.query(
+      `SELECT ur.id, ur.reward_id, ur.quantity, ur.source, ur.earned_at,
+              r.reward_name, r.reward_type, r.icon, r.rarity, r.description
+       FROM user_rewards ur
+       JOIN rewards r ON ur.reward_id = r.reward_id
+       WHERE ur.user_id = ? AND ur.status = 'unlocked'
+       ORDER BY ur.earned_at DESC`,
+      [userId]
+    );
+    return successResponse(res, rows, "Lấy hộp thư thành công");
+  } catch (err) {
+    return errorResponse(res, "Lỗi khi lấy hộp thư", 500);
+  }
+};
+
+/**
+ * POST /api/rewards/claim
+ * Nhận quà từ hộp thư
+ * Body: { userRewardId: number }
+ */
+const claimRewardFromBody = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { userRewardId } = req.body;
+
+    if (!userRewardId || isNaN(Number(userRewardId))) {
+      return errorResponse(res, "userRewardId không hợp lệ", 400);
+    }
+
+    const result = await claimReward(userId, Number(userRewardId));
+    return successResponse(res, result, result.message);
+  } catch (err) {
+    const isClient = [
+      "Quà không tồn tại hoặc đã được nhận rồi.",
+    ].includes(err.message);
+    return errorResponse(res, err.message, isClient ? 400 : 500);
+  }
+};
+
 module.exports = {
   getUserRewards,
   claimRewardInstance,
   claimMilestone,
   buyReward,
-  useReward
+  useReward,
+  getMailbox,
+  claimRewardFromBody,
 };

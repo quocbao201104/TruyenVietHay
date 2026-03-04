@@ -85,6 +85,8 @@ const Rating = {
             t.trang_thai,
             t.thoi_gian_cap_nhat,
             t.so_luong_chuong,
+            t.so_luong_chuong AS so_chuong,
+            t.chuong_moi,
             t.rating AS avg_rating,
             t.rating_count AS total_ratings
            FROM truyen_new t
