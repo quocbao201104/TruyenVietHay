@@ -34,7 +34,7 @@ const editorConfig = {
     'undo redo | formatselect | bold italic backcolor | \
     alignleft aligncenter alignright alignjustify | \
     bullist numlist outdent indent | removeformat | help',
-  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px; color: #e0e0e0; background-color: #333; }',
+  content_style: 'body { font-family: "Be Vietnam Pro", Helvetica, Arial, sans-serif; font-size:14px; color: #e0e0e0; background-color: #333; }',
   skin: 'oxide-dark', 
   content_css: 'dark', 
 };

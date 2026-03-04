@@ -3,98 +3,104 @@
     
     <main class="main-content">
       <div class="container">
-        <!-- Page Header -->
-        <div class="section-header-block">
-          <h2 class="section-title">
-            <i class="fas fa-star"></i>
-            Xếp Hạng Đánh Giá
-          </h2>
-          <p class="section-subtitle">Top truyện được đánh giá cao nhất</p>
-          <div class="section-divider"></div>
+        
+        <!-- THIÊN BẢNG HEADER -->
+        <div class="section-header-block animate-fadeIn">
+          <div class="title-wrapper">
+             <i class="fas fa-crown crown-main"></i>
+             <h2 class="section-title">Thiên Bảng Đánh Giá</h2>
+          </div>
+          <p class="section-subtitle">Thần vật xuất thế - Vạn người bái phục</p>
+          <div class="section-divider-aura">
+            <div class="divider-dot"></div>
+          </div>
         </div>
 
-        <!-- Loading Skeleton -->
+        <!-- LOADING SKELETON (ĐÃ ĐỔI TONE MÀU TU TIÊN) -->
         <div v-if="rankingStore.loading" class="loading-container">
           <div class="skeleton-list">
-            <div v-for="n in 20" :key="n" class="skeleton-item">
-              <div class="skeleton-rank"></div>
-              <div class="skeleton-cover"></div>
-              <div class="skeleton-content">
-                <div class="skeleton-text"></div>
-                <div class="skeleton-text short"></div>
+            <div v-for="n in 10" :key="n" class="skeleton-item-pill">
+              <div class="skeleton-rank-circle"></div>
+              <div class="skeleton-cover-v2"></div>
+              <div class="skeleton-content-v2">
+                <div class="shimmer-line"></div>
+                <div class="shimmer-line short"></div>
               </div>
-              <div class="skeleton-views"></div>
             </div>
           </div>
         </div>
 
-        <!-- Error State -->
-        <div v-else-if="rankingStore.error" class="error-message">
-          <i class="fas fa-exclamation-circle"></i>
-          <p>{{ rankingStore.error }}</p>
+        <!-- ERROR STATE -->
+        <div v-else-if="rankingStore.error" class="error-message-aura">
+          <i class="fas fa-biohazard"></i>
+          <p>Thiên cơ nhiễu loạn: {{ rankingStore.error }}</p>
         </div>
 
-        <!-- Empty State -->
-        <div v-else-if="rankingStore.topRatedStories.length === 0" class="empty-state">
-          <i class="fas fa-star-half-alt"></i>
-          <h3>Chưa có dữ liệu</h3>
-          <p>Danh sách xếp hạng sẽ được cập nhật sớm!</p>
+        <!-- EMPTY STATE -->
+        <div v-else-if="rankingStore.topRatedStories.length === 0" class="empty-state-aura">
+          <i class="fas fa-scroll"></i>
+          <h3>Vô Danh Bảng</h3>
+          <p>Chưa có linh vật nào đủ phẩm cấp để lên bảng.</p>
         </div>
 
-        <!-- Top Rated Stories List -->
+        <!-- TOP RATED LIST (LỆNH BÀI THIÊN BẢNG) -->
         <div v-else class="ranking-content">
-          <div class="ranking-list">
+          <div class="ranking-list-v2">
             <div 
               v-for="(story, index) in rankingStore.topRatedStories" 
               :key="story.id" 
-              class="ranking-item"
+              class="ranking-pill"
               :class="getRankClass(index)"
             >
-              <!-- Rank Badge -->
-              <div class="rank-badge">
-                <span class="rank-number">{{ index + 1 }}</span>
-                <i v-if="index < 3" class="fas fa-crown rank-icon"></i>
+              <!-- Rank Aura (Hào quang phía sau cho Top 3) -->
+              <div v-if="index < 3" class="rank-aura-glow"></div>
+
+              <!-- Cảnh Giới Ấn (Rank Circle) -->
+              <div class="rank-indicator">
+                <div class="circle-inner">
+                  <span class="rank-num">{{ index + 1 }}</span>
+                  <i v-if="index < 3" class="fas fa-crown mini-crown"></i>
+                </div>
               </div>
 
-              <!-- Story Cover -->
-              <router-link :to="`/truyen-chu/${story.slug}`" class="story-cover">
+              <!-- Bìa Truyện (Linh Vật) -->
+              <router-link :to="`/truyen-chu/${story.slug}`" class="story-cover-pill">
                 <img 
                   :src="getImageUrl(story.anh_bia)" 
                   :alt="story.ten_truyen"
-                  class="cover-image"
+                  class="cover-img"
                   @error="handleImageError"
                 />
               </router-link>
 
-              <!-- Story Info -->
-              <div class="story-info">
-                <router-link :to="`/truyen-chu/${story.slug}`" class="story-title">
+              <!-- Thông Tin Chi Tiết -->
+              <div class="story-details">
+                <router-link :to="`/truyen-chu/${story.slug}`" class="title-link">
                   {{ story.ten_truyen }}
                 </router-link>
                 
-                <div class="story-author">
-                  <i class="fas fa-pen-nib"></i>
-                  {{ story.tac_gia }}
-                </div>
-
-                <div class="story-stats">
-                  <span class="stat-item">
-                    <i class="fas fa-eye"></i>
-                    {{ formatNumber(story.luot_xem) }} lượt xem
+                <div class="meta-row">
+                  <span class="author-tag">
+                    <i class="fas fa-feather-alt"></i> {{ story.tac_gia }}
                   </span>
-                  <span v-if="story.total_ratings" class="stat-item">
-                    <i class="fas fa-comment"></i>
-                    {{ formatNumber(story.total_ratings) }} đánh giá
+                  <span class="stat-tag">
+                    <i class="fas fa-eye"></i> {{ formatNumber(story.luot_xem) }}
+                  </span>
+                  <span v-if="story.total_ratings" class="stat-tag">
+                    <i class="fas fa-comment-dots"></i> {{ formatNumber(story.total_ratings) }}
                   </span>
                 </div>
               </div>
 
-              <!-- Rating Badge -->
-              <div class="rating-badge">
-                <i class="fas fa-star"></i>
-                <span class="rating-value">{{ Number(story.avg_rating).toFixed(1) }}</span>
-                <span class="rating-label">/ 5.0</span>
+              <!-- Linh Đan Score (Rating Badge) -->
+              <div class="score-crystal">
+                <div class="star-row">
+                   <i class="fas fa-star"></i>
+                   <span class="val">{{ Number(story.avg_rating).toFixed(1) }}</span>
+                </div>
+                <span class="total">/ 5.0</span>
               </div>
+
             </div>
           </div>
         </div>
@@ -110,31 +116,23 @@ import { getImageUrl } from "@/config/constants";
 
 const rankingStore = useRankingStore();
 
-// Fetch top rated stories on mount
 onMounted(() => {
   rankingStore.fetchTopRated();
 });
 
-// Get rank class based on position
 const getRankClass = (index: number): string => {
-  if (index === 0) return 'rank-1';
-  if (index === 1) return 'rank-2';
-  if (index === 2) return 'rank-3';
+  if (index === 0) return 'rank-top-1';
+  if (index === 1) return 'rank-top-2';
+  if (index === 2) return 'rank-top-3';
   return '';
 };
 
-// Format number with K/M suffix
 const formatNumber = (num: number): string => {
   if (!num) return '0';
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
   return num.toString();
 };
 
-// Get image URL with proper path handling
-// Local getImageUrl removed for global helper
-
-// Handle image load error
 const handleImageError = (event: Event) => {
   const target = event.target as HTMLImageElement;
   target.src = '/placeholder.jpg';
@@ -142,507 +140,360 @@ const handleImageError = (event: Event) => {
 </script>
 
 <style scoped>
-/* ===== Container & Layout ===== */
+/* ===== CORE THEME ===== */
 .ranking-container {
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  background: #1a1d29;
-  color: #ffffff;
-  font-family: "Be Vietnam Pro", "Roboto", sans-serif;
-}
-
-.main-content {
-  flex-grow: 1;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 40px 20px;
+  background: #0b0f19; /* Nền tối sâu */
+  color: #cbd5e1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  padding-bottom: 50px;
 }
 
 .container {
-  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
-/* ===== Header Section ===== */
+/* ===== HEADER TU TIEN ===== */
 .section-header-block {
-  margin-bottom: 40px;
   text-align: center;
+  margin-bottom: 60px;
+}
+
+.title-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.crown-main {
+  font-size: 2.5rem;
+  color: #fbbf24;
+  filter: drop-shadow(0 0 15px rgba(251, 191, 36, 0.6));
+  margin-bottom: 10px;
 }
 
 .section-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 3rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.section-title i {
-  color: #fbbf24;
-  animation: star-pulse 2s infinite;
-}
-
-@keyframes star-pulse {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
-  50% { transform: scale(1.1) rotate(5deg); opacity: 0.8; }
+  letter-spacing: 5px;
+  background: linear-gradient(to right, #fbbf24, #fff, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.3));
 }
 
 .section-subtitle {
-  font-size: 1.1rem;
-  color: #999;
-  margin-bottom: 15px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 10px;
 }
 
-.section-divider {
-  height: 4px;
-  width: 200px;
+.section-divider-aura {
+  height: 1px;
+  width: 300px;
   background: linear-gradient(90deg, transparent, #fbbf24, transparent);
-  margin: 0 auto;
-  border-radius: 2px;
+  margin: 20px auto;
+  position: relative;
 }
 
-/* ===== Loading Skeleton ===== */
-.loading-container {
-  padding: 20px 0;
+.divider-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #fbbf24;
+  box-shadow: 0 0 10px #fbbf24;
 }
 
-.skeleton-list {
+/* ===== RANKING PILL (LỆNH BÀI) ===== */
+.ranking-list-v2 {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-.skeleton-item {
+.ranking-pill {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  padding: 16px;
+  background: #131b2c;
+  border: 1px solid #1e293b;
+  border-radius: 50px; /* Kiểu Pill */
+  padding: 10px 25px 10px 10px;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.skeleton-rank {
-  width: 40px;
-  height: 40px;
+.ranking-pill:hover {
+  transform: translateX(15px);
+  border-color: #34d39960;
+  background: #1a2436;
+}
+
+/* Rank Indicator (Circle) */
+.rank-indicator {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  padding: 3px;
+  background: #1e293b;
   border-radius: 50%;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  z-index: 5;
 }
 
-.skeleton-cover {
-  width: 80px;
-  height: 110px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.skeleton-text {
-  height: 18px;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 4px;
-}
-
-.skeleton-text.short {
-  width: 60%;
-  height: 14px;
-}
-
-.skeleton-views {
-  width: 80px;
-  height: 40px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* ===== Error State ===== */
-.error-message {
-  text-align: center;
-  padding: 60px 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  border: 2px solid #f44336;
-  margin: 20px 0;
-}
-
-.error-message i {
-  font-size: 3rem;
-  color: #f44336;
-  margin-bottom: 20px;
-}
-
-.error-message p {
-  font-size: 1.2rem;
-  color: #cccccc;
-}
-
-/* ===== Empty State ===== */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  margin: 20px 0;
-}
-
-.empty-state i {
-  font-size: 4rem;
-  color: #fbbf24;
-  margin-bottom: 20px;
-  opacity: 0.7;
-}
-
-.empty-state h3 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.empty-state p {
-  font-size: 1.1rem;
-  color: #cccccc;
-}
-
-/* ===== Ranking List ===== */
-.ranking-content {
-  margin-top: 20px;
-}
-
-.ranking-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.ranking-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  padding: 16px;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  position: relative;
-}
-
-.ranking-item:hover {
-  transform: translateX(5px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  border-color: #fbbf24;
-}
-
-/* Special styling for top 3 */
-.ranking-item.rank-1 {
-  background: linear-gradient(135deg, #2a2d3a 0%, #fbbf2420 100%);
-  border-color: #ffd700;
-}
-
-.ranking-item.rank-2 {
-  background: linear-gradient(135deg, #2a2d3a 0%, #fbbf2415 100%);
-  border-color: #c0c0c0;
-}
-
-.ranking-item.rank-3 {
-  background: linear-gradient(135deg, #2a2d3a 0%, #fbbf2410 100%);
-  border-color: #cd7f32;
-}
-
-/* Rank Badge */
-.rank-badge {
-  position: relative;
+.circle-inner {
+  width: 100%;
+  height: 100%;
+  background: #0b0f19;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: #3e4256;
-  flex-shrink: 0;
+  border: 2px solid #334155;
+  position: relative;
 }
 
-.rank-1 .rank-badge {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-}
-
-.rank-2 .rank-badge {
-  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-  box-shadow: 0 0 15px rgba(192, 192, 192, 0.5);
-}
-
-.rank-3 .rank-badge {
-  background: linear-gradient(135deg, #cd7f32, #e8a66d);
-  box-shadow: 0 0 15px rgba(205, 127, 50, 0.5);
-}
-
-.rank-number {
-  font-size: 1.4rem;
+.rank-num {
+  font-size: 1.5rem;
   font-weight: 900;
-  color: #1a1d29;
+  color: #475569;
 }
 
-.rank-1 .rank-number,
-.rank-2 .rank-number,
-.rank-3 .rank-number {
-  color: #1a1d29;
-}
-
-.rank-icon {
+/* Aura Glow & Top Rank Colors */
+.rank-aura-glow {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  inset: 0;
+  border-radius: 50px;
+  opacity: 0;
+  filter: blur(20px);
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.ranking-pill:hover .rank-aura-glow {
+  opacity: 0.15;
+}
+
+/* Top 1 - Kim */
+.rank-top-1 { border-color: #fbbf2460; }
+.rank-top-1 .circle-inner { border-color: #fbbf24; background: #fbbf2420; }
+.rank-top-1 .rank-num { color: #fbbf24; }
+.rank-top-1 .rank-aura-glow { background: #fbbf24; }
+
+/* Top 2 - Ngân */
+.rank-top-2 { border-color: #cbd5e160; }
+.rank-top-2 .circle-inner { border-color: #cbd5e1; background: #cbd5e120; }
+.rank-top-2 .rank-num { color: #cbd5e1; }
+.rank-top-2 .rank-aura-glow { background: #cbd5e1; }
+
+/* Top 3 - Đồng */
+.rank-top-3 { border-color: #b4530960; }
+.rank-top-3 .circle-inner { border-color: #b45309; background: #b4530920; }
+.rank-top-3 .rank-num { color: #b45309; }
+.rank-top-3 .rank-aura-glow { background: #b45309; }
+
+.mini-crown {
+  position: absolute;
+  top: -8px;
   font-size: 0.7rem;
-  color: #ffd700;
-  filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.8));
+  color: inherit;
 }
 
 /* Story Cover */
-.story-cover {
-  flex-shrink: 0;
-  width: 80px;
-  height: 110px;
-  border-radius: 8px;
+.story-cover-pill {
+  width: 70px;
+  height: 95px;
+  border-radius: 12px;
   overflow: hidden;
-  transition: transform 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin-left: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  border: 1px solid #334155;
 }
 
-.ranking-item:hover .story-cover {
-  transform: scale(1.05);
-}
-
-.cover-image {
+.cover-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s;
 }
 
-/* Story Info */
-.story-info {
+.ranking-pill:hover .cover-img {
+  transform: scale(1.1);
+}
+
+/* Story Details */
+.story-details {
   flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-left: 20px;
   min-width: 0;
 }
 
-.story-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #ffffff;
+.title-link {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #f8fafc;
   text-decoration: none;
-  transition: color 0.3s ease;
+  display: block;
+  margin-bottom: 5px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  transition: color 0.3s;
 }
 
-.story-title:hover {
-  color: #fbbf24;
+.title-link:hover {
+  color: #34d399;
 }
 
-.story-author {
-  font-size: 0.9rem;
-  color: #999;
+.meta-row {
   display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.story-author i {
+  gap: 15px;
   font-size: 0.8rem;
+  color: #64748b;
 }
 
-.story-stats {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 0.85rem;
-  color: #666;
-}
-
-.stat-item {
+.meta-row span {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.stat-item i {
+.meta-row i {
+  color: #34d399;
+}
+
+.quality-tags {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.tag-pill {
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  color: #34d399;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.tag-pill.gold {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
   color: #fbbf24;
 }
 
-/* Rating Badge */
-.rating-badge {
-  flex-shrink: 0;
+/* Score Crystal */
+.score-crystal {
+  background: #0b0f19;
+  border: 1px solid #1e293b;
+  padding: 10px 15px;
+  border-radius: 20px;
+  text-align: center;
+  min-width: 80px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.star-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #fbbf24, #fcd34d);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  gap: 5px;
+  color: #fbbf24;
 }
 
-.rating-badge i {
-  font-size: 1.2rem;
-  color: #1a1d29;
-  margin-bottom: 4px;
+.star-row .val {
+  font-size: 1.4rem;
+  font-weight: 900;
 }
 
-.rating-value {
-  font-size: 1.3rem;
+.score-crystal .total {
+  font-size: 0.6rem;
+  color: #475569;
+  text-transform: uppercase;
   font-weight: 700;
-  color: #1a1d29;
 }
 
-.rating-label {
-  font-size: 0.75rem;
-  color: #1a1d29;
-  opacity: 0.7;
+/* ===== SKELETON ANIMATION ===== */
+.skeleton-item-pill {
+  height: 100px;
+  background: #131b2c;
+  border-radius: 50px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  overflow: hidden;
+  position: relative;
 }
 
-/* ===== Responsive Design ===== */
-/* ===== Responsive Design ===== */
+.shimmer-line {
+  height: 15px;
+  background: #1e293b;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  width: 200px;
+}
+
+.shimmer-line::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.05), transparent);
+  animation: shimmer-swipe 2s infinite;
+}
+
+@keyframes shimmer-swipe {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
-  }
-
-  /* Convert List to Grid 2 Columns */
-  .ranking-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .ranking-item {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 12px;
-    height: 100%;
-    position: relative;
-    border: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-
-  .rank-badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    width: 32px;
-    height: 32px;
-    z-index: 2;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-  }
-
-  .rank-number {
-    font-size: 1rem;
-  }
-
-  .rank-icon {
-    top: -4px;
-    right: -4px;
-    font-size: 0.6rem;
-  }
-
-  /* Cover becomes top part of card */
-  .story-cover {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 2/3;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  .section-title { font-size: 1.8rem; letter-spacing: 2px; }
+  
+  .ranking-pill {
+    border-radius: 20px;
+    padding-right: 15px;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
   
-  .story-info {
+  .story-details {
+    width: calc(100% - 170px);
+    margin-left: 10px;
+  }
+  
+  .title-link { font-size: 1rem; }
+  
+  .score-crystal {
+    order: 3;
+    margin-top: 10px;
     width: 100%;
-    flex-basis: auto;
-    gap: 6px;
-  }
-
-  .story-title {
-    font-size: 1rem;
-    line-height: 1.3;
-    margin-bottom: 4px;
-    min-height: 2.6em; /* Align cards */
-  }
-
-  .story-author {
-    font-size: 0.8rem;
-    margin-bottom: 4px;
-  }
-
-  .story-stats {
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 0.75rem;
-  }
-
-  .rating-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 4px 8px;
-    border-radius: 8px;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
+    padding: 5px;
+    background: transparent;
+    border: none;
     box-shadow: none;
-    flex-direction: row;
-    gap: 4px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
   }
 
-  .rating-badge i {
-    font-size: 0.8rem;
-    color: #fbbf24;
-    margin: 0;
-  }
-
-  .rating-value {
-    font-size: 0.9rem;
-    color: #fff;
-  }
-
-  .rating-label {
-    display: none;
-  }
+  .star-row .val { font-size: 1rem; }
 }
 
-@media (max-width: 480px) {
-  .main-content {
-    padding: 16px;
-  }
-  
-  .ranking-list {
-    gap: 12px;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>

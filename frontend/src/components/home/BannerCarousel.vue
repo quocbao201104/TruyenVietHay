@@ -212,4 +212,23 @@ const endDrag = (e: MouseEvent | TouchEvent) => {
 .dot.active {
   background: #4ade80; /* active color */
 }
+@media (max-width: 768px) {
+  /* Tắt thanh trượt ngang trên mobile vì giờ đã thành banner tĩnh */
+  .track {
+    display: block; /* Bỏ Flexbox */
+    overflow: hidden;
+    transform: none !important;
+  }
+  
+  /* Ẩn các linh châu (dấu chấm tròn) */
+  .indicators {
+    display: none;
+  }
+  
+  /* Chỉnh lại chiều cao container cho khớp với Banner tĩnh (60vh) */
+  .banner-carousel {
+    height: 60vh;
+    padding-bottom: 0;
+  }
+}
 </style>

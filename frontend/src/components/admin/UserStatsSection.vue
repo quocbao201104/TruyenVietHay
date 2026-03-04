@@ -86,7 +86,7 @@ const props = defineProps({
   gap: 1rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  font-family: 'Manrope', sans-serif; 
+  /* font-family: 'Manrope', sans-serif; */ 
   color: #ffffff;
 }
 
@@ -139,7 +139,7 @@ const props = defineProps({
 }
 
 .card-value {
-  font-family: 'Sora', sans-serif;
+  /* font-family: 'Sora', sans-serif; */
   font-size: 1.8rem;
   font-weight: 600;
   color: #22c55e; 

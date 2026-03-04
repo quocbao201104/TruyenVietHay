@@ -1,87 +1,119 @@
 <template>
-  <div class="submit-story-page">
-    <main class="submit-story-container">
-      <section class="submit-story-card">
-        <h1 class="submit-story-title">{{ route.params.id ? 'Cập Nhật Truyện' : 'Đăng Truyện Mới' }}</h1>
-        <form @submit.prevent="handleSubmit" class="submit-story-form">
-          <StoryBasicInfoForm 
-            v-model="story" 
-            :default-author-name="authStore.user?.username" 
-            :submitted="submitted"
-            :initial-cover-url="story.anh_bia_url"
-            @validation-error="handleFileValidationError"
-            @delete-initial-cover="handleDeleteCover"
-          />
+  <div class="submit-story-page-xianxia">
+    <main class="submit-spirit-container">
+      
+      <!-- TIÊU ĐỀ LINH ĐÀI -->
+      <div class="page-header-spirit animate-fadeIn">
+        <h1 class="page-title-glow">
+          {{ route.params.id ? 'Cập Nhật Bí Tịch' : 'Khai Phá Linh Thư' }}
+        </h1>
+        <p class="page-subtitle">Nơi đạo hữu đặt những viên gạch đầu tiên cho một đại giới mới</p>
+        <div class="header-divider-spirit">
+          <div class="dot"></div>
+        </div>
+      </div>
 
-          <StoryCategorySelector 
-            :categories="categories" 
-            v-model="story.the_loai_ids" 
-            :submitted="submitted"
-          />
-
-          <StoryStatusSelects 
-            v-model="story" 
-            :submitted="submitted"
-          />
-
-          <div class="form-group">
-            <label for="linkNguon" class="form-label"><i class="fas fa-link icon"></i> Link nguồn (nếu có)</label>
-            <input 
-              type="url" 
-              id="linkNguon" 
-              v-model="story.link_nguon" 
-              class="form-input" 
-              placeholder="https://example.com/source-story"
-            >
+      <section class="submit-aura-card animate-fadeIn">
+        <form @submit.prevent="handleSubmit" class="submit-spirit-form">
+          
+          <!-- THÔNG TIN CƠ BẢN (BASIC INFO) -->
+          <div class="form-spirit-section">
+            <h3 class="section-spirit-title"><i class="fas fa-id-card-clip mr-2 text-emerald-400"></i> Danh Tính Bí Tịch</h3>
+            <StoryBasicInfoForm 
+              v-model="story" 
+              :default-author-name="authStore.user?.username" 
+              :submitted="submitted"
+              :initial-cover-url="story.anh_bia_url"
+              @validation-error="handleFileValidationError"
+              @delete-initial-cover="handleDeleteCover"
+            />
           </div>
 
-
-
-          <div class="form-group">
-            <label for="ageRating" class="form-label"><i class="fas fa-users icon"></i> Đối tượng độc giả</label>
-            <select 
-              id="ageRating" 
-              v-model="story.age_rating" 
-              class="form-input"
-            >
-              <option value="" disabled>-- Chọn đối tượng --</option>
-              <option :value="1">Mọi lứa tuổi (1)</option>
-              <option :value="2">13+</option>
-              <option :value="3">18+</option>
-            </select>
-            <span v-if="submitted && !story.age_rating" class="error-message-inline">Vui lòng chọn đối tượng độc giả.</span>
+          <!-- PHÂN LOẠI CĂN CƠ (CATEGORY) -->
+          <div class="form-spirit-section">
+            <h3 class="section-spirit-title"><i class="fas fa-scroll mr-2 text-emerald-400"></i> Căn Cơ Phân Loại</h3>
+            <StoryCategorySelector 
+              :categories="categories" 
+              v-model="story.the_loai_ids" 
+              :submitted="submitted"
+            />
           </div>
 
+          <!-- TRẠNG THÁI TU VI (STATUS) -->
+          <div class="form-spirit-section">
+            <h3 class="section-spirit-title"><i class="fas fa-hourglass-half mr-2 text-emerald-400"></i> Trạng Thái Tu Vi</h3>
+            <StoryStatusSelects 
+              v-model="story" 
+              :submitted="submitted"
+            />
+          </div>
 
-          <div class="form-group">
-            <label for="chuongMau" class="form-label"><i class="fas fa-file-alt icon"></i> Nội dung chương mẫu</label>
-            <textarea
-              id="chuongMau"
-              v-model="story.chuong_mau"
-              rows="12"
-              class="form-input"
-              placeholder="Nhập nội dung chương đầu tiên..."
-            ></textarea>
-            <span v-if="submitted && (!story.chuong_mau || story.chuong_mau.trim() === '')" class="error-message-inline">Nội dung chương mẫu không được để trống.</span>
+          <!-- CHI TIẾT PHỤ -->
+          <div class="form-spirit-grid">
+            <div class="spirit-group">
+              <label for="linkNguon" class="spirit-label"><i class="fas fa-link mr-2"></i> Linh Khí Nguồn (nếu có)</label>
+              <input 
+                type="url" 
+                id="linkNguon" 
+                v-model="story.link_nguon" 
+                class="spirit-input" 
+                placeholder="https://truyen-nguon.com/..."
+              >
+            </div>
+
+            <div class="spirit-group">
+              <label for="ageRating" class="spirit-label"><i class="fas fa-users-viewfinder mr-2"></i> Định Tầm Độc Giả</label>
+              <select 
+                id="ageRating" 
+                v-model="story.age_rating" 
+                class="spirit-select-custom"
+              >
+                <option value="" disabled>-- Chọn đối tượng --</option>
+                <option :value="1">Mọi đạo hữu (Phổ thông)</option>
+                <option :value="2">Trúc Cơ trở lên (13+)</option>
+                <option :value="3">Nguyên Anh trở lên (18+)</option>
+              </select>
+              <span v-if="submitted && !story.age_rating" class="error-aura-text">Vui lòng chọn tầm độc giả.</span>
+            </div>
+          </div>
+
+          <!-- CHƯƠNG MẪU (SAMPLE CONTENT) -->
+          <div class="form-spirit-section">
+            <h3 class="section-spirit-title"><i class="fas fa-feather-pointed mr-2 text-emerald-400"></i> Bản Thảo Khởi Đầu</h3>
+            <div class="spirit-group">
+              <textarea
+                id="chuongMau"
+                v-model="story.chuong_mau"
+                rows="10"
+                class="spirit-textarea"
+                placeholder="Nhập những dòng linh khí đầu tiên cho bí tịch này..."
+              ></textarea>
+              <span v-if="submitted && (!story.chuong_mau || story.chuong_mau.trim() === '')" class="error-aura-text">Nội dung chương mẫu không được để trống.</span>
+            </div>
           </div>
           
-          <div class="form-group agree-group">
-            <label class="agree-label">
+          <!-- XÁC NHẬN LINH ƯỚC -->
+          <div class="spirit-agree-box">
+            <label class="spirit-checkbox-label">
               <input
                 type="checkbox"
                 v-model="agreeToSubmit"
-                :class="{ 'is-invalid': submitted && !agreeToSubmit }"
+                class="spirit-checkbox"
+                :class="{ 'invalid-aura': submitted && !agreeToSubmit }"
               />
-              Bạn muốn đăng truyện và xác nhận thông tin trên đã đúng.
+              <span class="ml-3">Tôi muốn khai phá bí tịch này và cam kết nội dung tuân thủ tiên quy.</span>
             </label>
-            <span v-if="submitted && !agreeToSubmit" class="error-message-inline">Bạn phải đồng ý xác nhận để đăng truyện.</span>
+            <span v-if="submitted && !agreeToSubmit" class="error-aura-text block mt-1">Đạo hữu phải ký linh ước để tiếp tục.</span>
           </div>
 
-          <button type="submit" class="submit-btn" :disabled="loading">
-            <i class="fas fa-upload"></i>
-            {{ loading ? 'Đang xử lý...' : (route.params.id ? 'Cập Nhật Truyện' : 'Gửi Truyện') }}
-          </button>
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+          <!-- NÚT GỬI (KHAI THIÊN) -->
+          <div class="submit-action-area">
+            <button type="submit" class="btn-khai-thien" :disabled="loading">
+              <i class="fas" :class="loading ? 'fa-yin-yang fa-spin' : 'fa-wand-magic-sparkles'"></i>
+              <span>{{ loading ? 'Đang vận công...' : (route.params.id ? 'Cập Nhật Bí Tịch' : 'Khai Thiên Lập Đạo') }}</span>
+            </button>
+            <p v-if="errorMessage" class="error-aura-msg">{{ errorMessage }}</p>
+          </div>
         </form>
       </section>
     </main>
@@ -105,8 +137,6 @@ const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
-const tinymceApiKey = 'uaj7kxz5hqnxtzefohh4ix5gcm41m7bfzxbtg3oglrkv7s4a';
-
 const story = ref({
   ten_truyen: '',
   tac_gia: authStore.user?.username || '', 
@@ -127,17 +157,14 @@ const errorMessage = ref('');
 const submitted = ref(false); 
 const fileErrors = ref({ anh_bia: '' });
 const agreeToSubmit = ref(false); 
-const isCoverDeleted = ref(false); // Flag để đánh dấu đã xóa ảnh cũ 
-
-// Local getImageUrl replaced with global helper
+const isCoverDeleted = ref(false);
 
 const fetchCategories = async () => {
   try {
     const response = await axios.get('/api/theloai'); 
     categories.value = response.data.data;
   } catch (error) {
-    console.error('Lỗi khi tải danh sách thể loại:', error);
-    toast.error('Không thể tải danh sách thể loại.');
+    toast.error('Không thể tải linh pháp thể loại.');
   }
 };
 
@@ -155,85 +182,33 @@ const validateForm = () => {
   errorMessage.value = ''; 
   fileErrors.value.anh_bia = ''; 
 
-  if (!story.value.ten_truyen || story.value.ten_truyen.trim() === '') {
-    isValid = false;
-    errorMessage.value = 'Tên truyện không được để trống.';
-  }
-  if (!story.value.tac_gia || story.value.tac_gia.trim() === '') {
-    isValid = false;
-    errorMessage.value = 'Tên tác giả không được để trống.';
-  }
-  if (!story.value.mo_ta || story.value.mo_ta.trim() === '') {
-    isValid = false;
-    errorMessage.value = 'Mô tả không được để trống.';
-  }
+  if (!story.value.ten_truyen?.trim()) { isValid = false; errorMessage.value = 'Tên truyện không được để trống.'; }
+  if (!story.value.tac_gia?.trim()) { isValid = false; errorMessage.value = 'Tên tác giả không được để trống.'; }
+  
   const isEditMode = !!route.params.id;
-
-  // Validate cơ bản bắt buộc (luôn cần)
-  if (!story.value.ten_truyen || story.value.ten_truyen.trim() === '') {
-    isValid = false;
-    errorMessage.value = 'Tên truyện không được để trống.';
-  }
-  if (!story.value.tac_gia || story.value.tac_gia.trim() === '') {
-    isValid = false;
-    errorMessage.value = 'Tên tác giả không được để trống.';
-  }
-
-  // Các trường khác chỉ bắt buộc khi tạo mới (hoặc tùy logic user muốn, ở đây nới lỏng tối đa cho update)
   if (!isEditMode) {
-      if (!story.value.mo_ta || story.value.mo_ta.trim() === '') {
-        isValid = false;
-        errorMessage.value = 'Mô tả không được để trống.';
-      }
-      if (!story.value.the_loai_ids || story.value.the_loai_ids.length === 0) {
-        isValid = false;
-        errorMessage.value = 'Vui lòng chọn ít nhất một thể loại.';
-      }
-      if (!story.value.age_rating) {
-        isValid = false;
-        errorMessage.value = 'Đối tượng độc giả không được để trống.';
-      }
-      if (!story.value.chuong_mau || story.value.chuong_mau.trim() === '') {
-        isValid = false;
-        errorMessage.value = 'Nội dung chương mẫu không được để trống.';
-      }
-  }
-
-  // Validate Cover Image
-  // Nếu là edit mode: không bắt buộc (backend sẽ giữ ảnh cũ)
-  // Nếu là create mode: bắt buộc
-  if (!isEditMode && !story.value.anh_bia) {
-    isValid = false;
-    fileErrors.value.anh_bia = 'Ảnh bìa là bắt buộc cho truyện mới.';
-    errorMessage.value = 'Ảnh bìa là bắt buộc.'; 
-  } else if (!isEditMode && fileErrors.value.anh_bia) {
-     // Check file validations (size, type) if uploading new
-      isValid = false; 
-      errorMessage.value = fileErrors.value.anh_bia; 
+    if (!story.value.mo_ta?.trim()) { isValid = false; errorMessage.value = 'Mô tả không được để trống.'; }
+    if (!story.value.the_loai_ids?.length) { isValid = false; errorMessage.value = 'Vui lòng chọn ít nhất một thể loại.'; }
+    if (!story.value.chuong_mau?.trim()) { isValid = false; errorMessage.value = 'Nội dung chương mẫu không được để trống.'; }
+    if (!story.value.anh_bia) { isValid = false; errorMessage.value = 'Ảnh bìa là bắt buộc cho linh thư mới.'; }
   }
 
   if (!agreeToSubmit.value) {
     isValid = false;
-    errorMessage.value = 'Bạn phải đồng ý xác nhận để đăng truyện.';
+    errorMessage.value = 'Đạo hữu phải đồng ý linh ước để đăng truyện.';
   }
 
   if (!isValid && errorMessage.value) {
     toast.error(errorMessage.value);
   }
-
   return isValid;
 };
 
 const handleSubmit = async () => {
   submitted.value = true; 
-  
-  if (!validateForm()) {
-    return; 
-  }
+  if (!validateForm()) return;
 
   loading.value = true;
-  errorMessage.value = ''; 
-
   const isEditMode = !!route.params.id;
   const storyId = route.params.id; 
 
@@ -250,7 +225,7 @@ const handleSubmit = async () => {
   if (story.value.anh_bia) {
     formData.append('anh_bia', story.value.anh_bia);
   } else if (isEditMode && isCoverDeleted.value) {
-    formData.append('delete_cover_image', 'true'); // Gửi flag xóa ảnh
+    formData.append('delete_cover_image', 'true');
   }
 
   story.value.the_loai_ids.forEach(id => {
@@ -270,21 +245,11 @@ const handleSubmit = async () => {
     }
     
     toast.success(response.data.message);
-    // Redirect to story management for authors, home for new submissions
-    if (isEditMode) {
-      router.push({ name: 'AuthorStoryManagement' }); // /user/quan-ly-truyen
-    } else {
-      router.push('/user/thong-tin-ca-nhan');
-    } 
+    if (isEditMode) router.push({ name: 'AuthorStoryManagement' });
+    else router.push('/user/thong-tin-ca-nhan');
   } catch (error) {
-    console.error('Lỗi khi đăng truyện:', error);
-    if (error.response && error.response.data && error.response.data.message) {
-      errorMessage.value = error.response.data.message;
-      toast.error(error.response.data.message);
-    } else {
-      errorMessage.value = 'Đã xảy ra lỗi khi đăng truyện. Vui lòng thử lại.';
-      toast.error('Đã xảy ra lỗi khi đăng truyện. Vui lòng thử lại.');
-    }
+    errorMessage.value = error.response?.data?.message || 'Đã xảy ra lỗi khi cảm ứng thiên địa.';
+    toast.error(errorMessage.value);
   } finally {
     loading.value = false;
   }
@@ -292,14 +257,12 @@ const handleSubmit = async () => {
 
 onMounted(() => {
   fetchCategories();
-  
   if (route.params.id) {
     const fetchStoryDetails = async () => {
         try {
             loading.value = true;
             const res = await axios.get(`/api/truyen/${route.params.id}`);
             const data = res.data;
-            // Populate form
             story.value = {
                 ten_truyen: data.ten_truyen || '',
                 tac_gia: data.tac_gia || '',
@@ -308,16 +271,13 @@ onMounted(() => {
                 trang_thai: data.trang_thai || 'dang_ra',
                 link_nguon: data.link_nguon || '',
                 age_rating: data.age_rating || 1,
-                chuong_mau: data.sample_chapter_content || '', // Corrected field name
+                chuong_mau: data.sample_chapter_content || '',
                 anh_bia: null,
-                anh_bia_url: data.anh_bia ? getImageUrl(data.anh_bia) : null, // Load url ảnh cũ
+                anh_bia_url: data.anh_bia ? getImageUrl(data.anh_bia) : null,
                 user_id: authStore.user?.id,
             };
-            // Note: Handling existing image preview might require extra UI logic, keeping it simple for now
-            
         } catch (error) {
-            console.error("Error loading story for edit:", error);
-            toast.error("Không thể tải thông tin truyện.");
+            toast.error("Không thể thỉnh thông tin bí tịch.");
             router.push({ name: 'AuthorStoryManagement' });
         } finally {
             loading.value = false;
@@ -329,240 +289,211 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Sora:wght@400;600&display=swap");
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
-
-.submit-story-page {
+/* ===== CORE THEME XIANXIA ===== */
+.submit-story-page-xianxia {
   min-height: 100vh;
-  background: #1a1d29; 
-  color: #ffffff;
-  position: relative;
-  overflow: hidden;
+  background: #0b0f19; /* Nền tối sâu đồng bộ */
+  color: #cbd5e1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  padding-bottom: 80px;
 }
 
-.submit-story-container {
+.submit-spirit-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 40px 20px;
 }
 
-.submit-story-card {
-  background: rgba(26, 29, 41, 0.9);
-  backdrop-filter: blur(15px);
-  border: 2px solid #4caf50; 
-  border-radius: 1rem;
-  padding: 2.5rem;
-  box-shadow: 0 0 25px rgba(76, 175, 80, 0.25); 
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fade-in 0.8s ease-in;
-}
-
-.submit-story-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0 35px rgba(76, 175, 80, 0.35);
-}
-
-.submit-story-title {
-  font-family: "Sora", sans-serif;
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #4caf50; 
-  margin-bottom: 2rem;
+/* Page Header */
+.page-header-spirit {
   text-align: center;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  margin-bottom: 50px;
 }
 
-.submit-story-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.page-title-glow {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  background: linear-gradient(to right, #34d399, #fff, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.3));
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.page-subtitle {
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 10px;
 }
 
-.form-label {
-  font-family: "Manrope", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #cccccc;
+.header-divider-spirit {
+  height: 1px;
+  width: 240px;
+  background: linear-gradient(90deg, transparent, #34d399, transparent);
+  margin: 20px auto;
+  position: relative;
 }
 
-.form-input {
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(76, 175, 80, 0.3); 
-  border-radius: 0.5rem;
-  color: #ffffff;
-  font-family: "Manrope", sans-serif;
-  font-size: 1rem;
-  outline: none;
-  transition: all 0.3s ease;
+.header-divider-spirit .dot {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);
+  width: 8px; height: 8px; background: #34d399; box-shadow: 0 0 10px #34d399;
 }
 
-.form-input:focus {
-  border-color: #4caf50; 
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-}
-
-.form-input.is-invalid {
-  border-color: #ef4444; 
-}
-
-.agree-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.agree-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: "Manrope", sans-serif;
-  font-size: 0.9rem;
-  color: #ffffff;
-}
-
-.agree-label input {
-  width: 1.2rem;
-  height: 1.2rem;
-  accent-color: #4caf50; 
-}
-.agree-label input.is-invalid {
-  outline: 2px solid #ef4444; 
-}
-
-.submit-btn {
-  padding: 0.75rem 2rem;
-  background: linear-gradient(90deg, #4caf50, #66bb6a); 
-  color: #ffffff; 
-  font-family: "Sora", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
+/* Form Aura Card */
+.submit-aura-card {
+  background: #131b2c;
+  border: 1px solid #1e293b;
+  border-radius: 30px;
+  padding: 50px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
 }
 
-.submit-btn:hover {
-  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+.submit-spirit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
-.submit-btn::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
+.form-spirit-section {
+  padding-bottom: 20px;
+  border-bottom: 1px dashed rgba(52, 211, 153, 0.1);
 }
 
-.submit-btn:hover::after {
-  width: 250px;
-  height: 250px;
+.section-spirit-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
 }
 
-.submit-btn i {
-  margin-right: 0.5rem;
+/* Grid for smaller inputs */
+.form-spirit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
 }
 
-.submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: linear-gradient(90deg, #333, #555);
-  box-shadow: none;
-  color: #cccccc;
+/* Form Groups & Inputs */
+.spirit-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.error-message {
-  color: #ff6b6b;
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.error-message-inline {
-  color: #ff6b6b;
+.spirit-label {
   font-size: 0.85rem;
-  margin-top: 0.25rem;
-  margin-left: 5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.spirit-input, .spirit-textarea, .spirit-select-custom {
+  background: #0b0f19;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 14px 18px;
+  color: #fff;
+  font-size: 0.95rem;
+  transition: all 0.3s;
 }
 
+.spirit-input:focus, .spirit-textarea:focus, .spirit-select-custom:focus {
+  border-color: #34d399;
+  background: #0b0f19;
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.15);
+  outline: none;
+}
+
+.spirit-textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.spirit-select-custom {
+  cursor: pointer;
+}
+
+/* Agreement Box */
+.spirit-agree-box {
+  background: rgba(52, 211, 153, 0.03);
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(52, 211, 153, 0.1);
+}
+
+.spirit-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.spirit-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: #34d399;
+}
+
+/* Action Area & Main Button */
+.submit-action-area {
+  text-align: center;
+  padding-top: 20px;
+}
+
+.btn-khai-thien {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 50px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #0b0f19;
+  border-radius: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-khai-thien:hover:not(:disabled) {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
+}
+
+.btn-khai-thien:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.error-aura-text { color: #f43f5e; font-size: 0.75rem; font-weight: 700; margin-top: 4px; }
+.error-aura-msg { color: #f43f5e; font-weight: 800; margin-top: 20px; font-size: 0.9rem; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.8s ease-out; }
+
+/* Responsive */
 @media (max-width: 768px) {
-  .submit-story-container {
-    padding: 1.5rem 1rem;
-  }
-
-  .submit-story-card {
-    padding: 1.5rem;
-  }
-
-  .submit-story-title {
-    font-size: 1.75rem;
-  }
-  
-  .form-input {
-    font-size: 0.9rem;
-  }
-
-  .submit-btn {
-    padding: 0.5rem 1.5rem;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .submit-story-card {
-    padding: 1rem;
-  }
-
-  .submit-story-title {
-    font-size: 1.5rem;
-  }
-  
-  .form-group {
-    gap: 0.3rem;
-  }
-
-  .form-label {
-    font-size: 0.95rem;
-  }
-
-  .form-input {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
-    border-radius: 0.75rem;
-  }
-
-  .error-message-inline {
-    font-size: 0.8rem;
-    margin-top: 0.1rem;
-  }
-
-  .submit-btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
-  }
+  .submit-aura-card { padding: 30px 20px; }
+  .form-spirit-grid { grid-template-columns: 1fr; }
+  .btn-khai-thien { width: 100%; justify-content: center; }
+  .page-title-glow { font-size: 2rem; }
 }
 </style>

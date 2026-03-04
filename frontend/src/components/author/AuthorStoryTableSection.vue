@@ -14,7 +14,6 @@
       <table>
         <thead>
           <tr>
-            <th @click="requestSort('id')" class="sortable">ID</th>
             <th>Ảnh bìa</th>
             <th @click="requestSort('ten_truyen')" class="sortable">Tên truyện</th>
             <th @click="requestSort('trang_thai_kiem_duyet')" class="sortable text-center">Trạng thái</th>
@@ -25,7 +24,6 @@
         </thead>
         <tbody>
           <tr v-for="story in stories" :key="story.id">
-            <td>#{{ story.id }}</td>
             <td class="cover-cell">
                <img 
                 v-if="story.anh_bia" 
@@ -133,10 +131,30 @@ const formatStatus = (status: string) => {
 };
 
 const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('vi-VN', { 
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit' 
-    });
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffInSeconds = Math.round((date.getTime() - now.getTime()) / 1000);
+  
+  const rtf = new Intl.RelativeTimeFormat("vi-VN", { numeric: "auto" });
+  
+  const absSeconds = Math.abs(diffInSeconds);
+  if (absSeconds < 60) return "Vừa xong";
+  
+  const diffInMinutes = Math.trunc(diffInSeconds / 60);
+  if (Math.abs(diffInMinutes) < 60) return rtf.format(diffInMinutes, "minute");
+  
+  const diffInHours = Math.trunc(diffInSeconds / 3600);
+  if (Math.abs(diffInHours) < 24) return rtf.format(diffInHours, "hour");
+  
+  const diffInDays = Math.trunc(diffInSeconds / 86400);
+  if (Math.abs(diffInDays) < 30) return rtf.format(diffInDays, "day");
+  
+  const diffInMonths = Math.trunc(diffInDays / 30);
+  if (Math.abs(diffInMonths) < 12) return rtf.format(diffInMonths, "month");
+  
+  const diffInYears = Math.trunc(diffInDays / 365);
+  return rtf.format(diffInYears, "year");
 };
 
 const requestSort = (column: string) => {
@@ -156,7 +174,7 @@ const requestSort = (column: string) => {
   border: 1px solid rgba(34, 197, 94, 0.2);
   min-height: 200px;
   position: relative;
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
   color: #e0e0e0;
 }
 

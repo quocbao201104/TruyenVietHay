@@ -31,7 +31,13 @@ export interface Story {
     trang_thai: string;
     thoi_gian_cap_nhat: string;
     the_loai_chinh?: string;
-    // Add other fields as necessary
+    luot_thich?: number;
+    user_id?: number;
+    genres?: Array<{
+        id_theloai: number;
+        ten_theloai: string;
+    }>;
+    so_luong_chuong?: number;
 }
 
 // --- Chapter APIs ---

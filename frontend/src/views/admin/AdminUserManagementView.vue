@@ -1,51 +1,70 @@
 <template>
-    <div class="user-management-page">
+  <div class="user-management-page-xianxia">
+    <main class="user-management-container-aura">
+      
+      <!-- TIÊU ĐỀ CHƯỞNG QUẢN -->
+      <div class="page-header-spirit animate-fadeIn">
+        <h1 class="page-title-glow-admin">Khống Chế Chúng Sinh</h1>
+        <p class="page-subtitle">Thiên Cơ Lệnh - Quản lý căn cơ và trật tự vạn giới đạo hữu</p>
+        <div class="header-divider-spirit admin">
+          <div class="dot"></div>
+        </div>
+      </div>
 
-        <main class="user-management-container">
-            <section class="admin-dashboard-card">
-                <div class="section-title-wrapper">
-                    <h2 class="section-title">Quản lý người dùng</h2>
-                    <div class="section-underline"></div>
-                </div>
+      <!-- LINH ĐÀI NHÂN SỐ (STATS) -->
+      <section class="stats-aura-section animate-fadeIn">
+        <UserStatsSection
+          :totalUsers="totalUsersCount"
+          :activeUsers="activeUsersCount"
+          :blockedUsers="blockedUsersCount"
+          :authorUsers="authorUsersCount"
+        />
+      </section>
 
-                <UserStatsSection
-                    :totalUsers="totalUsersCount"
-                    :activeUsers="activeUsersCount"
-                    :blockedUsers="blockedUsersCount"
-                    :authorUsers="authorUsersCount"
-                />
+      <!-- LINH ĐÀI TRUY VẾT (FILTERS) -->
+      <section class="filters-aura-section animate-fadeIn">
+        <div class="glass-filter-box">
+          <UserFiltersSection
+            :searchTerm="currentSearchTerm"
+            :selectedRole="selectedRole"
+            :selectedStatus="selectedStatus"
+            @update:searchTerm="newSearchTerm => currentSearchTerm = newSearchTerm"
+            @update:selectedRole="newRole => selectedRole = newRole"
+            @update:selectedStatus="newStatus => selectedStatus = newStatus"
+            @applyFilters="fetchUsers"
+          />
+        </div>
+      </section>
 
-                <UserFiltersSection
-                    :searchTerm="currentSearchTerm"
-                    :selectedRole="selectedRole"
-                    :selectedStatus="selectedStatus"
-                    @update:searchTerm="newSearchTerm => currentSearchTerm = newSearchTerm"
-                    @update:selectedRole="newRole => selectedRole = newRole"
-                    @update:selectedStatus="newStatus => selectedStatus = newStatus"
-                    @applyFilters="fetchUsers"
-                />
+      <!-- BẢNG MỆNH BÀI CHÚNG SINH (TABLE) -->
+      <section class="table-aura-section animate-fadeIn">
+        <div class="spirit-table-wrapper">
+          <UserTableSection
+            :users="users"
+            :isLoading="isLoading"
+            :sortColumn="sortColumn"
+            :sortDirection="sortDirection"
+            :selectedBanDuration="selectedBanDuration"
+            @requestSort="requestSort"
+            @confirmBan="confirmBan"
+            @handleUnbanUser="handleUnbanUser"
+            @handleDeleteUser="handleDeleteUser"
+            @handleChangeUserRole="handleChangeUserRole"
+          />
+        </div>
+      </section>
 
-                <UserTableSection
-                    :users="users"
-                    :isLoading="isLoading"
-                    :sortColumn="sortColumn"
-                    :sortDirection="sortDirection"
-                    :selectedBanDuration="selectedBanDuration"
-                    @requestSort="requestSort"
-                    @confirmBan="confirmBan"
-                    @handleUnbanUser="handleUnbanUser"
-                    @handleDeleteUser="handleDeleteUser"
-                    @handleChangeUserRole="handleChangeUserRole"
-                />
+      <!-- PHÂN TẦNG LINH TRẬN (PAGINATION) -->
+      <section class="pagination-aura-area">
+        <PaginationSection
+          :currentPage="currentPage"
+          :totalPages="totalPages"
+          @goToPage="goToPage"
+        />
+      </section>
 
-                <PaginationSection
-                    :currentPage="currentPage"
-                    :totalPages="totalPages"
-                    @goToPage="goToPage"
-                />
-            </section>
-        </main>
-    </div>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -104,23 +123,14 @@ const fetchUsers = async () => {
         totalPages.value = response.pagination.totalPages;
         currentPage.value = response.pagination.page;
 
-        if (response.stats) { // Kiểm tra nếu object stats tồn tại
+        if (response.stats) {
             totalUsersCount.value = response.stats.totalUsers;
             activeUsersCount.value = response.stats.activeUsers;
             blockedUsersCount.value = response.stats.blockedUsers;
             authorUsersCount.value = response.stats.authorUsers;
-        } else {
-
-            console.warn("API /api/admin/users không trả về dữ liệu thống kê 'stats'.");
-            totalUsersCount.value = 0;
-            activeUsersCount.value = 0;
-            blockedUsersCount.value = 0;
-            authorUsersCount.value = 0;
         }
-
     } catch (error: any) {
-        toast.error('Lỗi khi tải danh sách người dùng: ' + (error.response?.data?.message || error.message));
-        console.error('Fetch users error:', error);
+        toast.error('Cảm ứng thất bại: ' + (error.response?.data?.message || error.message));
     } finally {
         isLoading.value = false;
     }
@@ -140,54 +150,50 @@ const confirmBan = async (userId: number, durationValue: string | number) => {
     selectedBanDuration.value[userId] = durationValue.toString();
     const durationDays = durationValue === '0' ? null : Number(durationValue);
 
-    if (confirm(`Bạn có chắc chắn muốn cấm người dùng ID ${userId} ${durationDays !== null ? `trong ${durationDays} ngày` : 'vĩnh viễn'}?`)) {
+    if (confirm(`Trục xuất đạo hữu ID ${userId} vào hư không ${durationDays !== null ? `trong ${durationDays} ngày` : 'vĩnh viễn'}?`)) {
         try {
             await banUserApi(userId, durationDays);
-            toast.success('Cấm người dùng thành công!');
+            toast.success('Đã thi triển cấm chế thành công!');
             await fetchUsers();
         } catch (error: any) {
-            toast.error('Lỗi khi cấm người dùng: ' + (error.response?.data?.message || error.message));
-            console.error('Ban user error:', error);
+            toast.error('Pháp lực không đủ: ' + (error.response?.data?.message || error.message));
         }
     }
     selectedBanDuration.value[userId] = '';
 };
 
 const handleUnbanUser = async (userId: number) => {
-    if (confirm(`Bạn có chắc chắn muốn bỏ cấm người dùng ID ${userId}?`)) {
+    if (confirm(`Giải trừ phong ấn cho đạo hữu ID ${userId}?`)) {
         try {
             await unbanUserApi(userId);
-            toast.success('Bỏ cấm người dùng thành công!');
+            toast.success('Đã thu hồi cấm chế!');
             await fetchUsers();
         } catch (error: any) {
-            toast.error('Lỗi khi bỏ cấm người dùng: ' + (error.response?.data?.message || error.message));
-            console.error('Unban user error:', error);
+            toast.error('Thao tác thất bại!');
         }
     }
 };
 
 const handleDeleteUser = async (userId: number) => {
-    if (confirm(`Bạn có chắc chắn muốn xóa người dùng ID ${userId} vĩnh viễn?`)) {
+    if (confirm(`Làm biến mất hoàn toàn đạo hữu ID ${userId} khỏi lục giới?`)) {
         try {
             await deleteUserApi(userId);
-            toast.success('Xóa người dùng thành công!');
+            toast.success('Đã xóa bỏ danh tính!');
             await fetchUsers();
         } catch (error: any) {
-            toast.error('Lỗi khi xóa người dùng: ' + (error.response?.data?.message || error.message));
-            console.error('Delete user error:', error);
+            toast.error('Thao tác thất bại!');
         }
     }
 };
 
 const handleChangeUserRole = async (userId: number, newRole: 'user' | 'author' | 'admin') => {
-    if (confirm(`Bạn có chắc chắn muốn đổi vai trò của người dùng ID ${userId} thành ${newRole}?`)) {
+    if (confirm(`Cải biến căn cơ của đạo hữu ID ${userId} thành ${newRole}?`)) {
         try {
             await updateUserRoleApi(userId, newRole);
-            toast.success(`Đã đổi vai trò của người dùng ID ${userId} thành ${newRole}!`);
+            toast.success(`Đã cải biến thiên phú thành công!`);
             await fetchUsers();
         } catch (error: any) {
-            toast.error('Lỗi khi đổi vai trò người dùng: ' + (error.response?.data?.message || error.message));
-            console.error('Change user role error:', error);
+            toast.error('Không thể cải biến căn cơ!');
         }
     }
 };
@@ -208,88 +214,106 @@ watch(currentPage, () => {
 </script>
 
 <style scoped>
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&family=Sora:wght@400;600&display=swap');
-
-/* Import Font Awesome for icons */
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
-
-/* General Page Layout */
-.user-management-page {
-    min-height: 100vh;
-    background: #1a1d29;
-    color: #ffffff;
-    position: relative;
-    overflow-x: hidden;
-    font-family: 'Manrope', sans-serif;
+/* ===== CORE THEME ADMIN XIANXIA ===== */
+.user-management-page-xianxia {
+  min-height: 100vh;
+  background: #0b0f19; /* Nền tối sâu đồng bộ */
+  color: #cbd5e1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  padding-bottom: 80px;
 }
 
-.user-management-container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem;
+.user-management-container-aura {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px 20px;
 }
 
-/* Thẻ bao ngoài cho toàn bộ phần admin (thống kê, lọc, bảng, phân trang) */
-.admin-dashboard-card {
-    background: rgba(26, 29, 41, 0.7);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(34, 197, 94, 0.4);
-    border-radius: 1rem;
-    padding: 2rem;
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Page Header */
+.page-title-glow-admin {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  background: linear-gradient(to right, #a78bfa, #fff, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.4));
 }
 
-.admin-dashboard-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+.page-subtitle {
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 10px;
 }
 
-.section-title-wrapper {
-    margin-bottom: 2rem;
-    text-align: center;
+.header-divider-spirit {
+  height: 1px;
+  width: 300px;
+  background: linear-gradient(90deg, transparent, #a78bfa, transparent);
+  margin: 20px auto 50px;
+  position: relative;
+}
+.header-divider-spirit .dot {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);
+  width: 10px; height: 10px; background: #a78bfa; box-shadow: 0 0 10px #a78bfa;
 }
 
-.section-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 2rem;
-    font-weight: 600;
-    color: #22c55e;
-    margin-bottom: 0.5rem;
-    animation: fade-in 0.8s ease-in;
+/* Filter Box Glassmorphism */
+.glass-filter-box {
+  background: rgba(19, 27, 44, 0.6);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.section-underline {
-    height: 3px;
-    background: #22c55e;
-    width: 80px;
-    margin: 0 auto;
-    border-radius: 1px;
+/* Table Section */
+.table-aura-section {
+  background: #131b2c;
+  border: 1px solid #1e293b;
+  border-radius: 24px;
+  padding: 5px; /* Để bảng tràn viền mượt */
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+
+.spirit-table-wrapper {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #a78bfa #0b0f19;
+}
+
+/* Stats Area */
+.stats-aura-section {
+  margin-bottom: 40px;
+}
+
+/* Pagination Xianxia Area */
+.pagination-aura-area {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
 }
 
 /* Animations */
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.8s ease-out; }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .admin-dashboard-card {
-        padding: 1.5rem;
-    }
-    .section-title {
-        font-size: 1.75rem;
-    }
+@media (max-width: 1024px) {
+  .page-title-glow-admin { font-size: 2.2rem; }
+  .user-management-container-aura { padding: 20px 15px; }
 }
 
-@media (max-width: 480px) {
-    .admin-dashboard-card {
-        padding: 1rem;
-    }
-    .section-title {
-        font-size: 1.5rem;
-    }
+@media (max-width: 640px) {
+  .page-title-glow-admin { font-size: 1.8rem; }
 }
 </style>

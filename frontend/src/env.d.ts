@@ -11,3 +11,9 @@ declare module "*.vue" {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+
+declare module "vue3-apexcharts" {
+  import { DefineComponent } from "vue";
+  const component: DefineComponent<{ options?: object; series?: object[]; type?: string; height?: number | string }>;
+  export default component;
+}

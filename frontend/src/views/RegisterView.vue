@@ -51,7 +51,6 @@ const onGoogleCallback = async (response) => {
 
 <style>
 /* Import Google Fonts cho typography */
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 
 /* Container chính */
 .dangky-container {
@@ -60,7 +59,7 @@ const onGoogleCallback = async (response) => {
   min-height: 100vh;
   background: #1a1d29;
   color: #ffffff;
-  font-family: "Roboto", sans-serif;
+  /* font-family: "Roboto", sans-serif; */
 }
 
 /* Nội dung chính */

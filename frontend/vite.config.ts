@@ -1,6 +1,7 @@
 // frontend/vite.config.ts
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
+import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -12,6 +13,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
+      tailwindcss(),
       VitePWA({
         registerType: "autoUpdate",
         manifest: {

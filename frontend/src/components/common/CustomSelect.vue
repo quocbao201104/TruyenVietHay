@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
 .custom-select {
   position: relative;
   width: 100%;
-  font-family: 'Manrope', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
   color: #ffffff;
 }
 

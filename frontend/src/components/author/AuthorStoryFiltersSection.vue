@@ -98,7 +98,7 @@ const clearFilters = () => {
   border-radius: 0.75rem;
   border: 1px solid rgba(34, 197, 94, 0.2);
   margin-bottom: 2rem;
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
   color: #e0e0e0;
 }
 

@@ -99,7 +99,7 @@ const applyFilters = () => {
   padding: 1.5rem;
   margin-bottom: 2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
 }
 
 /* Nhóm các input và select */

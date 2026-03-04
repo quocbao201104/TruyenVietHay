@@ -8,6 +8,7 @@ import {
     updateStoryAdmin,
     deleteStoryAdmin,
     getTopMonthlyStories,
+    Story,
 } from "./story.service";
 import { getAllCategories } from "@/modules/category/category.service";
 import { getTopViewStories } from "@/modules/topview/topview.service";
@@ -26,8 +27,8 @@ interface CachedData<T> {
 export const useStoryStore = defineStore("story", () => {
     // --- State ---
     // --- State ---
-    const stories = ref<any[]>([]); // Public stories
-    const currentStory = ref<any | null>(null); // Detail
+    const stories = ref<Story[]>([]); // Public stories
+    const currentStory = ref<Story | null>(null); // Detail
 
     // Admin State
     const adminStories = ref<any[]>([]);

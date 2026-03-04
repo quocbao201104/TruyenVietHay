@@ -40,7 +40,7 @@ import { useRouter } from 'vue-router';
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
 }
 
 .not-found-container {
@@ -76,7 +76,7 @@ import { useRouter } from 'vue-router';
 }
 
 .error-code {
-  font-family: 'Sora', sans-serif;
+  /* font-family: 'Sora', sans-serif; */
   font-size: 6rem; 
   font-weight: 700;
   color: #22c55e; 
@@ -85,7 +85,7 @@ import { useRouter } from 'vue-router';
 }
 
 .error-title {
-  font-family: 'Sora', sans-serif;
+  /* font-family: 'Sora', sans-serif; */
   font-size: 2.2rem;
   font-weight: 600;
   color: #ffffff;
@@ -112,7 +112,7 @@ import { useRouter } from 'vue-router';
   gap: 0.75rem;
   padding: 0.8rem 1.8rem;
   border-radius: 0.75rem;
-  font-family: 'Sora', sans-serif;
+  /* font-family: 'Sora', sans-serif; */
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;

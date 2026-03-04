@@ -264,7 +264,7 @@ const handleChangeUserRole = (userId: number, newRole: 'user' | 'author' | 'admi
   padding: 1.5rem;
   margin-bottom: 2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
   color: #ffffff;
 }
 
@@ -304,7 +304,7 @@ td {
   border-bottom: 1px solid rgba(34, 197, 94, 0.2);
   vertical-align: middle;
   font-size: 0.9rem;
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
 }
 
 /* Điều chỉnh chiều rộng cột sau khi bỏ avatar */
@@ -325,7 +325,7 @@ th {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: 'Sora', sans-serif;
+  /* font-family: 'Sora', sans-serif; */
 }
 
 .user-row.even-row {

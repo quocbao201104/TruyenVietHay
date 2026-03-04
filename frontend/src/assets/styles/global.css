@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* RESET CSS - đảm bảo đồng nhất trình duyệt */
 *,
 *::before,
@@ -9,7 +11,7 @@
 
 html,
 body {
-  font-family: "Segoe UI", Roboto, sans-serif;
+  font-family: 'Be Vietnam Pro', "Segoe UI", Roboto, sans-serif;
   font-size: 16px;
   background-color: #f9f9f9;
   color: #333;

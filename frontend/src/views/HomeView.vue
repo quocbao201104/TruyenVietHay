@@ -13,7 +13,7 @@
         </div>
 
         <h1 class="tieu-de-chinh">
-          Đọc Truyện Miễn Phí, Nhanh Và Mượt Mà, Cồng Đồng Tác Giả Tài Năng,
+          Đọc Truyện Miễn Phí, Nhanh Và Mượt Mà, Cộng Đồng Tác Giả Tài Năng,
           Cùng Nhau Sáng Tạo
         </h1>
 
@@ -141,7 +141,6 @@ body {
 }
 
 /* Font chữ */
-@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap");
 
 /* Layout chính */
 .trang-chu {

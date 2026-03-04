@@ -141,7 +141,7 @@ const clearAllFilters = () => {
   flex-wrap: wrap;
   gap: 1.5rem;
   align-items: flex-end;
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
   color: #ffffff;
 }
 

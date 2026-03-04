@@ -1,29 +1,34 @@
 <template>
   <div class="hero-grid-container" v-if="stories.length > 0">
-    <!-- MOBILE HERO SLIDER -->
-    <div class="hero-mobile-slider">
-      <div 
-        v-for="(story, index) in stories.slice(0, 5)" 
-        :key="story.id" 
-        class="hero-slide-item"
-      >
-        <div 
-          @click="navigateToStory(story.slug)" 
-          class="slide-content" 
-          role="link" 
-          tabindex="0"
-          style="cursor: pointer"
-        >
-          <img :src="getImageUrl(story.anh_bia)" class="slide-bg" loading="lazy" />
-          <div class="slide-overlay"></div>
-          <div class="slide-info">
-             <span class="badge-hot-sm" v-if="index === 0"><i class="fas fa-fire"></i> Hot #1</span>
-             <h3 class="slide-title">{{ story.ten_truyen }}</h3>
-             <div class="slide-meta">
-               <span><i class="fas fa-pen-nib"></i> {{ story.tac_gia }}</span>
-               <span><i class="fas fa-eye"></i> {{ formatNumber(story.luot_xem) }}</span>
-             </div>
+    <!-- MOBILE HERO STATIC BANNER -->
+    <div class="hero-mobile-static mobile-only">
+      <div class="mobile-bg-wrapper">
+        <img src="@/assets/images/banner-mobile.png" alt="Truyện Việt Hay Banner" class="mobile-bg-img" />
+        <!-- Lớp phủ gradient đen lên phần chữ để đảm bảo dễ đọc -->
+        <div class="mobile-vignette"></div>
+      </div>
+
+      <div class="mobile-content-wrapper">
+        <h1 class="grand-title-mobile">
+          <div class="title-line">
+            <span class="word-glow">KHÁM PHÁ</span>
           </div>
+          <div class="title-line">
+            <span class="word-glow-emerald">THIÊN THƯ</span>
+          </div>
+        </h1>
+        
+        <p class="slogan-mobile">VẠN GIỚI KHAI NGUYÊN - TIÊN LỘ THÔNG THIÊN</p>
+
+        <div class="action-buttons-mobile">
+          <router-link to="/truyen-chu" class="spirit-btn-sm emerald">
+            <div class="btn-aura-sm"></div>
+            <span class="btn-inner-sm">TRUYỆN CHỮ</span>
+          </router-link>
+          <router-link to="/truyen-tranh" class="spirit-btn-sm azure">
+            <div class="btn-aura-sm"></div>
+            <span class="btn-inner-sm">TRUYỆN TRANH</span>
+          </router-link>
         </div>
       </div>
     </div>
@@ -186,7 +191,6 @@ const truncateText = (text: string, length: number) => {
   gap: 24px;
   height: 480px;
   margin-bottom: 40px;
-  font-family: 'Manrope', sans-serif;
 }
 
 /* --- LEFT MAIN highlight --- */
@@ -579,7 +583,7 @@ const truncateText = (text: string, length: number) => {
 }
 
 /* --- Mobile Only Utility --- */
-.hero-mobile-slider {
+.hero-mobile-static {
   display: none;
 }
 
@@ -595,95 +599,115 @@ const truncateText = (text: string, length: number) => {
     display: none !important;
   }
   
-  /* Enable Mobile Slider */
-  .hero-mobile-slider {
-    display: flex;
-    overflow-x: auto;
-    padding-bottom: 20px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
-  }
-  
-  .hero-mobile-slider::-webkit-scrollbar {
-    display: none;  
-  }
-  
-  .hero-slide-item {
-     flex: 0 0 100%;
-     width: 100%;
-     aspect-ratio: 16/9;
-     height: auto;
-     border-radius: 12px;
-     overflow: hidden;
-     position: relative;
-     scroll-snap-align: center;
-     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  
-  .slide-content {
-    display: block;
-    width: 100%;
-    height: 100%;
+  /* Enable Mobile Static Banner */
+  .hero-mobile-static {
     position: relative;
-    text-decoration: none;
-  }
-  
-  .slide-bg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s;
-  }
-  
-  .slide-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.9) 100%);
-  }
-  
-  .slide-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 16px;
-    z-index: 2;
-  }
-  
-  .badge-hot-sm {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: #ef4444;
-    color: white;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 99px;
-    font-weight: 700;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-  }
-  
-  .slide-title {
-    color: white;
-    font-size: 1.25rem;
-    font-weight: 800;
-    margin: 0 0 6px 0;
-    line-height: 1.2;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    width: 100vw;
+    height: 60vh; /* Banner cao 60% màn hình điện thoại */
+    left: -12px; /* Kéo bù lề của Container (nếu có padding), tạm định -12px theo padding 640px của StoryListView */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Ép nội dung xuống đáy */
     overflow: hidden;
   }
   
-  .slide-meta {
-    display: flex;
-    gap: 12px;
-    font-size: 0.8rem;
-    color: #e5e7eb;
+  /* Trong màn 640px padding main-content-spirit là 12px, ta margin left, right -12px để fullbleed */
+  @media (max-width: 640px) {
+    .hero-mobile-static {
+      left: 0;
+      margin-left: -12px;
+      margin-right: -12px;
+      width: calc(100% + 24px); 
+    }
   }
+
+  .mobile-bg-wrapper {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .mobile-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .mobile-vignette {
+    position: absolute;
+    inset: 0;
+    /* Chuyển mờ dần thành đen ở dưới đáy để chữ nổi bật */
+    background: linear-gradient(to bottom, transparent 30%, rgba(5,7,10,0.6) 60%, #0b0f19 100%);
+  }
+
+  /* 3. Nội dung (Chữ + Nút) */
+  .mobile-content-wrapper {
+    position: relative;
+    z-index: 10;
+    padding: 20px 15px 40px;
+    text-align: center;
+    font-family: 'Be Vietnam Pro', sans-serif;
+  }
+
+  .grand-title-mobile {
+    font-family: 'Spectral', serif;
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    letter-spacing: 2px;
+  }
+
+  .title-line { display: flex; justify-content: center; gap: 10px; }
+
+  .word-glow { color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.5), 0 4px 10px rgba(0,0,0,0.8); }
+  .word-glow-emerald { color: #6ee7b7; text-shadow: 0 0 20px rgba(52,211,153,0.6), 0 4px 10px rgba(0,0,0,0.8); }
+
+  .slogan-mobile {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: #ffffff;
+    letter-spacing: 2px;
+    margin-bottom: 25px;
+    font-weight: 700;
+  }
+
+  /* 4. Nút Hành Động */
+  .action-buttons-mobile {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+  }
+
+  .spirit-btn-sm {
+    position: relative;
+    flex: 1;
+    padding: 12px 0;
+    text-decoration: none;
+    border-radius: 50px;
+    overflow: hidden;
+  }
+
+  .btn-inner-sm {
+    position: relative;
+    z-index: 2;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .btn-aura-sm { position: absolute; inset: 0; z-index: 1; opacity: 0.9; }
+
+  .spirit-btn-sm.emerald { border: 1px solid transparent; }
+  .spirit-btn-sm.emerald .btn-aura-sm { background: linear-gradient(135deg, #10b981, #047857); }
+  .spirit-btn-sm.azure { border: 1px solid rgba(255,255,255,0.3); }
+  .spirit-btn-sm.azure .btn-aura-sm { background: transparent; backdrop-filter: blur(5px); }
 }
 
 @media (max-width: 768px) {

@@ -59,12 +59,9 @@ export default {
 
 <style scoped>
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap");
-
 .app-footer {
   background: #1a1d29;
   color: #a3a3a3;
-  font-family: "Inter", sans-serif;
   padding: 50px 20px 20px;
   border-top: 4px solid transparent;
   border-image: linear-gradient(to right, #22c55e33, transparent, #22c55e33);

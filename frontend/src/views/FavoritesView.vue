@@ -1,80 +1,86 @@
 <template>
-  <div class="favorites-view-container">
+  <div class="favorites-view-container-xianxia">
     
     <main class="main-content">
       <div class="container">
-        <!-- Page Header -->
-        <div class="section-header-block">
-          <h2 class="section-title">Truyện Đang Theo Dõi</h2>
-          <div class="section-divider"></div>
+        
+        <!-- THIÊN THƯ HEADER -->
+        <div class="section-header-aura animate-fadeIn">
+          <h2 class="section-title-xianxia">Tâm Đắc Linh Thư</h2>
+          <p class="section-subtitle">Những bí tịch đang đồng hành trên đạo lộ tu tiên</p>
+          <div class="header-divider-spirit">
+            <div class="dot"></div>
+          </div>
         </div>
 
-        <!-- Loading Skeleton -->
-        <div v-if="favoriteStore.loading" class="loading-container">
-          <div class="skeleton-grid">
-            <div v-for="n in 12" :key="n" class="skeleton-card">
-              <div class="skeleton-image"></div>
-              <div class="skeleton-text"></div>
-              <div class="skeleton-text short"></div>
+        <!-- TRẠNG THÁI CẢM ỨNG (LOADING) -->
+        <div v-if="favoriteStore.loading" class="loading-aura-container">
+          <div class="skeleton-grid-xianxia">
+            <div v-for="n in 10" :key="n" class="skeleton-pill-card">
+              <div class="skeleton-cover-aura"></div>
+              <div class="skeleton-info-aura">
+                <div class="line"></div>
+                <div class="line short"></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Error State -->
-        <div v-else-if="favoriteStore.error" class="error-message">
-          <i class="fas fa-exclamation-circle"></i>
-          <p>{{ favoriteStore.error }}</p>
+        <!-- THIÊN CƠ NHIỄU LOẠN (ERROR) -->
+        <div v-else-if="favoriteStore.error" class="state-box-aura error">
+          <i class="fas fa-circle-nodes"></i>
+          <p>Thiên cơ nhiễu loạn: {{ favoriteStore.error }}</p>
         </div>
 
-        <!-- Empty State -->
-        <div v-else-if="favoriteStore.favorites.length === 0" class="empty-state">
-          <i class="fas fa-heart-broken"></i>
-          <h3>Bạn chưa theo dõi truyện nào</h3>
-          <p>Hãy khám phá và theo dõi những truyện yêu thích của bạn!</p>
-          <router-link to="/truyen-chu" class="explore-btn">
-            <i class="fas fa-compass"></i>
-            Khám phá truyện
+        <!-- VÔ DUYÊN BÍ TỊCH (EMPTY STATE) -->
+        <div v-else-if="favoriteStore.favorites.length === 0" class="state-box-aura empty">
+          <i class="fas fa-heart-crack opacity-20"></i>
+          <h3>Vô Duyên Bí Tịch</h3>
+          <p>Đạo hữu chưa tìm thấy tâm đắc linh thư nào để lưu dấu.</p>
+          <router-link to="/truyen-chu" class="btn-seek-destiny">
+            <i class="fas fa-compass-drafting mr-2"></i>
+            Tầm Tiên Lộ
           </router-link>
         </div>
 
-        <!-- Favorites Grid -->
-        <div v-else class="favorites-content">
-          <div class="favorites-grid">
-            <div v-for="story in favoriteStore.favorites" :key="story.id" class="story-wrapper relative group">
+        <!-- LINH THƯ LƯỚI (FAVORITES GRID) -->
+        <div v-else class="favorites-spirit-content animate-fadeIn">
+          <div class="favorites-grid-xianxia">
+            <div v-for="story in favoriteStore.favorites" :key="story.id" class="story-aura-wrapper group">
+              <!-- Sử dụng Card truyện đồng bộ -->
               <NewStoryCard :story="story" />
               
-              <!-- Unfavorite Button - Absolute Overlay -->
+              <!-- Nút Bỏ Theo Dõi (Dấu Ấn Đoạn Tuyệt) -->
               <button 
-                class="unfavorite-btn" 
-                @click.prevent.stop="handleUnfollow(story.id, story.ten_truyen)"
-                title="Bỏ theo dõi"
+                class="btn-sever-bond" 
+                @click.prevent.stop="handleUnfollow(story.id)"
+                title="Bỏ theo dõi bí tịch"
               >
                 <i class="fas fa-heart"></i>
+                <span class="tooltip-aura">Đoạn Tuyệt</span>
               </button>
             </div>
           </div>
 
-          <!-- Pagination -->
-          <div v-if="favoriteStore.totalPages > 1" class="pagination-container">
+          <!-- LINH TRẬN PHÂN TRANG (PAGINATION) -->
+          <div v-if="favoriteStore.totalPages > 1" class="xianxia-pagination">
             <button 
-              class="pagination-btn" 
+              class="page-nav-btn" 
               :disabled="!favoriteStore.hasPrevPage"
               @click="favoriteStore.prevPage()"
             >
               <i class="fas fa-chevron-left"></i>
-              Trước
             </button>
             
-            <span class="pagination-info">
-              Trang {{ favoriteStore.pagination.page }} / {{ favoriteStore.totalPages }}
-            </span>
+            <div class="page-counter-aura">
+              Tầng <span class="current">{{ favoriteStore.pagination.page }}</span> / {{ favoriteStore.totalPages }}
+            </div>
             
             <button 
-              class="pagination-btn" 
+              class="page-nav-btn" 
               :disabled="!favoriteStore.hasNextPage"
               @click="favoriteStore.nextPage()"
             >
-              Sau
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -87,355 +93,221 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useFavoriteStore } from '@/modules/favorite/favorite.store';
-import { getImageUrl } from "@/config/constants";
 import NewStoryCard from '@/modules/storyText/components/NewStoryCard.vue';
 
 const favoriteStore = useFavoriteStore();
 
-// Fetch favorites on mount
 onMounted(() => {
   favoriteStore.fetchFavorites();
 });
 
-// Handle image load error
-const handleImageError = (event: Event) => {
-  const target = event.target as HTMLImageElement;
-  target.src = '/placeholder.jpg';
-};
-
-// Handle unfollow click - Immediate Action
-const handleUnfollow = async (storyId: number, storyTitle: string) => {
+const handleUnfollow = async (storyId: number) => {
   await favoriteStore.toggleFollow(storyId);
+  // Optional: Thêm hiệu ứng toast báo bỏ theo dõi thành công
 };
 </script>
 
 <style scoped>
-/* ===== Container & Layout ===== */
-.favorites-view-container {
-  display: flex;
-  flex-direction: column;
+/* ===== CORE THEME XIANXIA ===== */
+.favorites-view-container-xianxia {
   min-height: 100vh;
-  background: #1a1d29;
-  color: #ffffff;
-  font-family: "Be Vietnam Pro", "Roboto", sans-serif;
+  background: #0b0f19; /* Nền tối sâu đồng bộ */
+  color: #cbd5e1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  padding-bottom: 50px;
 }
 
 .main-content {
-  flex-grow: 1;
   max-width: 1400px;
   margin: 0 auto;
-  width: 100%;
   padding: 40px 20px;
 }
 
-.container {
-  width: 100%;
-}
-
-/* ===== Header Section ===== */
-.section-header-block {
-  margin-bottom: 40px;
+/* ===== HEADER SPIRIT ===== */
+.section-header-aura {
   text-align: center;
+  margin-bottom: 50px;
 }
 
-.section-title {
+.section-title-xianxia {
   font-size: 2.8rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 15px;
-  display: inline-block;
+  letter-spacing: 4px;
+  background: linear-gradient(to right, #34d399, #fff, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.3));
 }
 
-.section-divider {
-  height: 4px;
-  width: 200px;
-  background: linear-gradient(90deg, transparent, #4caf50, transparent);
-  margin: 0 auto;
-  border-radius: 2px;
+.section-subtitle {
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 10px;
 }
 
-/* ===== Loading Skeleton ===== */
-.loading-container {
-  padding: 20px 0;
+.header-divider-spirit {
+  height: 1px;
+  width: 240px;
+  background: linear-gradient(90deg, transparent, #34d399, transparent);
+  margin: 20px auto;
+  position: relative;
 }
 
-.skeleton-grid {
+.header-divider-spirit .dot {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(45deg);
+  width: 8px; height: 8px; background: #34d399; box-shadow: 0 0 10px #34d399;
+}
+
+/* ===== FAVORITES GRID ===== */
+.favorites-grid-xianxia {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 25px;
+  margin-bottom: 50px;
 }
 
-.skeleton-card {
-  background: #2a2d3a;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.skeleton-image {
-  width: 100%;
-  height: 280px;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-text {
-  height: 20px;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  margin: 12px 15px;
-  border-radius: 4px;
-}
-
-.skeleton-text.short {
-  width: 60%;
-  height: 16px;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* ===== Error State ===== */
-.error-message {
-  text-align: center;
-  padding: 60px 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  border: 2px solid #f44336;
-  margin: 20px 0;
-}
-
-.error-message i {
-  font-size: 3rem;
-  color: #f44336;
-  margin-bottom: 20px;
-}
-
-.error-message p {
-  font-size: 1.2rem;
-  color: #cccccc;
-}
-
-/* ===== Empty State ===== */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  border: 2px dashed #4caf50;
-  margin: 20px 0;
-}
-
-.empty-state > i {
-  font-size: 4rem;
-  color: #4caf50;
-  margin-bottom: 20px;
-  opacity: 0.7;
-}
-
-.explore-btn i {
-  font-size: 1.2rem;
-}
-
-.empty-state h3 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.empty-state p {
-  font-size: 1.1rem;
-  color: #cccccc;
-  margin-bottom: 30px;
-}
-
-.explore-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 32px;
-  background: linear-gradient(135deg, #4caf50, #66bb6a);
-  color: #ffffff;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-.explore-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-  background: linear-gradient(135deg, #66bb6a, #4caf50);
-}
-
-/* ===== Favorites Grid ===== */
-.favorites-content {
-  margin-top: 20px;
-}
-
-.favorites-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
-}
-
-.story-wrapper {
+.story-aura-wrapper {
   position: relative;
   height: 100%;
 }
 
-/* ===== Unfavorite Button ===== */
-.unfavorite-btn {
+/* ===== BTN SEVER BOND (UNFOLLOW) ===== */
+.btn-sever-bond {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(239, 68, 68, 0.9); /* Red */
-  border: none;
-  color: #ffffff;
-  font-size: 1rem;
+  background: rgba(244, 63, 94, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #f43f5e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  display: flex;
+  z-index: 20;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-sever-bond:hover {
+  background: #f43f5e;
+  color: #fff;
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.5);
+}
+
+.tooltip-aura {
+  position: absolute;
+  bottom: 110%;
+  right: 0;
+  background: #0b0f19;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.2s;
+  pointer-events: none;
+  border: 1px solid #f43f5e40;
+}
+
+.btn-sever-bond:hover .tooltip-aura {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== EMPTY STATE AURA ===== */
+.state-box-aura {
+  text-align: center;
+  padding: 80px 20px;
+  background: #131b2c;
+  border-radius: 24px;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.state-box-aura i { font-size: 4rem; margin-bottom: 25px; color: #34d399; }
+.state-box-aura.error i { color: #f43f5e; }
+
+.btn-seek-destiny {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  opacity: 1; /* Always visible */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  z-index: 10; /* Ensure on top of card */
-  backdrop-filter: blur(4px);
+  padding: 14px 35px;
+  margin-top: 30px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #0b0f19;
+  border-radius: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 1px;
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s;
 }
 
-.unfavorite-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(220, 38, 38, 0.4);
+.btn-seek-destiny:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
 }
 
-.unfavorite-btn:active {
-  transform: scale(0.95);
-}
-
-/* ===== Pagination ===== */
-.pagination-container {
+/* ===== PAGINATION XIANXIA ===== */
+.xianxia-pagination {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 20px;
+  align-items: center;
+  gap: 25px;
   margin-top: 40px;
-  padding: 20px;
 }
 
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: #2a2d3a;
-  color: #ffffff;
-  border: 2px solid #4caf50;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+.page-nav-btn {
+  width: 45px;
+  height: 45px;
+  background: #131b2c;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  color: #fff;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  background: #4caf50;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+.page-nav-btn:hover:not(:disabled) {
+  border-color: #34d399;
+  color: #34d399;
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
 }
 
-.pagination-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  border-color: #666;
+.page-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+.page-counter-aura {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-.pagination-info {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #4caf50;
-  padding: 0 20px;
-}
+.page-counter-aura .current { color: #34d399; font-weight: 900; }
 
-/* ===== Responsive Design ===== */
-@media (max-width: 1200px) {
-  .favorites-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  }
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+.animate-fadeIn { animation: fadeIn 0.8s ease-out; }
 
+/* Responsive */
 @media (max-width: 768px) {
-  .section-title {
-    font-size: 2rem;
-  }
-
-  .favorites-grid, .skeleton-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
-  }
-
-  .story-image-wrapper {
-    height: 220px;
-  }
-
-  .pagination-container {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .pagination-btn {
-    width: 100%;
-    justify-content: center;
-  }
+  .section-title-xianxia { font-size: 1.8rem; }
+  .favorites-grid-xianxia { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+  .btn-sever-bond { width: 30px; height: 30px; font-size: 0.8rem; }
 }
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 20px 10px;
-  }
-
-  .section-title {
-    font-size: 1.6rem;
-  }
-
-  .favorites-grid, .skeleton-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .story-image-wrapper {
-    height: 200px;
-  }
-
-  .story-title {
-    font-size: 0.95rem;
-  }
-
-  .empty-state {
-    padding: 50px 15px;
-  }
-
-  .empty-state h3 {
-    font-size: 1.3rem;
-  }
-
-  .empty-state > i {
-    font-size: 3rem;
-  }
-}
-
-
 </style>

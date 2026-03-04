@@ -256,7 +256,7 @@ onBeforeUnmount(() => {
   border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
   color: #ffffff;
   position: relative;
 }
@@ -330,7 +330,7 @@ onBeforeUnmount(() => {
   padding: 1rem;
   text-align: left; 
   border-bottom: 1px solid rgba(75, 85, 99, 0.5);
-  font-family: 'Manrope', sans-serif; 
+  /* font-family: 'Manrope', sans-serif; */ 
   vertical-align: middle;
 }
 

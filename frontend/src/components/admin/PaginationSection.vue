@@ -41,7 +41,7 @@ const goToPage = (page: number) => {
   padding: 1.5rem;
   margin-top: 2rem;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  font-family: 'Manrope', sans-serif;
+  /* font-family: 'Manrope', sans-serif; */
   color: #ffffff;
   display: flex;
   justify-content: center; 
@@ -64,7 +64,7 @@ const goToPage = (page: number) => {
   color: #22c55e;
   border: 1px solid #22c55e;
   border-radius: 0.5rem;
-  font-family: 'Sora', sans-serif;
+  /* font-family: 'Sora', sans-serif; */
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;

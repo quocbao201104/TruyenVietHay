@@ -166,7 +166,7 @@ onMounted(async () => {
     color: #e0e0e0;
     display: flex;
     flex-direction: column;
-    font-family: 'Manrope', sans-serif;
+    /* font-family: 'Manrope', sans-serif; */
 }
 
 .author-chapter-management-container {

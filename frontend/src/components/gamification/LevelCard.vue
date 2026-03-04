@@ -120,7 +120,6 @@ export default {
 .badge-diamond { background: linear-gradient(135deg, #b9f2ff, #00bfff); color: #000; }
 
 .level-level {
-    font-family: "Sora", sans-serif;
     font-weight: 600;
     color: #4caf50;
     font-size: 1.1rem;
@@ -146,7 +145,6 @@ export default {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    font-family: "Manrope", sans-serif;
 }
 
 .points-label {

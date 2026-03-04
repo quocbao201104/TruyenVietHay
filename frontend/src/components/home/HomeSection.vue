@@ -172,7 +172,6 @@ onUnmounted(() => {
   font-weight: 700;
   color: #ffffff;
   margin: 0;
-  font-family: 'Sora', sans-serif;
 }
 
 .view-all-link {

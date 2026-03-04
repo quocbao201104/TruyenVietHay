@@ -15,6 +15,10 @@ export interface Chapter {
       ten_truyen: string;
       slug: string;
   };
+  navigation?: {
+      prev_slug: string | null;
+      next_slug: string | null;
+  };
   trang_thai?: string;
 }
 

@@ -68,7 +68,7 @@ export default {
   min-height: 100vh;
   background: #1a1d29;
   color: #ffffff;
-  font-family: "Roboto", sans-serif;
+  /* font-family: "Roboto", sans-serif; */
 }
 
 .main-content {

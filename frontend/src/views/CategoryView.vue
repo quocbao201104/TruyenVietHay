@@ -3,65 +3,64 @@
     
     <main class="main-content">
       <div class="container">
-        <!-- Page Header -->
-        <div class="page-header">
-          <h1 class="page-title">
-            <i class="fas fa-bookmark"></i>
-            Thể Loại Truyện
+        
+        <!-- THIÊN THƯ HEADER -->
+        <div class="page-header animate-fadeIn">
+          <h1 class="page-title-xianxia">
+            <i class="fas fa-bookmark text-emerald-400"></i>
+            Linh Anh Phân Loại
           </h1>
-          <p class="page-subtitle">Khám phá truyện theo thể loại yêu thích</p>
+          <p class="page-subtitle">Khám phá bí tịch theo căn cơ và duyên phận</p>
+          <div class="header-divider"></div>
         </div>
 
-        <!-- Category Selection -->
-        <div class="category-selection">
-          <div v-if="loadingCategories" class="categories-loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            Đang tải thể loại...
+        <!-- CATEGORY SELECTION (CĂN CƠ CHIPS) -->
+        <div class="category-selection-area">
+          <div v-if="loadingCategories" class="categories-loading-aura">
+            <i class="fas fa-yin-yang fa-spin"></i>
+            <span>Đang cảm ứng thể loại...</span>
           </div>
 
-          <div v-else class="category-chips">
+          <div v-else class="xianxia-chips-container">
             <button
               @click="clearSelection"
-              :class="['category-chip', { active: selectedCategories.length === 0 }]"
+              :class="['xianxia-chip', { active: selectedCategories.length === 0 }]"
             >
-              <i class="fas fa-list"></i>
-              Tất cả
+              <i class="fas fa-infinity"></i>
+              Toàn Thể
             </button>
 
             <button
               v-for="category in categories"
               :key="category.id_theloai"
               @click="toggleCategory(category.id_theloai)"
-              :class="['category-chip', { active: selectedCategories.includes(category.id_theloai) }]"
+              :class="['xianxia-chip', { active: selectedCategories.includes(category.id_theloai) }]"
             >
-              <i v-if="selectedCategories.includes(category.id_theloai)" class="fas fa-check-circle" style="margin-right: 5px;"></i>
+              <i v-if="selectedCategories.includes(category.id_theloai)" class="fas fa-check-circle animate-pulse"></i>
               {{ category.ten_theloai }}
             </button>
           </div>
         </div>
 
-        <!-- Selected Category Info -->
-        <div v-if="selectedCategoryInfo" class="category-info-banner">
-          <div class="category-info-content">
-            <h2>
-              {{ selectedCategoryInfo.ten_theloai }}
-              <span v-if="selectedCategories.length > 1" class="badge-count">
-                ({{ selectedCategories.length }})
-              </span>
-            </h2>
+        <!-- SELECTED INFO BANNER (LINH KHÍ BANNER) -->
+        <div v-if="selectedCategoryInfo" class="category-info-aura animate-slideUp">
+          <div class="aura-content">
+            <div class="title-row">
+               <h2>{{ selectedCategoryInfo.ten_theloai }}</h2>
+               <span v-if="selectedCategories.length > 1" class="aura-badge">
+                {{ selectedCategories.length }} Phẩm Cấp
+               </span>
+            </div>
             <p v-if="selectedCategoryInfo.mo_ta">{{ selectedCategoryInfo.mo_ta }}</p>
-            <div v-if="selectedCategories.length > 0" class="selected-categories-list">
+            
+            <div v-if="selectedCategories.length > 0" class="tag-cloud">
               <span 
                 v-for="catId in selectedCategories" 
                 :key="catId"
-                class="selected-category-tag"
+                class="xianxia-tag"
               >
                 {{ categories.find(c => c.id_theloai === catId)?.ten_theloai }}
-                <button 
-                  @click.stop="toggleCategory(catId)" 
-                  class="remove-category-btn"
-                  title="Bỏ chọn"
-                >
+                <button @click.stop="toggleCategory(catId)" class="tag-remove">
                   <i class="fas fa-times"></i>
                 </button>
               </span>
@@ -69,58 +68,55 @@
           </div>
         </div>
 
-        <!-- Results Section -->
-        <section class="results-section">
-          <!-- Results Header -->
-          <div class="results-header">
-            <div class="results-count">
-              <i class="fas fa-book"></i>
-              <span v-if="!loading">
-                <strong>{{ totalResults }}</strong> truyện
-              </span>
-              <span v-else>Đang tải...</span>
+        <!-- RESULTS SECTION -->
+        <section class="results-section-xianxia">
+          <!-- Filter Header -->
+          <div class="filter-header-bar">
+            <div class="results-info">
+              <i class="fas fa-scroll text-emerald-500"></i>
+              <span v-if="!loading">Tìm thấy <strong class="text-emerald-400">{{ totalResults }}</strong> bộ linh thư</span>
+              <span v-else>Đang truy vấn...</span>
             </div>
 
-            <!-- Sort Options -->
-            <div class="sort-wrapper">
-              <label>Sắp xếp:</label>
-              <select v-model="sortBy" @change="fetchStories" class="sort-select">
-                <option value="thoi_gian_cap_nhat">Mới cập nhật</option>
-                <option value="luot_xem">Xem nhiều nhất</option>
-                <option value="luot_thich">Được yêu thích</option>
+            <div class="sort-box-xianxia">
+              <label>Thứ tự:</label>
+              <select v-model="sortBy" @change="fetchStories" class="xianxia-select">
+                <option value="thoi_gian_cap_nhat">Mới Cập Nhật</option>
+                <option value="luot_xem">Xem Nhiều Nhất</option>
+                <option value="luot_thich">Được Yêu Thích</option>
                 <option value="ten_truyen">Tên A-Z</option>
               </select>
             </div>
           </div>
 
           <!-- Loading State -->
-          <div v-if="loading" class="loading-state">
+          <div v-if="loading" class="loading-grid-aura">
             <div class="skeleton-grid">
-              <div v-for="n in 12" :key="n" class="skeleton-card">
-                <div class="skeleton-cover"></div>
-                <div class="skeleton-content">
-                  <div class="skeleton-line"></div>
-                  <div class="skeleton-line short"></div>
+              <div v-for="n in 12" :key="n" class="skeleton-card-pill">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-text-block">
+                  <div class="line"></div>
+                  <div class="line short"></div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Error State -->
-          <div v-else-if="error" class="error-state">
+          <div v-else-if="error" class="state-message error">
             <i class="fas fa-exclamation-triangle"></i>
-            <p>{{ error }}</p>
+            <p>Thiên cơ nhiễu loạn: {{ error }}</p>
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="stories.length === 0" class="empty-state">
-            <i class="fas fa-book-open"></i>
-            <h3>Chưa có truyện</h3>
-            <p>Thể loại này chưa có truyện nào</p>
+          <div v-else-if="stories.length === 0" class="state-message empty">
+            <i class="fas fa-ghost"></i>
+            <h3>Vô Thư Bảng</h3>
+            <p>Thể loại này chưa có linh vật nào trú ngụ.</p>
           </div>
 
-          <!-- Stories Grid -->
-          <div v-else class="stories-grid">
+          <!-- Stories Grid (Linh Thư Lưới) -->
+          <div v-else class="stories-grid-xianxia">
             <NewStoryCard
               v-for="story in stories"
               :key="story.id"
@@ -128,34 +124,24 @@
             />
           </div>
 
-          <!-- Pagination -->
-          <div v-if="totalPages > 1" class="pagination">
-            <button
-              @click="goToPage(currentPage - 1)"
-              :disabled="currentPage === 1"
-              class="pagination-btn"
-            >
+          <!-- PAGINATION (PHÂN TRANG LINH TRẬN) -->
+          <div v-if="totalPages > 1" class="xianxia-pagination">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1" class="nav-btn">
               <i class="fas fa-chevron-left"></i>
-              Trước
             </button>
 
-            <div class="page-numbers">
+            <div class="num-group">
               <button
                 v-for="page in visiblePages"
                 :key="page"
                 @click="goToPage(page)"
-                :class="['page-btn', { active: page === currentPage }]"
+                :class="['num-btn', { active: page === currentPage }]"
               >
                 {{ page }}
               </button>
             </div>
 
-            <button
-              @click="goToPage(currentPage + 1)"
-              :disabled="currentPage === totalPages"
-              class="pagination-btn"
-            >
-              Sau
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages" class="nav-btn">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -180,21 +166,21 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const categories = ref<any[]>([]);
 const stories = ref<any[]>([]);
-const selectedCategories = ref<number[]>([]); // Changed to array for multiple selection
+const selectedCategories = ref<number[]>([]);
 const sortBy = ref('thoi_gian_cap_nhat');
 const currentPage = ref(1);
 const totalResults = ref(0);
 const totalPages = ref(1);
 
-// Computed
+// Computed Info
 const selectedCategoryInfo = computed(() => {
   if (selectedCategories.value.length === 0) return null;
   if (selectedCategories.value.length === 1) {
     return categories.value.find(cat => cat.id_theloai === selectedCategories.value[0]);
   }
   return {
-    ten_theloai: `${selectedCategories.value.length} thể loại đã chọn`,
-    mo_ta: `Đang lọc theo ${selectedCategories.value.length} thể loại`
+    ten_theloai: `${selectedCategories.value.length} Linh Phẩm`,
+    mo_ta: `Đang cảm ứng linh khí từ ${selectedCategories.value.length} thể loại đã chọn`
   };
 });
 
@@ -203,24 +189,16 @@ const visiblePages = computed(() => {
   const maxVisible = 5;
   let start = Math.max(1, currentPage.value - 2);
   let end = Math.min(totalPages.value, start + maxVisible - 1);
-
-  if (end - start < maxVisible - 1) {
-    start = Math.max(1, end - maxVisible + 1);
-  }
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
-  }
-
+  if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
   return pages;
 });
 
-// Methods
+// Logic Fetch
 const fetchCategories = async () => {
   loadingCategories.value = true;
   try {
     const response = await axios.get('/api/theloai');
-    // Backend returns { data: [...] } so we need response.data.data
     categories.value = response.data.data || [];
   } catch (err) {
     console.error('Failed to load categories:', err);
@@ -232,7 +210,6 @@ const fetchCategories = async () => {
 const fetchStories = async () => {
   loading.value = true;
   error.value = null;
-
   try {
     const params: any = {
       page: currentPage.value,
@@ -240,26 +217,16 @@ const fetchStories = async () => {
       sort_by: sortBy.value,
       order: 'DESC',
     };
-
-    // Send category_ids as comma-separated string if any categories are selected
     if (selectedCategories.value.length > 0) {
       params.category_ids = selectedCategories.value.join(',');
     }
-
-
     const response = await axios.get('/api/truyen/public', { params });
-
     stories.value = response.data.data || [];
     totalResults.value = response.data.pagination?.total || 0;
     totalPages.value = response.data.pagination?.total_pages || 1;
     currentPage.value = response.data.pagination?.current_page || 1;
-
-
-
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (err: any) {
-    console.error('Failed to load stories:', err);
     error.value = err.response?.data?.message || 'Có lỗi xảy ra khi tải truyện';
     stories.value = [];
   } finally {
@@ -269,13 +236,8 @@ const fetchStories = async () => {
 
 const toggleCategory = (categoryId: number) => {
   const index = selectedCategories.value.indexOf(categoryId);
-  if (index > -1) {
-    // Remove category if already selected
-    selectedCategories.value.splice(index, 1);
-  } else {
-    // Add category if not selected
-    selectedCategories.value.push(categoryId);
-  }
+  if (index > -1) selectedCategories.value.splice(index, 1);
+  else selectedCategories.value.push(categoryId);
   currentPage.value = 1;
   updateURL();
   fetchStories();
@@ -297,54 +259,27 @@ const goToPage = (page: number) => {
 
 const updateURL = () => {
   const query: any = {};
-
-  // Store selected categories as comma-separated string in URL
-  if (selectedCategories.value.length > 0) {
-    query.categories = selectedCategories.value.join(',');
-  }
-
-  if (sortBy.value !== 'thoi_gian_cap_nhat') {
-    query.sort = sortBy.value;
-  }
-
-  if (currentPage.value > 1) {
-    query.page = currentPage.value;
-  }
-
+  if (selectedCategories.value.length > 0) query.categories = selectedCategories.value.join(',');
+  if (sortBy.value !== 'thoi_gian_cap_nhat') query.sort = sortBy.value;
+  if (currentPage.value > 1) query.page = currentPage.value;
   router.replace({ query });
 };
 
 const loadFromURL = () => {
   const query = route.query;
-
-  // Load multiple categories from URL (comma-separated)
   if (query.categories) {
-    const categoryIds = (query.categories as string).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-    selectedCategories.value = categoryIds;
+    selectedCategories.value = (query.categories as string).split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
   }
-
-  // Support legacy single category parameter for backward compatibility
-  if (query.category && selectedCategories.value.length === 0) {
-    selectedCategories.value = [parseInt(query.category as string)];
-  }
-
-  if (query.sort) {
-    sortBy.value = query.sort as string;
-  }
-
-  if (query.page) {
-    currentPage.value = parseInt(query.page as string);
-  }
+  if (query.sort) sortBy.value = query.sort as string;
+  if (query.page) currentPage.value = parseInt(query.page as string);
 };
 
-// Lifecycle
 onMounted(() => {
   fetchCategories();
   loadFromURL();
   fetchStories();
 });
 
-// Watch route changes
 watch(() => route.query, () => {
   if (route.name === 'CategoryView') {
     loadFromURL();
@@ -354,465 +289,299 @@ watch(() => route.query, () => {
 </script>
 
 <style scoped>
-/* Container */
+/* ===== CONTAINER & BG ===== */
 .category-view-container {
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  background: #1a1d29;
-  color: #ffffff;
-  font-family: "Be Vietnam Pro", sans-serif;
+  background: #0b0f19;
+  color: #cbd5e1;
+  font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 .main-content {
-  flex-grow: 1;
   max-width: 1400px;
   margin: 0 auto;
-  width: 100%;
   padding: 40px 20px;
 }
 
-.container {
-  width: 100%;
-}
-
-/* Page Header */
+/* ===== HEADER XIANXIA ===== */
 .page-header {
-  margin-bottom: 40px;
   text-align: center;
+  margin-bottom: 40px;
 }
 
-.page-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #ffffff;
+.page-title-xianxia {
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  background: linear-gradient(to right, #34d399, #fff, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   display: inline-flex;
   align-items: center;
   gap: 15px;
-  margin-bottom: 10px;
-}
-
-.page-title i {
-  color: #4caf50;
+  filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.3));
 }
 
 .page-subtitle {
-  font-size: 1.1rem;
-  color: #999;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 10px;
 }
 
-/* Category Selection */
-.category-selection {
+.header-divider {
+  height: 1px;
+  width: 300px;
+  background: linear-gradient(90deg, transparent, #34d399, transparent);
+  margin: 25px auto;
+}
+
+/* ===== CATEGORY CHIPS (PILLS) ===== */
+.category-selection-area {
   margin-bottom: 40px;
 }
 
-.categories-loading {
+.categories-loading-aura {
   text-align: center;
   padding: 30px;
-  color: #4caf50;
-  font-size: 1.1rem;
+  color: #34d399;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.categories-loading i {
-  margin-right: 10px;
-}
-
-.category-chips {
+.xianxia-chips-container {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   justify-content: center;
-  padding: 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
+  padding: 25px;
+  background: #131b2c;
+  border-radius: 24px;
+  border: 1px solid #1e293b;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.category-chip {
-  padding: 10px 20px;
-  background: #1a1d29;
-  border: 2px solid rgba(76, 175, 80, 0.3);
-  border-radius: 20px;
-  color: #cccccc;
-  font-size: 0.95rem;
-  font-weight: 600;
+.xianxia-chip {
+  padding: 10px 22px;
+  background: #0b0f19;
+  border: 1px solid #334155;
+  border-radius: 50px; /* Pill Shape */
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.category-chip:hover {
-  border-color: #4caf50;
-  color: #ffffff;
+.xianxia-chip:hover {
+  border-color: #34d39960;
+  color: #34d399;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+  background: #34d39905;
 }
 
-.category-chip.active {
-  background: linear-gradient(135deg, #4caf50, #66bb6a);
-  border-color: #4caf50;
-  color: #ffffff;
-  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+.xianxia-chip.active {
+  background: #34d39915;
+  border-color: #34d399;
+  color: #34d399;
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
 }
 
-.category-chip i {
-  font-size: 0.9rem;
-}
-
-/* Category Info Banner */
-.category-info-banner {
-  margin-bottom: 30px;
+/* ===== INFO BANNER ===== */
+.category-info-aura {
+  margin-bottom: 35px;
   padding: 25px;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
-  border-left: 4px solid #4caf50;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #131b2c, #0b0f19);
+  border-left: 4px solid #34d399;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
 
-.category-info-content h2 {
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 8px;
+}
+
+.title-row h2 {
   font-size: 1.8rem;
-  font-weight: 700;
-  color: #4caf50;
-  margin-bottom: 10px;
+  font-weight: 900;
+  color: #f8fafc;
 }
 
-.category-info-content p {
-  font-size: 1rem;
-  color: #cccccc;
-  line-height: 1.6;
+.aura-badge {
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 3px 10px;
+  background: #34d39920;
+  color: #34d399;
+  border: 1px solid #34d39940;
+  border-radius: 50px;
+  text-transform: uppercase;
 }
 
-.badge-count {
+.aura-content p {
+  color: #94a3b8;
   font-size: 0.9rem;
-  color: #66bb6a;
-  font-weight: 400;
 }
 
-.selected-categories-list {
+.tag-cloud {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 15px;
 }
 
-.selected-category-tag {
+.xianxia-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(76, 175, 80, 0.2);
-  border: 1px solid #4caf50;
-  border-radius: 16px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  color: #4caf50;
+  gap: 8px;
+  background: #34d39910;
+  border: 1px solid #34d39930;
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  color: #34d399;
+  font-weight: 700;
 }
 
-.remove-category-btn {
+.tag-remove {
   background: transparent;
   border: none;
-  color: #4caf50;
+  color: #34d399;
   cursor: pointer;
-  padding: 0;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s;
+  opacity: 0.6;
 }
 
-.remove-category-btn:hover {
-  background: rgba(76, 175, 80, 0.3);
-  color: #ffffff;
-}
+.tag-remove:hover { opacity: 1; }
 
-/* Results Section */
-.results-section {
-  min-height: 500px;
-}
-
-.results-header {
+/* ===== RESULTS AREA ===== */
+.filter-header-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 25px;
-  padding: 15px 20px;
-  background: #2a2d3a;
-  border-radius: 8px;
+  padding: 15px 25px;
+  background: #131b2c;
+  border-radius: 16px;
+  border: 1px solid #1e293b;
 }
 
-.results-count {
+.results-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.sort-box-xianxia {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1rem;
-  color: #cccccc;
+  font-size: 0.85rem;
 }
 
-.results-count i {
-  color: #4caf50;
-}
-
-.results-count strong {
-  color: #4caf50;
-  font-weight: 700;
-}
-
-.sort-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sort-wrapper label {
-  font-size: 0.9rem;
-  color: #cccccc;
-}
-
-.sort-select {
-  background: #1a1d29;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  border-radius: 6px;
-  padding: 8px 12px;
-  color: #ffffff;
-  font-size: 0.9rem;
+.xianxia-select {
+  background: #0b0f19;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 8px 15px;
+  color: #fff;
+  font-size: 0.8rem;
   cursor: pointer;
-  outline: none;
-}
-
-.sort-select:focus {
-  border-color: #4caf50;
-}
-
-.sort-select option {
-  background: #1a1d29;
-  color: #ffffff;
-}
-
-/* Loading State */
-.loading-state {
-  padding: 20px 0;
-}
-
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-}
-
-.skeleton-card {
-  background: #2a2d3a;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.skeleton-cover {
-  width: 100%;
-  padding-top: 140%;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-content {
-  padding: 12px;
-}
-
-.skeleton-line {
-  height: 16px;
-  background: linear-gradient(90deg, #2a2d3a 25%, #3e4256 50%, #2a2d3a 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-.skeleton-line.short {
-  width: 60%;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Error State */
-.error-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
-  color: #f44336;
-}
-
-.error-state i {
-  font-size: 4rem;
-  margin-bottom: 20px;
-  opacity: 0.7;
-}
-
-.error-state p {
-  font-size: 1.1rem;
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 80px 20px;
-  background: #2a2d3a;
-  border-radius: 12px;
-}
-
-.empty-state i {
-  font-size: 5rem;
-  color: #4caf50;
-  margin-bottom: 20px;
-  opacity: 0.5;
-}
-
-.empty-state h3 {
-  font-size: 1.8rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.empty-state p {
-  font-size: 1rem;
-  color: #999;
 }
 
 /* Stories Grid */
-.stories-grid {
+.stories-grid-xianxia {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  gap: 25px;
 }
 
-/* Pagination */
-.pagination {
+/* States */
+.state-message {
+  text-align: center;
+  padding: 100px 20px;
+  background: #131b2c;
+  border-radius: 24px;
+}
+
+.state-message i { font-size: 4rem; margin-bottom: 20px; opacity: 0.2; }
+.state-message.error i { color: #ef4444; opacity: 0.5; }
+
+/* ===== PAGINATION ===== */
+.xianxia-pagination {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 40px;
-  padding: 20px;
-}
-
-.pagination-btn {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  background: #2a2d3a;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  border-radius: 8px;
-  padding: 10px 20px;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 600;
+  gap: 15px;
+  margin-top: 50px;
+}
+
+.nav-btn {
+  width: 45px;
+  height: 45px;
+  background: #131b2c;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  color: #fff;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
-.pagination-btn:hover:not(:disabled) {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: #4caf50;
-  transform: translateY(-2px);
-}
+.nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+.nav-btn:hover:not(:disabled) { border-color: #34d399; color: #34d399; }
 
-.pagination-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.page-numbers {
+.num-group {
   display: flex;
-  gap: 5px;
+  gap: 8px;
 }
 
-.page-btn {
-  width: 40px;
-  height: 40px;
-  background: #2a2d3a;
-  border: 1px solid rgba(76, 175, 80, 0.3);
-  border-radius: 8px;
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 600;
+.num-btn {
+  width: 45px;
+  height: 45px;
+  background: transparent;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  color: #64748b;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
 }
 
-.page-btn:hover {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: #4caf50;
+.num-btn.active {
+  background: #34d399;
+  color: #0b0f19;
+  border-color: #34d399;
+  box-shadow: 0 5px 15px rgba(52, 211, 153, 0.3);
 }
 
-.page-btn.active {
-  background: #4caf50;
-  border-color: #4caf50;
-  color: #ffffff;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+.animate-fadeIn { animation: fadeIn 0.8s ease-out; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideUp { animation: slideUp 0.5s ease-out; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .page-title {
-    font-size: 2rem;
-  }
-
-  .category-chips {
-    gap: 8px;
-  }
-
-  .category-chip {
-    padding: 8px 16px;
-    font-size: 0.85rem;
-  }
-
-  .results-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .stories-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 20px 10px;
-  }
-
-  .page-title {
-    font-size: 1.6rem;
-  }
-
-  .category-chips {
-    padding: 15px;
-  }
-
-  .stories-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .pagination-btn {
-    padding: 8px 12px;
-    font-size: 0.8rem;
-  }
-
-  .page-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 0.85rem;
-  }
+  .page-title-xianxia { font-size: 2rem; }
+  .xianxia-chips-container { padding: 15px; }
+  .xianxia-chip { padding: 8px 16px; font-size: 0.75rem; }
+  .filter-header-bar { flex-direction: column; gap: 15px; align-items: flex-start; }
+  .stories-grid-xianxia { grid-template-columns: repeat(2, 1fr); gap: 15px; }
 }
 </style>
