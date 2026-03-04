@@ -23,7 +23,6 @@ import StoryDetailView from "@/views/StoryDetailView.vue";
 import ChapterView from "@/views/ChapterView.vue";
 import AuthorChapterManagementView from "@/views/author/AuthorChapterManagementView.vue";
 import AuthorChapterEditor from "@/views/author/AuthorChapterEditor.vue";
-import AuthorStoryManagementView from "@/views/author/AuthorStoryManagementView.vue";
 import AuthorDashboardView from "@/views/author/AuthorDashboardView.vue";
 const routes: Array<RouteRecordRaw> = [
   { path: "/", name: "Home", component: HomeView },

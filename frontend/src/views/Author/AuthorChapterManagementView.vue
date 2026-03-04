@@ -125,7 +125,7 @@ const formatDate = (dateString?: string) => {
 };
 
 const goBack = () => {
-    router.push({ name: 'AuthorStoryManagement' });
+    router.push({ name: 'AuthorDashboard' });
 };
 
 const goToAddChapter = () => {
