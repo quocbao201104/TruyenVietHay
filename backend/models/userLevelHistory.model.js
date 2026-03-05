@@ -3,7 +3,17 @@ const db = require("../config/db");
 const UserLevelHistory = {
   getByUserId: async (userId, limit = 10, offset = 0) => {
     const [rows] = await db.query(
-      "SELECT * FROM user_levels_history WHERE user_id = ? ORDER BY start_date DESC LIMIT ? OFFSET ?",
+      `SELECT 
+        h.*, 
+        l.name as name, 
+        nl.name as next_level_name,
+        nl.required_points as next_level_points
+      FROM user_levels_history h
+      LEFT JOIN user_levels l ON h.level_id = l.level_id
+      LEFT JOIN user_levels nl ON l.next_level_id = nl.level_id
+      WHERE h.user_id = ? 
+      ORDER BY h.start_date DESC 
+      LIMIT ? OFFSET ?`,
       [userId, parseInt(limit), parseInt(offset)]
     );
     return rows;

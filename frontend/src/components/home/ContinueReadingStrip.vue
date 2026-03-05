@@ -60,7 +60,10 @@ const getChapterLink = (item: HistoryItem) => {
     const storySlug = item.truyen_slug; 
     
     if (storySlug && chapterSlug) {
-        return `/truyen-chu/${storySlug}/${chapterSlug}`;
+        return {
+            path: `/truyen-chu/${storySlug}/${chapterSlug}`,
+            query: { storyId: item.truyen_id }
+        };
     }
     return `/truyen-chu/${storySlug}`;
 };

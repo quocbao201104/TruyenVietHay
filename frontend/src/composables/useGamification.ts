@@ -30,6 +30,31 @@ export function useGamification() {
     } catch (e) { console.error('fetchCurrentLevel:', e); }
   };
 
+  const upgradeLevel = async (userId: number) => { // Thêm userId vào đây
+  loading.value = true;
+  try {
+    const res = await axios.post('/api/levels/history/upgrade');
+    showSuccessToast(res.data.message || 'Thăng cấp thành công!');
+    
+    // Sử dụng luôn userId truyền vào thay vì đợi data từ res
+    if (userId) {
+      await Promise.all([
+        fetchUserPoints(userId),
+        fetchCurrentLevel(userId),
+        fetchMailbox(),
+        fetchInventoryBadges(),
+        fetchUserCurrency()
+      ]);
+    }
+    return res.data;
+  } catch (e: any) {
+    showErrorToast(e.response?.data?.message || 'Lỗi khi thăng cấp');
+    throw e;
+  } finally {
+    loading.value = false;
+  }
+};
+
   // ── Tasks ─────────────────────────────────────────────────
   const fetchTasks = async () => {
     loading.value = true;
@@ -161,7 +186,7 @@ export function useGamification() {
     userRewards, mailbox, badges, userCurrency, loading,
     levelProgress,
     // Points & Level
-    fetchUserPoints, fetchCurrentLevel,
+    fetchUserPoints, fetchCurrentLevel, upgradeLevel,
     // Tasks
     fetchTasks, completeTask,
     // Catalog rewards

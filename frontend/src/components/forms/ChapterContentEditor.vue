@@ -10,7 +10,6 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import Editor from '@tinymce/tinymce-vue';
 
 interface Props {
   modelValue: string;

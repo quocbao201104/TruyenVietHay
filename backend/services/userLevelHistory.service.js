@@ -117,17 +117,15 @@ const autoUpgrade = async (user_id) => {
     const [users] = await connection.execute("SELECT role FROM users_new WHERE id = ?", [user_id]);
     const userRole = users[0]?.role;
 
-    if (nextLevel.type !== userRole && userRole !== 'admin') {
-        // Allow admin to bypass? Or strictly require role match? 
-        // User said: "muốn tiếp tục nâng cấp thì phải lên type 'author'"
-        // Let's enforce strict match for 'user' -> 'author' transition
-        if (nextLevel.type === 'author' && userRole === 'user') {
-             throw new Error(`Bạn cần nâng cấp tài khoản lên Tác giả (Author) để lên cấp ${nextLevel.name}`);
-        }
-        // General type mismatch check if needed, but safe to assume admin can be anything or specific logic
-        if (nextLevel.type !== userRole && userRole !== 'admin') {
-            throw new Error(`C cấp độ này yêu cầu vai trò ${nextLevel.type}`);
-        }
+    if (nextLevel.type === 'author' && userRole === 'user') {
+        throw new Error(`Bạn cần nâng cấp tài khoản lên Tác giả (Author) để lên cấp ${nextLevel.name}`);
+    }
+    // General type mismatch check:
+    // If nextLevel.type is 'user', allow both 'user' and 'author'.
+    // If nextLevel.type is 'author', allow 'author'.
+    // Admin is allowed everything.
+    if (nextLevel.type === 'author' && userRole !== 'author' && userRole !== 'admin') {
+        throw new Error(`Cấp độ này yêu cầu vai trò ${nextLevel.type}`);
     }
 
     // Check points requirement
@@ -149,10 +147,28 @@ const autoUpgrade = async (user_id) => {
         rootStartDate = new Date(rootHistory[0].start_date);
     }
 
-    const lifespanDays = nextLevel.lifespan || 365; // Default 365 if null
+    // Calculate total lifespan (T_max) by summing lifespans of all predecessor levels
+    let totalLifespanDays = 0;
+    try {
+        // We sum lifespans of all levels that lead to this next_level_id by required_points
+        // This is a simplified linear model.
+        const [lifespanRows] = await connection.execute(
+            "SELECT SUM(COALESCE(lifespan, 0)) as total_lifespan FROM user_levels WHERE required_points <= ?",
+            [nextLevel.required_points]
+        );
+        if (lifespanRows.length > 0 && lifespanRows[0].total_lifespan !== null) {
+            totalLifespanDays = parseInt(lifespanRows[0].total_lifespan);
+        }
+    } catch (e) {
+        console.warn("Failed to sum lifespans, falling back to next level's lifespan sum", e);
+        totalLifespanDays = (nextLevel.lifespan || 365);
+    }
     
+    // Safety check for T_max
+    if (totalLifespanDays <= 0) totalLifespanDays = 365;
+
     // Calculate new end date based on Root Date
-    const end_date_history = new Date(rootStartDate.getTime() + lifespanDays * 24 * 60 * 60 * 1000);
+    const end_date_history = new Date(rootStartDate.getTime() + totalLifespanDays * 24 * 60 * 60 * 1000);
     
     // Current time for history start
     const now = new Date();
@@ -163,10 +179,10 @@ const autoUpgrade = async (user_id) => {
       [user_id, next_level_id, now, end_date_history]
     );
 
-    // Update expiry_date in user_points (account status)
+    // Update expiry_date and current_level_id in user_points (account status)
     await connection.execute(
-        "UPDATE user_points SET expiry_date = ? WHERE user_id = ?",
-        [end_date_history, user_id]
+        "UPDATE user_points SET expiry_date = ?, current_level_id = ? WHERE user_id = ?",
+        [end_date_history, next_level_id, user_id]
     );
 
     await connection.commit();
@@ -187,7 +203,9 @@ const autoUpgrade = async (user_id) => {
     }
 
     return {
+        user_id: user_id,
         new_level_id: next_level_id,
+        expiry_date: end_date_history,
         rewards_sent: grantedRewards.length,
         message: `Chúc mừng! Bạn đã thăng lên cấp ${next_level_id} (${nextLevel.name})! Bạn có ${grantedRewards.length} phần thưởng mới trong Hộp Thư.`,
     };
@@ -221,11 +239,25 @@ const ensureUserLevel = async (userId) => {
     );
 
     let defaultLevelId = 1; 
+    let type = userRole || 'user';
     let lifespan = 365;
 
     if (levels.length > 0) {
         defaultLevelId = levels[0].level_id;
+        type = levels[0].type;
         lifespan = levels[0].lifespan || 365;
+        
+        // Similarly fetch total lifespan = SUM(lifespan) up to this point
+        try {
+            const [lifespanRows] = await db.execute(
+                "SELECT SUM(COALESCE(lifespan, 0)) as total_lifespan FROM user_levels WHERE required_points <= ?",
+                [levels[0].required_points]
+            );
+            if (lifespanRows.length > 0 && lifespanRows[0].total_lifespan !== null) {
+                lifespan = parseInt(lifespanRows[0].total_lifespan);
+            }
+        } catch (e) {}
+        if (lifespan <= 0) lifespan = 365;
     } else {
         // Fallback: if 'author' has no levels defined, maybe fallback to 'user' levels? 
         // Or just hardcode 1.
@@ -234,6 +266,7 @@ const ensureUserLevel = async (userId) => {
 
     // Create history record
     const now = new Date();
+    // end_date = now + T_max
     const end_date = new Date(now.getTime() + lifespan * 24 * 60 * 60 * 1000);
 
     await UserLevelHistory.create({

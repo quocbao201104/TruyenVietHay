@@ -146,23 +146,12 @@
             </div>
             
             <!-- Mobile-only nav items -->
-            <div class="mobile-nav-items">
-              <router-link to="/the-loai" class="spirit-dropdown-item">
-                <i class="fas fa-list-ul"></i> Thể Loại
-              </router-link>
-              <router-link to="/xep-hang" class="spirit-dropdown-item">
-                <i class="fas fa-trophy"></i> Xếp Hạng
-              </router-link>
-              <router-link to="/truyen-hot" class="spirit-dropdown-item">
-                <i class="fas fa-fire"></i> Truyện Hot
-              </router-link>
-              <div class="aura-divider"></div>
-            </div>
+
 
             <router-link to="/user/thong-tin-ca-nhan" class="spirit-dropdown-item">
               <i class="fas fa-id-card-clip"></i> Thông Tin Cá Nhân
             </router-link>
-            <router-link to="/nhiem-vu" class="spirit-dropdown-item highlight-aura">
+            <router-link to="/nhiem-vu" class="spirit-dropdown-item">
               <i class="fas fa-fire-flame-curved"></i> Đạo Lộ Tu Luyện
             </router-link>
             <router-link to="/user/truyen-theo-doi" class="spirit-dropdown-item">
@@ -171,6 +160,19 @@
             <router-link to="/user/lich-su-doc" class="spirit-dropdown-item">
               <i class="fas fa-clock-rotate-left"></i> Lịch Sử Đọc
             </router-link>
+            <div class="mobile-nav-items">
+          
+              <router-link to="/xep-hang" class="spirit-dropdown-item">
+                <i class="fas fa-trophy"></i> Xếp Hạng
+              </router-link>
+              <router-link to="/truyen-hot" class="spirit-dropdown-item">
+                <i class="fas fa-fire"></i> Truyện Hot
+              </router-link>
+              <router-link to="/the-loai" class="spirit-dropdown-item">
+                <i class="fas fa-list-ul"></i> Thể Loại
+              </router-link>
+              <div class="aura-divider"></div>
+            </div>
             <div class="aura-divider"></div>
             <div class="spirit-dropdown-item logout-spirit" @click="handleLogout">
               <i class="fas fa-power-off"></i> Thoát Cõi Tiên

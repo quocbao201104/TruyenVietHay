@@ -28,7 +28,7 @@
     </main>
 
     <!-- NỘI DUNG CHÍNH -->
-    <main v-else-if="story" class="detail-container animate-fadeIn">
+    <main v-else-if="story && story.slug === route.params.slug" class="detail-container animate-fadeIn">
       
       <!-- STORY HERO SECTION (Khối thông tin chính theo chuẩn ảnh mẫu) -->
       <section class="story-hero-section">
@@ -90,8 +90,15 @@
 
             <!-- Hành động (Action Buttons) -->
             <div class="actions-row">
-              <router-link v-if="firstChapterSlug" :to="`/truyen-chu/${story.slug}/${firstChapterSlug}`" class="btn-primary">
-                <i class="fas fa-book-reader mr-2"></i> BẮT ĐẦU TU LUYỆN
+              <router-link 
+                v-if="story && readTarget" 
+                :to="{ 
+                  path: `/truyen-chu/${story.slug}/${readTarget.slug}`, 
+                  query: { storyId: story.id, chapterId: readTarget.id } 
+                }" 
+                class="btn-primary"
+              >
+                <i class="fas fa-book-reader mr-2"></i> {{ hasHistory ? 'TIẾP TỤC ĐỌC' : 'ĐỌC NGAY' }}
               </router-link>
               
               <button @click="toggleFollow" class="btn-secondary" :class="{ 'followed': isFollowed }">
@@ -151,8 +158,14 @@
         <!-- Tab: Chương (Danh sách) -->
         <div v-if="currentTab === 'chapters'" class="content-panel chapters">
              <div class="panel-header-row">
-               <h3 class="panel-title"><i class="fas fa-list-ul"></i> Danh Sách Chương</h3>
-               <span class="text-sm text-slate-500">{{ chapters.length }} chương</span>
+               <div class="panel-title-group">
+                 <h3 class="panel-title"><i class="fas fa-list-ul"></i> Danh Sách Chương</h3>
+                 <span class="text-sm text-slate-500">{{ chapters.length }} chương</span>
+               </div>
+               <button @click="isReverse = !isReverse" class="btn-sort-spirit" :title="isReverse ? 'Cũ nhất trước' : 'Mới nhất trước'">
+                 <i class="fas" :class="isReverse ? 'fa-sort-amount-up' : 'fa-sort-amount-down'"></i>
+                 <span>{{ isReverse ? 'Mới nhất' : 'Cũ nhất' }}</span>
+               </button>
              </div>
              
              <div v-if="chapterLoading" class="loading-state">Đang thỉnh chương...</div>
@@ -191,12 +204,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
+import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router';
 import { useStoryStore } from '@/modules/storyText/story.store';
 import { useChapterStore } from '@/modules/storyText/chapter/chapter.store';
 import { useFavoriteStore } from '@/modules/favorite/favorite.store'; 
 import { useRatingStore } from '@/modules/rating/rating.store';
+import { useHistoryStore } from '@/modules/history/history.store';
 import CommentList from '@/modules/comment/CommentList.vue';
 import SkeletonLoader from '@/components/common/SkeletonLoader.vue';
 import { incrementViewCount } from "@/modules/storyText/story.service";
@@ -207,6 +221,7 @@ const storyStore = useStoryStore();
 const chapterStore = useChapterStore();
 const favoriteStore = useFavoriteStore();
 const ratingStore = useRatingStore();
+const historyStore = useHistoryStore();
 
 const hoverRating = ref(0);
 const userRating = computed(() => ratingStore.userRating);
@@ -227,17 +242,58 @@ const isLiked = computed(() => storyStore.isLiked);
 const chapters = computed(() => chapterStore.chapterList);
 const chapterLoading = computed(() => chapterStore.loading);
 
-// Phân trang
+// Phân trang & Sắp xếp
+const isReverse = ref(true);
+const sortedChapters = computed(() => isReverse.value ? [...chapters.value].reverse() : [...chapters.value]);
+
 const currentPage = ref(1);
 const itemsPerPage = 30; // Hiện 30 chương cho đẹp lưới
 const paginatedChapters = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage;
-    return chapters.value.slice(start, start + itemsPerPage);
+    return sortedChapters.value.slice(start, start + itemsPerPage);
 });
-const totalPages = computed(() => Math.ceil(chapters.value.length / itemsPerPage));
+const totalPages = computed(() => Math.ceil(sortedChapters.value.length / itemsPerPage));
 const changePage = (page: number) => { if (page >= 1 && page <= totalPages.value) currentPage.value = page; };
 
-const firstChapterSlug = computed(() => chapters.value.length > 0 ? chapters.value[0].slug : null);
+const firstChapterSlug = computed(() => {
+    if (chapters.value.length > 0 && story.value && chapters.value[0].truyen_id === story.value.id) {
+        return chapters.value[0].slug;
+    }
+    return null;
+});
+
+const firstChapterId = computed(() => {
+    if (chapters.value.length > 0 && story.value && chapters.value[0].truyen_id === story.value.id) {
+        return chapters.value[0].id;
+    }
+    return null;
+});
+
+const storyHistory = computed(() => {
+    if (!story.value) return null;
+    return historyStore.history.find(h => h.truyen_id === story.value?.id) || null;
+});
+
+const hasHistory = computed(() => !!storyHistory.value);
+
+const readTarget = computed(() => {
+    if (hasHistory.value && storyHistory.value?.chuong_slug) {
+        // Find the chapter ID if possible, otherwise we might need the backend to return it or just use slug
+        // Actually the button query needs chapterId. If history doesn't have ID, we might have an issue.
+        // Let's check history service interface. It doesn't have chuong_id! 
+        // This is a problem for our requirement "Carry ID of story or chapter".
+        
+        // Let's check if the chapterList has the chapter with this slug
+        const lastRead = chapters.value.find(c => c.slug === storyHistory.value?.chuong_slug);
+        if (lastRead) return { slug: lastRead.slug, id: lastRead.id };
+    }
+    
+    // Fallback to first chapter
+    if (chapters.value.length > 0) {
+        return { slug: chapters.value[0].slug, id: chapters.value[0].id };
+    }
+    return null;
+});
 
 // Follow/Like Logic
 const isFollowed = computed(() => story.value ? favoriteStore.favorites.some(f => f.id === story.value?.id) : false);
@@ -273,21 +329,33 @@ const statusClass = computed(() => {
   return s === 'hoan_thanh' ? 'completed' : (s === 'dang_ra' ? 'ongoing' : 'suspended');
 });
 
+let lastFetchSlug = '';
 const fetchData = async () => {
     const slug = route.params.slug as string;
-    if (slug) {
-        storyStore.clearData();
-        chapterStore.clearChapterList();
-        await storyStore.fetchStoryBySlug(slug); 
-        if (story.value) {
-            await Promise.all([
-                chapterStore.fetchChapterList(story.value.id),
-                favoriteStore.fetchFavorites(),
-                storyStore.fetchLikeStatus(story.value.id),
-                ratingStore.fetchRatings(story.value.id)
-            ]);
-            incrementViewCount(story.value.id);
-        }
+    if (!slug) return;
+    
+    lastFetchSlug = slug;
+    storyStore.clearData();
+    chapterStore.clearChapterList();
+    
+    await storyStore.fetchStoryBySlug(slug); 
+    
+    // Nếu slug đã thay đổi trong khi chờ, bỏ qua kết quả này
+    if (lastFetchSlug !== slug) return;
+
+    if (story.value) {
+        await Promise.all([
+            chapterStore.fetchChapterList(story.value.id),
+            favoriteStore.fetchFavorites(),
+            storyStore.fetchLikeStatus(story.value.id),
+            ratingStore.fetchRatings(story.value.id),
+            historyStore.fetchHistory(1) // Fetch history to see progress
+        ]);
+        
+        // Kiểm tra lại lần nữa sau khi fetch thêm dữ liệu
+        if (lastFetchSlug !== slug) return;
+        
+        incrementViewCount(story.value.id);
     }
 };
 
@@ -299,6 +367,18 @@ const formatNumber = (num: number) => {
 onMounted(() => {
     if (route.query.tab) currentTab.value = route.query.tab as string;
     fetchData();
+});
+
+onUnmounted(() => {
+    storyStore.clearData();
+    chapterStore.clearChapterList();
+});
+
+onBeforeRouteUpdate((to) => {
+    if (to.params.slug !== route.params.slug) {
+        storyStore.clearData();
+        chapterStore.clearChapterList();
+    }
 });
 
 watch(() => route.params.slug, () => { if (route.name === 'StoryDetail') fetchData(); });
@@ -535,7 +615,27 @@ watch(() => route.params.slug, () => { if (route.name === 'StoryDetail') fetchDa
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;
 }
+.panel-title-group { display: flex; align-items: center; gap: 15px; }
 .panel-header-row .panel-title { margin-bottom: 0; }
+
+.btn-sort-spirit {
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  color: #34d399;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-sort-spirit:hover {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: #34d399;
+}
 
 .description-text {
   line-height: 1.8;

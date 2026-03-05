@@ -31,13 +31,12 @@ export const useChapterStore = defineStore("chapter", () => {
     // Cache
     const contentCache = ref<Map<string, Chapter>>(new Map());
 
-    const cacheChapter = (slug: string, chapter: Chapter) => {
-        if (!contentCache.value.has(slug)) {
-             contentCache.value.set(slug, chapter);
-             // Optional: Limit cache size (LRU) or TTL if memory is a concern
-             // For text chapters, memory usage is usually low (10-50KB per chapter)
-             // Clean cache if too big
-             if (contentCache.value.size > 20) {
+    const cacheChapter = (storySlug: string, slug: string, chapter: Chapter) => {
+        const cacheKey = `${storySlug}:${slug}`;
+        if (!contentCache.value.has(cacheKey)) {
+             contentCache.value.set(cacheKey, chapter);
+             // Optional: Limit cache size (LRU)
+             if (contentCache.value.size > 30) {
                  const firstKey = contentCache.value.keys().next().value;
                  if (firstKey) contentCache.value.delete(firstKey);
              }
@@ -53,22 +52,23 @@ export const useChapterStore = defineStore("chapter", () => {
 
         try {
             // Check cache first
-            if (contentCache.value.has(slug)) {
+            const cacheKey = `${storySlug}:${slug}`;
+            if (contentCache.value.has(cacheKey)) {
                 // If this is the active chapter (not preload), update currentChapter
                 if (!isPreload) {
-                   console.log(`✅ Chapter Cache HIT: ${slug}`);
-                   currentChapter.value = contentCache.value.get(slug) || null;
+                   console.log(`✅ Chapter Cache HIT: ${cacheKey}`);
+                   currentChapter.value = contentCache.value.get(cacheKey) || null;
                 }
                 return; // Done
             }
 
             // Fetch from API
-            console.log(`❌ Chapter Cache MISS: ${slug} - Fetching...`);
+            console.log(`❌ Chapter Cache MISS: ${cacheKey} - Fetching...`);
             const data = await getChapterBySlug(slug, storySlug);
             
             // Validate data before caching
             if (data) {
-                cacheChapter(slug, data);
+                cacheChapter(storySlug, slug, data);
                 if (!isPreload) {
                     currentChapter.value = data;
                 }
@@ -232,6 +232,7 @@ export const useChapterStore = defineStore("chapter", () => {
     const clearChapterList = () => {
         chapterList.value = [];
         currentChapter.value = null;
+        clearCache(); // Clear content cache as well to ensure total isolation
     };
     
     const clearCache = () => {

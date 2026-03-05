@@ -113,6 +113,8 @@
 import { onMounted, computed, watch, ref, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useChapterStore } from "@/modules/storyText/chapter/chapter.store";
+import { saveReadingHistory } from "@/modules/history/history.service";
+import { useAuthStore } from "@/modules/auth/auth.store";
 
 const route = useRoute();
 const router = useRouter();

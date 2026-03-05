@@ -20,9 +20,8 @@
         
         <div class="cultivation-content">
           
-          <!-- Cảnh Giới & Tài Sản -->
           <div class="user-stats">
-            <div class="badge-container group">
+            <div class="badge-container group" :style="{ '--badge-color': equippedBadgeColor }">
               <!-- Vòng xoáy linh khí -->
               <div class="badge-glow"></div>
               
@@ -39,13 +38,14 @@
             </div>
             
             <div class="stats-info">
-              <div class="stats-title">Tài Vận Tu Chân</div>
+              <div class="stats-title">Tài Vận</div>
               <div class="stats-grid">
                 <div class="stat-card">
                   <i class="fas fa-fire-alt stat-icon exp"></i>
+                  
                   <div class="stat-value-group">
                     <span class="stat-value">{{ userPoints?.total_exp?.toLocaleString() || 0 }}</span>
-                    <span class="stat-label exp">Tu Vi Kinh Nghiệm</span>
+                    <span class="stat-label exp">Tu Vi</span>
                   </div>
                 </div>
                 <div class="stat-card">
@@ -53,6 +53,13 @@
                   <div class="stat-value-group">
                     <span class="stat-value">{{ userCurrency?.toLocaleString() || 0 }}</span>
                     <span class="stat-label gem">Linh Thạch Hạ Phẩm</span>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <i class="fas fa-hourglass-half stat-icon time"></i>
+                  <div class="stat-value-group">
+                    <span class="stat-value">{{ remainingLifespan || 'Vô hạn' }}</span>
+                    <span class="stat-label time">Thọ Nguyên</span>
                   </div>
                 </div>
               </div>
@@ -64,10 +71,10 @@
              <div class="progress-header">
               <div class="progress-title-group">
                 <span class="progress-ping"></span>
-                <span class="progress-title">Bình Cảnh Cần Phá</span>
+                <span class="progress-title">Bình Cảnh</span>
               </div>
               <span class="progress-text">
-                <span class="progress-value">{{ userPoints?.total_exp || 0 }}</span> / {{ currentLevel.next_level_points || 'Vô Thượng' }}
+                <span class="progress-value">{{ userPoints?.total_exp || 0 }}</span> / {{ currentLevel.next_level_points || 'Đột phá' }}
               </span>
             </div>
             
@@ -79,11 +86,24 @@
             </div>
             
             <div class="progress-footer">
-               <p class="progress-hint" v-if="currentLevel.next_level_points">
+              <template v-if="currentLevel.next_level_points">
+               <p class="progress-hint" v-if="(userPoints?.total_exp || 0) < currentLevel.next_level_points">
                 Đang ngưng tụ <span class="progress-max">{{ (currentLevel.next_level_points - (userPoints?.total_exp || 0)).toLocaleString() }}</span> linh khí để đột phá <span>{{ currentLevel.next_level_name }}</span>...
-              </p>
+               </p>
+               <div class="upgrade-action" v-else style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <p class="progress-hint" style="color: #34d399; font-weight: bold;">
+                  Linh khí viên mãn! Đã có thể đột phá <span>{{ currentLevel.next_level_name }}</span>.
+                </p>
+                <button @click="handleUpgradeLevel" :disabled="processingUpgrade" class="task-action-btn" style="margin-top: 0; padding: 0.25rem 0.75rem; border-color: #34d399;">
+                  <i v-if="processingUpgrade" class="fas fa-spinner fa-spin"></i>
+                  <template v-else>
+                    ĐỘT PHÁ <i class="fas fa-bolt task-action-icon" style="margin-left: 0.25rem;"></i>
+                  </template>
+                </button>
+               </div>
+              </template>
               <p class="progress-max" v-else>
-                Đã đạt tới đỉnh phong Tiên Giới!
+                Tiên lộ gian nan!
               </p>
             </div>
           </div>
@@ -92,7 +112,7 @@
 
       <!-- THANH ĐIỀU HƯỚNG TABS -->
       <div class="tabs-container">
-        <button v-for="tab in [{id:'tasks', label:'Lịch Luyện', icon:'fa-scroll'}, {id:'mailbox', label:'Truyền Âm', icon:'fa-envelope-open-text'}, {id:'inventory', label:'Nhẫn Trữ Vật', icon:'fa-ring'}]" 
+        <button v-for="tab in [{id:'tasks', label:'', icon:'fa-scroll'}, {id:'mailbox', label:'', icon:'fa-envelope-open-text'}, {id:'inventory', label:'', icon:'fa-ring'}]" 
           :key="tab.id"
           @click="activeTab = tab.id"
           class="tab-btn"
@@ -137,7 +157,7 @@
                   </div>
                 </div>
                 
-                <button v-if="task.status !== 'completed'" 
+                <!-- <button v-if="task.status !== 'completed'" 
                         class="task-action-btn"
                         @click="handleCompleteTask(task.task_id)"
                         :disabled="processingTask === task.task_id">
@@ -145,7 +165,7 @@
                   <template v-else>
                     LỊCH LUYỆN <i class="fas fa-chevron-right task-action-icon"></i>
                   </template>
-                </button>
+                </button> -->
               </div>
             </div>
           </div>
@@ -218,7 +238,8 @@
               <div v-for="badge in badges" :key="badge.reward_id"
                    @click="!badge.is_equipped && handleEquipBadge(badge.reward_id)"
                    class="inventory-slot"
-                   :class="{ equipped: badge.is_equipped }">
+                   :class="{ equipped: badge.is_equipped }"
+                   :style="{ '--badge-color': badge.color || '#34d399' }">
                 
                 <!-- Đang đeo -->
                 <div v-if="badge.is_equipped" class="inventory-equipped-glow"></div>
@@ -270,12 +291,13 @@ export default {
     const { 
       userPoints, currentLevel, tasks, rewards, mailbox, badges, userCurrency, 
       fetchUserPoints, fetchCurrentLevel, fetchTasks, fetchUserCurrency, 
-      fetchMailbox, fetchInventoryBadges, completeTask, claimFromMailbox, equipBadge
+      fetchMailbox, fetchInventoryBadges, completeTask, claimFromMailbox, equipBadge, upgradeLevel
     } = useGamification();
 
     const processingTask = ref(null);
     const processingMailbox = ref(null);
     const processingEquip = ref(null);
+    const processingUpgrade = ref(false);
     const loading = ref({ tasks: false });
     const activeTab = ref('tasks');
 
@@ -283,6 +305,11 @@ export default {
     const equippedBadgeUrl = computed(() => {
         const equipped = badges.value.find(b => b.is_equipped);
         return equipped ? equipped.icon_url : null;
+    });
+
+    const equippedBadgeColor = computed(() => {
+        const equipped = badges.value.find(b => b.is_equipped);
+        return equipped && equipped.color ? equipped.color : '#34d399';
     });
 
     onMounted(async () => {
@@ -312,6 +339,19 @@ export default {
         const current = userPoints.value.total_exp || 0; 
         const next = currentLevel.value.next_level_points || 1000; 
         return Math.min(Math.max((current / next) * 100, 0), 100);
+    });
+
+    const remainingLifespan = computed(() => {
+        if (!currentLevel.value || !currentLevel.value.end_date) return null;
+        
+        const endDate = new Date(currentLevel.value.end_date);
+        const now = new Date();
+        const diffMs = endDate.getTime() - now.getTime();
+        
+        if (diffMs <= 0) return 'Sắp cạn kiệt';
+        
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        return `${diffDays} ngày`;
     });
 
     const handleCompleteTask = async (taskId) => {
@@ -351,12 +391,22 @@ export default {
         }
     };
 
+    const handleUpgradeLevel = async () => {
+    processingUpgrade.value = true;
+    try {
+        // Truyền ID của Bảo vào đây
+        await upgradeLevel(authStore.user.id); 
+    } finally {
+        processingUpgrade.value = false;
+    }
+};
+
     return {
       userPoints, currentLevel, tasks, userCurrency, 
-      orderedTasks, levelProgress, handleCompleteTask,
-      processingTask, processingMailbox, processingEquip,
+      orderedTasks, levelProgress, remainingLifespan, handleCompleteTask,
+      processingTask, processingMailbox, processingEquip, processingUpgrade,
       loading, activeTab, mailbox, badges,
-      handleClaimMailbox, handleEquipBadge, equippedBadgeUrl
+      handleClaimMailbox, handleEquipBadge, handleUpgradeLevel, equippedBadgeUrl, equippedBadgeColor
     };
   }
 }
@@ -485,13 +535,13 @@ export default {
 .badge-container:hover .badge-glow { opacity: 1; }
 .badge-glow {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom right, #34d399, #14b8a6, #2563eb);
+  inset: -10px;
+  background: conic-gradient(from 0deg, transparent 0%, var(--badge-color) 40%, transparent 60%);
   border-radius: 50%;
-  opacity: 0.4;
+  opacity: 0.6;
   transition: opacity 0.3s;
-  filter: blur(2px);
-  animation: spin-slow 15s linear infinite;
+  filter: blur(10px);
+  animation: spin-slow 6s linear infinite;
 }
 .badge-icon-wrapper {
   position: relative;
@@ -502,7 +552,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 4px solid #1e293b;
+  border: 2px solid var(--badge-color);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--badge-color) 40%, transparent);
   margin: 0.25rem;
   overflow: hidden;
 }
@@ -524,13 +575,13 @@ export default {
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(2, 44, 34, 0.9);
-  border: 1px solid rgba(16, 185, 129, 0.5);
-  color: #6ee7b7;
+  border: 1px solid color-mix(in srgb, var(--badge-color) 50%, transparent);
+  color: var(--badge-color);
   font-size: 11px;
   font-weight: 900;
   padding: 0.25rem 1rem;
   border-radius: 9999px;
-  box-shadow: 0 0 15px rgba(52, 211, 153, 0.4);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--badge-color) 40%, transparent);
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: -0.05em;
@@ -566,6 +617,7 @@ export default {
 .stat-icon { font-size: 1.125rem; }
 .stat-icon.exp { color: #34d399; }
 .stat-icon.gem { color: #facc15; }
+.stat-icon.time { color: #60a5fa; }
 .stat-value-group {
   display: flex;
   flex-direction: column;
@@ -583,6 +635,7 @@ export default {
 }
 .stat-label.exp { color: rgba(16, 185, 129, 0.7); }
 .stat-label.gem { color: rgba(234, 179, 8, 0.7); }
+.stat-label.time { color: rgba(96, 165, 250, 0.7); }
 
 /* Progress Bar */
 .progress-container {
@@ -1044,12 +1097,12 @@ export default {
   background-color: #0b0f19;
   border: 1px solid #1e293b;
 }
-.inventory-slot:hover { border-color: rgba(16, 185, 129, 0.5); background-color: rgba(6, 78, 59, 0.1); }
+.inventory-slot:hover { border-color: color-mix(in srgb, var(--badge-color) 50%, transparent); background-color: color-mix(in srgb, var(--badge-color) 10%, transparent); }
 
 .inventory-slot.equipped {
-  background-color: rgba(16, 185, 129, 0.1);
-  border: 2px solid #34d399;
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+  background-color: color-mix(in srgb, var(--badge-color) 10%, transparent);
+  border: 2px solid var(--badge-color);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--badge-color) 30%, transparent);
 }
 .inventory-slot.empty {
   background-color: rgba(11, 15, 25, 0.3);
@@ -1070,14 +1123,14 @@ export default {
 .inventory-equipped-glow {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(16, 185, 129, 0.2), transparent);
+  background: linear-gradient(to top, color-mix(in srgb, var(--badge-color) 20%, transparent), transparent);
   pointer-events: none;
 }
 .inventory-equipped-badge {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background-color: #34d399;
+  background-color: var(--badge-color);
   color: #0b0f19;
   border-radius: 50%;
   width: 1rem;
@@ -1100,7 +1153,7 @@ export default {
   opacity: 0.6;
 }
 .inventory-slot:hover .inventory-badge-img { transform: scale(1.1); opacity: 1; }
-.inventory-slot.equipped .inventory-badge-img { opacity: 1; filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); }
+.inventory-slot.equipped .inventory-badge-img { opacity: 1; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--badge-color) 50%, transparent)); }
 
 .inventory-tooltip {
   position: absolute;
@@ -1109,7 +1162,7 @@ export default {
   left: 50%;
   transform: translateX(-50%) scale(0.9);
   background-color: #1a2333;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid color-mix(in srgb, var(--badge-color) 30%, transparent);
   color: white;
   font-size: 10px;
   padding: 0.75rem;
@@ -1123,7 +1176,7 @@ export default {
   text-align: center;
 }
 .inventory-slot:hover .inventory-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
-.tooltip-title { font-weight: 900; color: #34d399; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: -0.05em; }
+.tooltip-title { font-weight: 900; color: var(--badge-color); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: -0.05em; }
 .tooltip-desc { color: #64748b; }
 .tooltip-desc.equipped { color: white; }
 
