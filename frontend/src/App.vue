@@ -1,6 +1,12 @@
 <!-- src/App.vue -->
 <template>
-  <MainLayout>
+  <div v-if="authStore.isInitialLoading" class="app-loading">
+    <div class="loader-container">
+      <div class="loader"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+  </div>
+  <MainLayout v-else>
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
         <component :is="Component" />
@@ -14,9 +20,11 @@ import MainLayout from "./layouts/MainLayout.vue";
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAppToast } from '@/composables/useAppToast';
+import { useAuthStore } from '@/modules/auth/auth.store';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const { showSuccessToast, showErrorToast, showWarningToast } = useAppToast();
 
 watch(() => route.query.toast, (toastType) => {
@@ -42,8 +50,8 @@ watch(() => route.query.toast, (toastType) => {
 });
 </script>
 
-<!-- <style>
-/* Reset CSS để loại bỏ style mặc định của browser */
+<style>
+/* Reset CSS */
 html,
 body {
   margin: 0 !important;
@@ -51,6 +59,7 @@ body {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
+  background: #1a1d29;
 }
 
 #app {
@@ -58,13 +67,53 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #1a1d29;
-  color: #2c3e50;
+  color: #ffffff;
   width: 100vw;
   min-height: 100vh;
-  height: 100%;
   margin: 0;
   padding: 0;
+}
+
+/* Premium Loading Screen */
+.app-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #1a1d29;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-container {
+  text-align: center;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #3b82f6;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
   box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.loader-container p {
+  color: #3b82f6;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Global Transitions */
@@ -77,4 +126,4 @@ body {
 .fade-leave-to {
   opacity: 0;
 }
-</style> -->
+</style>

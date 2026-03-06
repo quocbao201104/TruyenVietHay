@@ -1,34 +1,4 @@
-<template>
-  <div class="level-card">
-    <div class="level-header">
-      <div class="level-info">
-        <div class="level-badge" :class="getBadgeClass(level?.level_id)">
-          <i class="fas fa-chess-queen level-icon"></i>
-          <span class="level-name">{{ level?.name || 'Chưa xếp hạng' }}</span>
-        </div>
-        <div class="level-level">Cấp {{ level?.level_id || 0 }}</div>
-      </div>
-      <router-link to="/nhiem-vu" class="view-task-btn">
-        Xem Nhiệm Vụ <i class="fas fa-arrow-right"></i>
-      </router-link>
-    </div>
 
-    <div class="points-section">
-      <div class="points-row">
-        <span class="points-label">Điểm tích lũy:</span>
-        <span class="points-value">{{ points || 0 }}</span>
-      </div>
-      
-      <div class="progress-wrapper">
-        <ProgressBar :percent="progress" :height="10" />
-        <div class="progress-text">
-          <span>{{ points || 0 }} / {{ nextLevelPoints || 'MAX' }}</span>
-          <span v-if="nextLevelName" class="next-level-name">Tiếp theo: {{ nextLevelName }}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <script>
 import ProgressBar from './ProgressBar.vue';

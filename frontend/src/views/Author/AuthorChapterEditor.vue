@@ -1,58 +1,77 @@
 <template>
-  <div class="chapter-editor-page">
-    <main class="editor-container">
-      <div class="header-section">
-        <button @click="goBack" class="back-btn">
-          <i class="fas fa-arrow-left"></i> Hủy / Quay lại
+  <div class="chapter-editor-page-xianxia">
+    <main class="editor-container-spirit">
+      
+      <div class="header-section-spirit animate-fadeIn">
+        <button @click="goBack" class="back-btn-spirit">
+          <i class="fas fa-arrow-left"></i> Về Động Phủ
         </button>
-        <h1 class="page-title">{{ isEditMode ? 'Chỉnh Sửa Chương' : 'Thêm Chương Mới' }}</h1>
+        <h1 class="page-title-spirit">
+          <i class="fas fa-feather-pointed text-emerald-400 mr-3"></i>
+          {{ isEditMode ? 'Chỉnh Sửa Pháp Quyết' : 'Khai Mở Tầng Mới' }}
+        </h1>
       </div>
 
-      <div class="form-card">
-          <form @submit.prevent="handleSubmit" class="chapter-form">
-              
-              <div class="form-group">
-                  <label>Tên Chương</label>
-                  <input 
-                    v-model="form.ten_chuong" 
-                    type="text" 
-                    placeholder="Ví dụ: Chương 1: Mở đầu"
-                    required
-                    class="form-input"
-                  >
+      <div class="form-card-aura animate-fadeIn">
+        <form @submit.prevent="handleSubmit" class="chapter-form-spirit">
+          
+          <div class="form-row-grid">
+            <div class="form-group-spirit title-group">
+              <label><i class="fas fa-heading mr-2"></i> Tên Tầng (Tiêu đề)</label>
+              <div class="input-glow-wrapper">
+                <input 
+                  v-model="form.ten_chuong" 
+                  type="text" 
+                  placeholder="Ví dụ: Tầng 1: Khởi nguồn linh khí..."
+                  required
+                  class="form-input-spirit"
+                >
               </div>
+            </div>
 
-               <div class="form-group">
-                  <label>Số Chương (Tự động tăng nếu để trống)</label>
-                  <input 
-                    v-model.number="form.so_chuong" 
-                    type="number" 
-                    min="1"
-                    placeholder="Nhập số chương"
-                    class="form-input"
-                  >
+            <div class="form-group-spirit number-group">
+              <label><i class="fas fa-hashtag mr-2"></i> Tầng Số</label>
+              <div class="input-glow-wrapper">
+                <input 
+                  v-model.number="form.so_chuong" 
+                  type="number" 
+                  min="1"
+                  placeholder="Tự động tăng..."
+                  class="form-input-spirit text-center"
+                >
               </div>
+            </div>
+          </div>
 
-              <div class="form-group">
-                  <label>Nội Dung</label>
-                   <!-- Simple Textarea for now, could be Rich Text Editor -->
-                  <textarea 
-                    v-model="form.noi_dung"
-                    rows="20"
-                    placeholder="Nhập nội dung chương..."
-                    required
-                    class="form-textarea"
-                  ></textarea>
-              </div>
+          <div class="form-group-spirit content-group">
+            <label class="flex justify-between items-end">
+              <span><i class="fas fa-scroll mr-2"></i> Nội Dung Bản Thảo</span>
+              <span class="text-xs text-slate-500 font-normal">Hỗ trợ ngắt dòng tự động</span>
+            </label>
+            <div class="textarea-glow-wrapper">
+              <textarea 
+                v-model="form.noi_dung"
+                rows="25"
+                placeholder="Truyền năng lượng vào ngòi bút... Viết ra những dòng thiên cổ..."
+                required
+                class="form-textarea-spirit scrollbar-magic"
+              ></textarea>
+            </div>
+          </div>
 
-              <div class="form-actions">
-                  <button type="submit" class="submit-btn" :disabled="loading">
-                      <span v-if="loading"><div class="spinner"></div> Đang xử lý...</span>
-                      <span v-else>{{ isEditMode ? 'Cập Nhật' : 'Đăng Chương' }}</span>
-                  </button>
-              </div>
-          </form>
+          <div class="form-actions-spirit">
+            <button type="submit" class="submit-btn-spirit" :disabled="loading">
+              <template v-if="loading">
+                <i class="fas fa-yin-yang fa-spin mr-2"></i> Đang phong ấn vào thiên thư...
+              </template>
+              <template v-else>
+                <i class="fas fa-stamp mr-2"></i> {{ isEditMode ? 'Cập Nhật Bản Thảo' : 'Xuất Thế Tầng Này' }}
+              </template>
+            </button>
+          </div>
+        </form>
       </div>
+
     </main>
   </div>
 </template>
@@ -88,21 +107,21 @@ const handleSubmit = async () => {
     try {
         const payload = {
             truyen_id: storyId,
-            tieu_de: form.value.ten_chuong, // Backend expects 'tieu_de'
+            tieu_de: form.value.ten_chuong, 
             so_chuong: form.value.so_chuong,
             noi_dung: form.value.noi_dung
         };
 
         if (isEditMode.value) {
             await chapterStore.updateChapter(chapterId, payload);
-            // showSuccessToast('Cập nhật chương thành công!');
+            showSuccessToast('Đã lưu lại chỉnh sửa.');
         } else {
             await chapterStore.createChapter(payload);
-            // showSuccessToast('Thêm chương mới thành công!');
+            showSuccessToast('Bản thảo đã được gửi lên càn khôn chờ duyệt.');
         }
         goBack();
     } catch (error: any) {
-        showErrorToast(error.message || 'Có lỗi xảy ra.');
+        showErrorToast(error.message || 'Thiên cơ nhiễu loạn, thất bại.');
     } finally {
         loading.value = false;
     }
@@ -110,33 +129,16 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
     if (isEditMode.value) {
-        // Fetch existing chapter
         loading.value = true;
         try {
-            // Need a getChapterById? or use chapterList. 
-            // Often best to have getChapterById API. 
-            // If getChapterById doesn't exist, we might scrape from list if available or fetch details.
-            // Let's assume fetchFromList is safer for now or we added getChapterById recently?
-            // Checking chapter.service.ts... we might need to add getChapterById if not by slug.
-            // We have getChapterBySlug. If we have ID, we might not have API for it?
-            // Usually we have /api/chuong/:id for edit.
-            
-            // Wait, we need to load currrent chapter data.
-            // I'll assume we can use `getChapterById` or similar. 
-            // Since we didn't explicitly add `getChapterById` in prev turns (only getStoryById), 
-            // I might need to rely on the list or add it.
-            // Actually `chapter.service.ts` has `updateChapter(id, data)` so likely there's a `getOne`?
-            // If not, I'll try to find it in the store if loaded, else error.
-            
-            // Fetch specific chapter directly (works for draft/pending too)
             const found = await chapterStore.fetchChapterById(chapterId);
             
             if (found) {
-                form.value.ten_chuong = found.tieu_de || found.ten_chuong; // Backend returns 'tieu_de'
+                form.value.ten_chuong = found.tieu_de || found.ten_chuong; 
                 form.value.so_chuong = found.so_chuong;
                 form.value.noi_dung = found.noi_dung;
             } else {
-                 showErrorToast("Không tìm thấy thông tin chương.");
+                 showErrorToast("Không tìm thấy thông tin chương này.");
             }
         } catch (e) {
              console.error(e);
@@ -144,7 +146,6 @@ onMounted(async () => {
             loading.value = false;
         }
     } else {
-        // New mode - maybe auto-fill next chapter number
         await chapterStore.fetchChapterList(storyId);
         const maxChap = Math.max(...chapterStore.chapterList.map(c => c.so_chuong), 0);
         form.value.so_chuong = maxChap + 1;
@@ -153,130 +154,208 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.chapter-editor-page {
-    min-height: 100vh;
-    background: #1a1d29;
-    color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    /* font-family: 'Manrope', sans-serif; */
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap");
+
+.chapter-editor-page-xianxia {
+  min-height: 100vh;
+  background: #0b0f19;
+  background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 60%);
+  color: #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  padding-bottom: 60px;
 }
 
-.editor-container {
-    flex: 1;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem;
-    width: 100%;
+.editor-container-spirit {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  width: 100%;
 }
 
-.header-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
+/* HEADER KHU VỰC */
+.header-section-spirit {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 30px;
+  border-bottom: 1px dashed rgba(52, 211, 153, 0.2);
+  padding-bottom: 15px;
 }
 
-.back-btn {
-    background: transparent;
-    border: 1px solid #6b7280;
-    color: #9ca3af;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
+.back-btn-spirit {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.back-btn:hover {
-    border-color: #fff;
-    color: #fff;
+.back-btn-spirit:hover {
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #f43f5e;
+  transform: translateX(-5px);
 }
 
-.page-title {
-    font-size: 2rem;
-    color: #22c55e;
-    font-weight: 800;
+.page-title-spirit {
+  font-size: 1.8rem;
+  color: #f8fafc;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+  text-shadow: 0 0 15px rgba(52, 211, 153, 0.2);
 }
 
-.form-card {
-    background: rgba(36, 40, 52, 0.5);
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+/* FORM BẢN THẢO (GLASSMORPHISM) */
+.form-card-aura {
+  background: rgba(11, 15, 25, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
 
-.form-group {
-    margin-bottom: 1.5rem;
+.form-row-grid {
+  display: grid;
+  grid-template-columns: 4fr 1fr; /* Tên dài, số ngắn */
+  gap: 20px;
+  margin-bottom: 25px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #4ade80;
-    font-weight: 600;
+.form-group-spirit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.form-input, .form-textarea {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 0.8rem;
-    color: white;
-    font-family: inherit;
-    font-size: 1rem;
-    transition: border-color 0.2s;
+.form-group-spirit label {
+  color: #34d399; /* Emerald Aura */
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.form-input:focus, .form-textarea:focus {
-    outline: none;
-    border-color: #22c55e;
+/* Wrappers để làm viền sáng (Glow border) */
+.input-glow-wrapper, .textarea-glow-wrapper {
+  position: relative;
+  border-radius: 12px;
+  background: #05080f;
 }
 
-.form-textarea {
-    resize: vertical;
-    min-height: 400px;
-    line-height: 1.6;
+.input-glow-wrapper::before, .textarea-glow-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.5), transparent);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-.submit-btn {
-    background: #22c55e;
-    color: white;
-    width: 100%;
-    padding: 1rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.input-glow-wrapper:focus-within::before, .textarea-glow-wrapper:focus-within::before {
+  opacity: 1;
 }
 
-.submit-btn:hover:not(:disabled) {
-    background: #16a34a;
+.form-input-spirit, .form-textarea-spirit {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 15px 20px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 1.05rem;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 1;
+  outline: none;
 }
 
-.submit-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+/* Khu vực text rộng rãi, dễ đọc */
+.form-textarea-spirit {
+  resize: vertical;
+  min-height: 500px;
+  line-height: 1.8;
+  font-size: 1.1rem; /* Chữ to lên chút để dễ soạn thảo */
 }
 
-.spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,0.3);
-    border-top: 3px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-right: 10px;
+.form-input-spirit:focus, .form-textarea-spirit:focus {
+  background: #080b14;
+  border-color: transparent; /* Nhường chỗ cho glow wrapper */
+}
+.form-input-spirit::placeholder, .form-textarea-spirit::placeholder { color: #475569; font-style: italic; }
+
+/* NÚT SUBMIT ẤN CHÚ */
+.form-actions-spirit {
+  margin-top: 30px;
+  padding-top: 30px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: flex-end;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.submit-btn-spirit {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #0b0f19;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.submit-btn-spirit:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.6);
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.submit-btn-spirit:disabled {
+  background: #334155;
+  color: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Custom Scrollbar cho Textarea */
+.scrollbar-magic::-webkit-scrollbar { width: 8px; }
+.scrollbar-magic::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-magic::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+.scrollbar-magic::-webkit-scrollbar-thumb:hover { background: #34d399; }
+
+/* ANIMATION */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .form-row-grid { grid-template-columns: 1fr; gap: 15px; }
+  .header-section-spirit { flex-direction: column-reverse; align-items: flex-start; gap: 15px; }
+  .page-title-spirit { font-size: 1.4rem; }
+  .form-card-aura { padding: 25px 20px; }
+  .submit-btn-spirit { width: 100%; }
 }
 </style>

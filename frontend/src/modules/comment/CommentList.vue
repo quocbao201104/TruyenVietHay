@@ -7,14 +7,10 @@
       <div class="form-row">
         <div class="form-avatar">
           <img
-            v-if="authStore.user?.avatar"
-            :src="getAvatarUrl(authStore.user.avatar)"
-            :alt="authStore.user.username"
+            :src="getAvatarUrl(authStore.user?.avatar)"
+            :alt="authStore.user?.username"
             class="avatar-img form-av-img"
           />
-          <div v-else class="avatar-circle form-av">
-            {{ (authStore.user?.username || '?').charAt(0).toUpperCase() }}
-          </div>
         </div>
         <div class="form-input-wrap">
           <textarea
@@ -54,15 +50,11 @@
         <!-- Avatar -->
         <div class="fb-avatar">
           <img
-            v-if="comment.author_avatar"
-            :src="comment.author_avatar"
+            :src="getAvatarUrl(comment.author_avatar)"
             :alt="comment.author_name"
             class="avatar-img"
             @error="onAvatarError"
           />
-          <div v-else class="avatar-circle">
-            {{ (comment.author_name || '?').charAt(0).toUpperCase() }}
-          </div>
         </div>
 
         <!-- Body -->
@@ -115,15 +107,11 @@
               <div v-for="reply in comment.replies" :key="reply.id" class="fb-reply">
                 <div class="fb-avatar sm">
                   <img
-                    v-if="reply.author_avatar"
-                    :src="reply.author_avatar"
+                    :src="getAvatarUrl(reply.author_avatar)"
                     :alt="reply.author_name"
                     class="avatar-img sm"
                     @error="onAvatarError"
                   />
-                  <div v-else class="avatar-circle sm">
-                    {{ (reply.author_name || '?').charAt(0).toUpperCase() }}
-                  </div>
                 </div>
                 <div class="fb-body">
                   <div class="fb-bubble">
@@ -163,14 +151,10 @@
           <div v-if="replyingTo === comment.id" class="reply-form">
             <div class="form-avatar">
               <img
-                v-if="authStore.user?.avatar"
-                :src="getAvatarUrl(authStore.user.avatar)"
-                :alt="authStore.user.username"
+                :src="getAvatarUrl(authStore.user?.avatar)"
+                :alt="authStore.user?.username"
                 class="avatar-img sm"
               />
-              <div v-else class="avatar-circle sm">
-                {{ (authStore.user?.username || '?').charAt(0).toUpperCase() }}
-              </div>
             </div>
             <div class="form-input-wrap">
               <textarea
@@ -313,356 +297,292 @@ const onAvatarError = (e: Event) => {
 </script>
 
 <style scoped>
-/* ── Section ────────────────────────────────────────────────────────────────── */
+/* ── Biến cục bộ & Nền tảng ──────────────────────────────────────────────────── */
 .comment-section {
+  --aura-primary: #34d399;
+  --aura-bg: #0b0f19;
+  --bubble-bg: rgba(19, 27, 44, 0.6);
+  --border-light: rgba(52, 211, 153, 0.15);
+  
   margin-top: 2rem;
   padding: 1.5rem 0;
+  font-family: 'Be Vietnam Pro', sans-serif;
 }
 
 .section-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #4ade80;
-  margin-bottom: 1.25rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--aura-primary);
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
 }
 
-/* ── Comment Form ───────────────────────────────────────────────────────────── */
-.comment-form { margin-bottom: 1.5rem; }
+/* ── Truyền Âm Phù (Comment Form) ───────────────────────────────────────────── */
+.comment-form, .reply-form { margin-bottom: 1.5rem; }
 
-.form-row,
-.reply-form {
+.form-row, .reply-form {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
+  gap: 1rem;
 }
 
 .form-input-wrap { flex: 1; }
 
 .comment-input {
   width: 100%;
-  padding: 0.55rem 0.9rem;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  color: #fff;
-  font-size: 0.9rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
   resize: none;
-  transition: border-color 0.2s, background 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1.5;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }
+
 .comment-input:focus {
   outline: none;
-  border-color: rgba(74, 222, 128, 0.4);
-  background: rgba(255,255,255,0.1);
+  border-color: var(--aura-primary);
+  background: rgba(52, 211, 153, 0.05);
+  box-shadow: 0 0 15px rgba(52, 211, 153, 0.15), inset 0 2px 4px rgba(0,0,0,0.2);
 }
-.comment-input::placeholder { color: #6b7280; }
-.comment-input.sm { border-radius: 16px; font-size: 0.85rem; }
+
+.comment-input::placeholder { color: #64748b; font-style: italic; }
+.comment-input.sm { border-radius: 12px; font-size: 0.85rem; padding: 0.6rem 0.8rem; }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin-top: 0.4rem;
-  padding: 0 0.4rem;
+  margin-top: 0.5rem;
 }
 
+/* Nút bấm tụ linh */
 .btn-submit {
-  padding: 0.35rem 1rem;
-  background: #4ade80;
-  color: #1a1d29;
+  padding: 0.4rem 1.2rem;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #0b0f19;
   border: none;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 0.85rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s, transform 0.15s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(52, 211, 153, 0.2);
 }
-.btn-submit:hover:not(:disabled) { background: #22c55e; transform: translateY(-1px); }
-.btn-submit:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-.btn-submit.sm { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(52, 211, 153, 0.4);
+}
+.btn-submit:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+.btn-submit.sm { padding: 0.3rem 1rem; font-size: 0.85rem; }
 
 .btn-cancel {
-  padding: 0.3rem 0.8rem;
+  padding: 0.3rem 1rem;
   background: transparent;
-  border: 1px solid #4b5563;
-  color: #9ca3af;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
 }
-.btn-cancel:hover { background: rgba(255,255,255,0.05); color: #fff; }
-
-.login-prompt { color: #9ca3af; margin-bottom: 1.5rem; font-size: 0.9rem; }
-.login-link { color: #4ade80; font-weight: 600; text-decoration: none; }
-.login-link:hover { text-decoration: underline; }
+.btn-cancel:hover { background: rgba(244, 63, 94, 0.1); border-color: #f43f5e; color: #f43f5e; }
 
 /* ── States ─────────────────────────────────────────────────────────────────── */
 .loading-state, .error-state, .empty-state {
-  text-align: center; padding: 2rem; color: #9ca3af; font-style: italic;
+  text-align: center; padding: 3rem 1rem; color: #64748b; font-style: italic;
+  background: var(--bubble-bg); border-radius: 16px; border: 1px dashed #334155;
 }
-.error-state { color: #ef4444; }
+.error-state { color: #f43f5e; border-color: rgba(244, 63, 94, 0.3); }
 
-/* ── Comments list ──────────────────────────────────────────────────────────── */
-.comments-list { display: flex; flex-direction: column; gap: 1rem; }
+/* ── Danh sách bình luận ────────────────────────────────────────────────────── */
+.comments-list { display: flex; flex-direction: column; gap: 1.5rem; }
 
-/* ── Facebook-style comment row ─────────────────────────────────────────────── */
-.fb-comment,
-.fb-reply {
+.fb-comment {
   display: flex;
-  gap: 0.6rem;
+  gap: 1rem;
   align-items: flex-start;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 .fb-body { flex: 1; min-width: 0; }
 
-/* ── Avatars ────────────────────────────────────────────────────────────────── */
+/* ── Avatar Thần Thức ───────────────────────────────────────────────────────── */
 .avatar-img {
-  width: 36px; height: 36px;
+  width: 42px; height: 42px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(74,222,128,0.3);
+  border: 2px solid var(--border-light);
   flex-shrink: 0;
-  display: block;
+  background: #1e293b;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
-.avatar-img.form-av-img {
-  width: 36px; height: 36px;
-  border: 2px solid rgba(74,222,128,0.4);
-}
-.avatar-img.sm { width: 28px; height: 28px; }
+.avatar-img.form-av-img { border-color: var(--aura-primary); }
+.avatar-img.sm { width: 32px; height: 32px; }
 
-.avatar-circle {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4ade80, #22c55e);
-  display: flex; align-items: center; justify-content: center;
-  color: #1a1d29; font-weight: 700; font-size: 1rem;
-  flex-shrink: 0;
-}
-.avatar-circle.sm    { width: 28px; height: 28px; font-size: 0.8rem; }
-.avatar-circle.form-av { font-size: 0.9rem; }
-
-.fb-avatar    { flex-shrink: 0; }
-.fb-avatar.sm { flex-shrink: 0; }
-
-/* ── Bubble ─────────────────────────────────────────────────────────────────── */
+/* ── Khí Tràng Bình Luận (Bubble) ───────────────────────────────────────────── */
 .fb-bubble {
   display: inline-block;
   position: relative;
-  background: rgba(255,255,255,0.06);
-  border-radius: 12px;
-  padding: 0.5rem 0.85rem 0.55rem;
+  background: var(--bubble-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 4px 16px 16px 16px;
+  padding: 0.7rem 1rem;
   max-width: 100%;
-  border: 1px solid rgba(255,255,255,0.07);
-  transition: background 0.2s;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: border-color 0.3s, transform 0.2s;
 }
-.fb-bubble:hover { background: rgba(255,255,255,0.09); }
+.fb-bubble:hover { border-color: var(--border-light); }
 
 .comment-text {
-  color: #e5e7eb;
-  font-size: 0.9rem;
-  line-height: 1.55;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.6;
   white-space: pre-line;
-  margin: 0.25rem 0 0;
+  margin: 0.4rem 0 0;
   word-break: break-word;
 }
 
-/* Admin delete button inside bubble */
+/* Nút xóa thần tốc */
 .btn-delete {
   position: absolute;
-  top: 6px; right: 8px;
-  background: transparent;
+  top: 8px; right: 8px;
+  background: rgba(244, 63, 94, 0.1);
   border: none;
-  color: #6b7280;
+  color: #f43f5e;
   cursor: pointer;
-  font-size: 0.75rem;
-  padding: 2px 4px;
-  border-radius: 4px;
+  font-size: 0.8rem;
+  width: 24px; height: 24px;
+  border-radius: 50%;
   opacity: 0;
-  transition: opacity 0.2s, color 0.2s;
+  transform: scale(0.8);
+  transition: all 0.2s;
+  display: flex; justify-content: center; align-items: center;
 }
-.fb-bubble:hover .btn-delete { opacity: 1; }
-.btn-delete:hover { color: #ef4444; }
+.fb-bubble:hover .btn-delete { opacity: 1; transform: scale(1); }
+.btn-delete:hover { background: #f43f5e; color: #fff; }
 
-/* ── Meta bar: time · reply ─────────────────────────────────────────────────── */
+/* ── Thanh trạng thái (Meta) ────────────────────────────────────────────────── */
 .fb-meta {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0.2rem 0 0 0.6rem;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0 0.8rem;
 }
 
-.meta-time {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.meta-sep { color: #4b5563; font-size: 0.65rem; }
+.meta-time { font-size: 0.8rem; color: #64748b; }
+.meta-sep { color: #334155; font-size: 0.8rem; }
 
 .meta-btn {
-  background: none;
-  border: none;
-  color: #6b7280;
-  font-size: 0.75rem;
-  font-weight: 600;
+  background: none; border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
   padding: 0;
   transition: color 0.2s;
 }
-.meta-btn:hover { color: #4ade80; }
+.meta-btn:hover { color: var(--aura-primary); text-shadow: 0 0 5px rgba(52, 211, 153, 0.4); }
 
-/* ── Replies section ────────────────────────────────────────────────────────── */
-.fb-replies-wrap { margin-top: 0.5rem; margin-left: 0.2rem; }
+/* ── Linh Mạch (Replies Section) ────────────────────────────────────────────── */
+.fb-replies-wrap { margin-top: 1rem; position: relative; }
 
-.btn-expand-replies {
+/* Nút mở rộng mượt mà */
+.btn-expand-replies, .btn-collapse-replies {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  background: none;
-  border: none;
-  color: #6b7280;
-  font-size: 0.8rem;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px dashed #334155;
+  color: #cbd5e1;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 0.2rem 0.4rem;
-  border-radius: 6px;
-  transition: color 0.2s, background 0.2s;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  transition: all 0.3s;
 }
-.btn-expand-replies:hover { color: #4ade80; background: rgba(74,222,128,0.06); }
+.btn-expand-replies:hover, .btn-collapse-replies:hover {
+  color: var(--aura-primary);
+  border-color: var(--aura-primary);
+  background: rgba(52, 211, 153, 0.05);
+}
 
 .fb-replies {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  padding-left: 0.4rem;
-  border-left: 2px solid rgba(255,255,255,0.08);
-}
-
-.btn-collapse-replies {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  background: none;
-  border: none;
-  color: #6b7280;
-  font-size: 0.76rem;
-  cursor: pointer;
-  padding: 0.2rem 0.3rem;
-  margin-top: 0.2rem;
-  transition: color 0.2s;
-}
-.btn-collapse-replies:hover { color: #9ca3af; }
-
-/* ══════════════════════════════════════════════════════════════════════════════
-   Author Nameplate  –  Pill style, dynamic color via --plate-color
-   ══════════════════════════════════════════════════════════════════════════════ */
-.author-nameplate {
-  --plate-color: #555e6b;          /* fallback — user chưa có badge */
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35em;
-  /* Pill shape */
-  padding: 0.16em 0.8em 0.16em 0.85em;
-  border-radius: 50px;
+  gap: 1rem;
   position: relative;
-  overflow: hidden;                /* cần cho shine swipe */
-  /* Nền bán trong suốt màu badge ~15% */
-  background: color-mix(in srgb, var(--plate-color) 15%, transparent);
-  /* Viền sắc nét */
-  border: 1.5px solid var(--plate-color);
-  /* Glow 2 lớp: sát viền (đậm) + tỏa xa (nhạt) + inset */
-  box-shadow:
-    0 0 4px  color-mix(in srgb, var(--plate-color) 70%, transparent),
-    0 0 14px color-mix(in srgb, var(--plate-color) 22%, transparent),
-    inset 0 0 6px color-mix(in srgb, var(--plate-color) 10%, transparent);
-  transition: box-shadow 0.3s ease;
+  padding-left: 2rem; /* Tạo không gian cho đường kẻ cong */
 }
 
-.author-nameplate:hover {
-  box-shadow:
-    0 0 6px  color-mix(in srgb, var(--plate-color) 80%, transparent),
-    0 0 20px color-mix(in srgb, var(--plate-color) 35%, transparent),
-    inset 0 0 8px color-mix(in srgb, var(--plate-color) 15%, transparent);
-}
-
-/* ── Vệt sáng (Shine) — ẩn mặc định, bật cho epic/legendary ─────────────────── */
-.plate-shine {
+/* Đường kẻ cong (Curved Thread Line) nối từ avatar cha xuống các con */
+.fb-replies::before {
+  content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.14) 50%,
-    transparent 65%
-  );
-  transform: translateX(-160%);
+  top: -20px;
+  bottom: 20px;
+  left: 0.5rem;
+  width: 1.5rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+  border-bottom-left-radius: 12px;
   pointer-events: none;
 }
 
-/* Shine chạy cho epic và legendary */
+.fb-reply {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  position: relative;
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* ── Pill Nameplate (Khung Tên Tác Giả) ─────────────────────────────────────── */
+.author-nameplate {
+  --plate-color: #64748b; 
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 50px;
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--plate-color) 10%, #0b0f19);
+  border: 1px solid color-mix(in srgb, var(--plate-color) 40%, transparent);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  margin-bottom: 2px;
+}
+
+.comment-author {
+  font-weight: 800;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--plate-color) 80%, transparent);
+}
+
+/* Hiệu ứng Shine cho Badge xịn */
+.plate-shine {
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.2) 50%, transparent 65%);
+  transform: translateX(-160%); pointer-events: none;
+}
 .author-nameplate[data-rarity="epic"] .plate-shine,
 .author-nameplate[data-rarity="legendary"] .plate-shine {
-  animation: plate-shine 4.5s ease-in-out infinite;
+  animation: plate-shine 3s ease-in-out infinite;
 }
 
-@keyframes plate-shine {
-  0%        { transform: translateX(-160%); }
-  30%, 100% { transform: translateX(160%); }
-}
-
-/* ── Tên tác giả — mặc định: solid color ──────────────────────────────────────── */
-.comment-author {
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  /* Chữ Trắng sáng để nổi bật trên nền trong suốt */
-  color: #ffffff;
-  text-shadow: 0 0 6px color-mix(in srgb, var(--plate-color) 80%, transparent);
-}
-
-/* ── Gradient text cho rare ──────────────────────────────────────────────────── */
-.author-nameplate[data-rarity="rare"] .comment-author {
-  background: linear-gradient(
-    90deg,
-    var(--plate-color),
-    color-mix(in srgb, var(--plate-color) 55%, #ffffff)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--plate-color) 50%, transparent));
-}
-
-/* ── Gradient text VIP cho epic ──────────────────────────────────────────────── */
-.author-nameplate[data-rarity="epic"] .comment-author {
-  background: linear-gradient(
-    90deg,
-    var(--plate-color),
-    color-mix(in srgb, var(--plate-color) 40%, #ffffff)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--plate-color) 60%, transparent));
-}
-
-/* ── Gradient text LEGENDARY — vivid & intense ───────────────────────────────── */
-.author-nameplate[data-rarity="legendary"] .comment-author {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--plate-color) 70%, #ff8800),
-    var(--plate-color),
-    color-mix(in srgb, var(--plate-color) 50%, #ffffff)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter:
-    drop-shadow(0 0 4px color-mix(in srgb, var(--plate-color) 70%, transparent))
-    drop-shadow(0 0 1px rgba(255,255,255,0.3));
-}
+@keyframes plate-shine { 0% { transform: translateX(-160%); } 30%, 100% { transform: translateX(160%); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

@@ -10,6 +10,7 @@ import {
     approveOrRejectChapter as approveOrRejectChapterApi,
     getAdminChaptersByStoryId,
     approveAllChaptersByStoryId,
+    incrementChapterView as incrementChapterViewApi,
     type Chapter 
 } from "./chapter.service";
 import { useAppToast } from "@/composables/useAppToast";
@@ -183,10 +184,10 @@ export const useChapterStore = defineStore("chapter", () => {
         }
     };
 
-    const approveChapter = async (id: number, action: 'duyet' | 'tu_choi') => {
+    const approveChapter = async (id: number, action: 'duyet' | 'tu_choi', reason?: string) => {
         loading.value = true;
         try {
-            const res = await approveOrRejectChapterApi(id, action);
+            const res = await approveOrRejectChapterApi(id, action, reason);
             showSuccessToast(res.message || "Duyệt/Từ chối thành công");
             return res;
         } catch (err: any) {
@@ -229,6 +230,15 @@ export const useChapterStore = defineStore("chapter", () => {
         }
     };
 
+    const incrementView = async (chapterId: number) => {
+        try {
+            // No global loading here to avoid UI flickering
+            await incrementChapterViewApi(chapterId);
+        } catch (error) {
+            console.error("Silent View Increment Error:", error);
+        }
+    };
+
     const clearChapterList = () => {
         chapterList.value = [];
         currentChapter.value = null;
@@ -254,6 +264,7 @@ export const useChapterStore = defineStore("chapter", () => {
         deleteChapter,
         approveChapter,
         approveAllChapters,
+        incrementView,
         clearChapterList,
         clearCache
     };

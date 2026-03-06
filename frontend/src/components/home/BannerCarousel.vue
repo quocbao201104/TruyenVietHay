@@ -20,25 +20,23 @@ onMounted(() => {
   store.fetchStories({ limit: 100 });
 });
 
-// Filter stories with status "Đề xuất" (checking both possible values)
-const filteredStories = computed(() => {
+// Take top 10 stories for carousel
+const carouselStories = computed(() => {
   if (!store.stories || !Array.isArray(store.stories)) return [];
-  return store.stories.filter((s: any) => {
-    const status = s.status || s.trang_thai || '';
-    return status.toLowerCase() === 'đề xuất' || status.toLowerCase() === 'suggested';
-  })
+  // Use first 10 stories from store
+  return store.stories.slice(0, 10);
 });
 
 // Clone first & last for infinite loop
 const displayedStories = computed(() => {
-  const arr = filteredStories.value;
+  const arr = carouselStories.value;
   if (arr.length === 0) return [];
   const first = arr[0];
   const last = arr[arr.length - 1];
   return [last, ...arr, first];
 });
 
-const realCount = computed(() => filteredStories.value.length);
+const realCount = computed(() => carouselStories.value.length);
 
 // Carousel state
 const currentIndex = ref(1); // starts at first real slide

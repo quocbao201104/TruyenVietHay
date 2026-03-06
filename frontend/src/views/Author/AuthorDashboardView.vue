@@ -45,69 +45,89 @@
         </div>
       </section>
 
-      <!-- PHẦN 3: QUẢN LÝ LINH THƯ (TABLE) -->
-      <section class="table-aura-section">
-        <div class="section-header-row">
-          <div class="section-title-aura">
-            <i class="fas fa-book-journal-whills text-emerald-400"></i>
-            <h2>Quản Lý Linh Thư</h2>
-          </div>
-          
-          <router-link :to="{ name: 'SubmitStory' }" class="btn-create-spirit">
-            <i class="fas fa-wand-sparkles mr-2"></i> Khai Phá Linh Thư
-          </router-link>
-        </div>
-
-        <!-- Bộ lọc linh khí -->
-        <div class="filters-spirit-box">
-          <AuthorStoryFiltersSection
-            :categories="categories"
-            @apply-filters="handleApplyFilters"
-            @clear-filters="handleClearFilters"
-          />
-        </div>
-
-        <!-- Bảng lệnh bài truyện -->
-        <div class="spirit-table-container">
-          <AuthorStoryTableSection
-            :stories="storyStore.authorStories"
-            :loading="storyStore.authorStoriesLoading"
-            :sortColumn="currentSortColumn"
-            :sortDirection="currentSortDirection"
-            @view-details="handleViewDetails"
-            @edit="handleEditStory"
-            @manage-chapters="handleManageChapters"
-            @delete="handleDeleteStory"
-            @requestSort="handleSortRequest"
-          />
-        </div>
-
-        <!-- PHÂN TẦNG LINH TRẬN (PAGINATION) -->
-        <div
-          v-if="storyStore.authorStoriesPagination.total_pages > 1"
-          class="xianxia-pagination"
-        >
-          <button
-            class="page-nav-btn"
-            :disabled="storyStore.authorStoriesPagination.current_page === 1"
-            @click="handlePageChange(storyStore.authorStoriesPagination.current_page - 1)"
-          >
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          
-          <div class="page-counter">
-            Tầng <span class="current">{{ storyStore.authorStoriesPagination.current_page }}</span> / {{ storyStore.authorStoriesPagination.total_pages }}
+        <!-- PHẦN 3: VÙNG TÁC NGHIỆP (TABS & CONTENT) -->
+        <section class="table-aura-section">
+          <div class="section-header-row">
+            <div class="tab-spirit-navigation">
+              <button 
+                :class="['tab-aura-btn', { 'active': currentTab === 'stories' }]"
+                @click="currentTab = 'stories'"
+              >
+                <i class="fas fa-book-journal-whills mr-2"></i> Linh Thư
+              </button>
+              <button 
+                :class="['tab-aura-btn', { 'active': currentTab === 'inbox' }]"
+                @click="currentTab = 'inbox'"
+              >
+                <i class="fas fa-envelope mr-2"></i> Hộp Thư
+                <span v-if="notificationStore.unreadCount > 0" class="tab-badge-spirit">
+                  {{ notificationStore.unreadCount }}
+                </span>
+              </button>
+            </div>
+            
+            <router-link v-if="currentTab === 'stories'" :to="{ name: 'SubmitStory' }" class="btn-create-spirit">
+              <i class="fas fa-wand-sparkles mr-2"></i> Khai Phá Linh Thư
+            </router-link>
           </div>
 
-          <button
-            class="page-nav-btn"
-            :disabled="storyStore.authorStoriesPagination.current_page === storyStore.authorStoriesPagination.total_pages"
-            @click="handlePageChange(storyStore.authorStoriesPagination.current_page + 1)"
-          >
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </section>
+          <div v-if="currentTab === 'stories'" class="stories-management-container animate-fadeIn">
+            <!-- Bộ lọc linh khí -->
+            <div class="filters-spirit-box">
+              <AuthorStoryFiltersSection
+                :categories="categories"
+                @apply-filters="handleApplyFilters"
+                @clear-filters="handleClearFilters"
+              />
+            </div>
+
+            <!-- Bảng lệnh bài truyện -->
+            <div class="spirit-table-container">
+              <AuthorStoryTableSection
+                :stories="storyStore.authorStories"
+                :loading="storyStore.authorStoriesLoading"
+                :sortColumn="currentSortColumn"
+                :sortDirection="currentSortDirection"
+                @view-details="handleViewDetails"
+                @edit="handleEditStory"
+                @manage-chapters="handleManageChapters"
+                @delete="handleDeleteStory"
+                @requestSort="handleSortRequest"
+              />
+            </div>
+
+            <!-- PHÂN TẦNG LINH TRẬN (PAGINATION) -->
+            <div
+              v-if="storyStore.authorStoriesPagination.total_pages > 1"
+              class="xianxia-pagination"
+            >
+              <button
+                class="page-nav-btn"
+                :disabled="storyStore.authorStoriesPagination.current_page === 1"
+                @click="handlePageChange(storyStore.authorStoriesPagination.current_page - 1)"
+              >
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              
+              <div class="page-counter">
+                Tầng <span class="current">{{ storyStore.authorStoriesPagination.current_page }}</span> / {{ storyStore.authorStoriesPagination.total_pages }}
+              </div>
+
+              <button
+                class="page-nav-btn"
+                :disabled="storyStore.authorStoriesPagination.current_page === storyStore.authorStoriesPagination.total_pages"
+                @click="handlePageChange(storyStore.authorStoriesPagination.current_page + 1)"
+              >
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- PHẦN HỘP THƯ (INBOX) -->
+          <div v-else class="inbox-management-container animate-fadeIn">
+            <NotificationInbox />
+          </div>
+        </section>
     </main>
   </div>
 </template>
@@ -122,12 +142,17 @@ import AuthorDashboardStatCard from "@/components/author/AuthorDashboardStatCard
 import AuthorDashboardChart from "@/components/author/AuthorDashboardChart.vue";
 import AuthorStoryFiltersSection from "@/components/author/AuthorStoryFiltersSection.vue";
 import AuthorStoryTableSection from "@/components/author/AuthorStoryTableSection.vue";
+import NotificationInbox from "@/components/author/NotificationInbox.vue";
+import { useNotificationStore } from "@/modules/notification/notification.store";
 import { useAppToast } from "@/composables/useAppToast";
 
 const router = useRouter();
 const storyStore = useStoryStore();
 const categoryStore = useCategoryStore();
+const notificationStore = useNotificationStore();
 const { showSuccessToast, showErrorToast } = useAppToast();
+
+const currentTab = ref('stories'); // 'stories' or 'inbox'
 
 const categories = computed(() => categoryStore.categories as any[]);
 
@@ -188,6 +213,7 @@ onMounted(async () => {
   }
   fetchDashboard();
   fetchStories();
+  notificationStore.fetchNotifications(true); // Pre-fetch for badge
 });
 
 watch(
@@ -295,6 +321,7 @@ const handleDeleteStory = async (storyId: number) => {
   letter-spacing: 4px;
   background: linear-gradient(to right, #34d399, #fff, #34d399);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.3));
 }
@@ -431,6 +458,53 @@ const handleDeleteStory = async (storyId: number) => {
 }
 
 .page-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+/* TABS NAVIGATION */
+.tab-spirit-navigation {
+  display: flex;
+  gap: 10px;
+  background: #0b0f19;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid #1e293b;
+}
+
+.tab-aura-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.tab-aura-btn.active {
+  background: #1e293b;
+  color: #34d399;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.tab-badge-spirit {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f43f5e;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0b0f19;
+}
 
 .page-counter {
   font-size: 0.9rem;

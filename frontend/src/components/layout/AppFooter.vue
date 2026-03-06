@@ -1,240 +1,318 @@
 <template>
-  <footer class="app-footer">
-    <div class="footer-container">
-      <div class="footer-column about">
-        <img src="/src/assets/images/logo.png" alt="Logo" class="footer-logo" />
-        <p class="footer-description">
-          Nền tảng đọc truyện online thân thiện, đa dạng thể loại, cập nhật mỗi
-          ngày.
+  <footer class="footer-xianxia">
+    <div class="footer-aura-glow"></div>
+    
+    <div class="footer-content-container">
+      <div class="footer-section sect-sect-identity">
+        <router-link to="/" class="footer-logo-link">
+          <img src="@/assets/images/logo.png" alt="TruyenVietHay Logo" class="footer-logo-spirit" />
+        </router-link>
+        <p class="spirit-description">
+          Dẫn lối đạo hữu vào cõi tiên, khám phá những bí tịch huyền huyễn, 
+          vượt qua nghịch cảnh mạt thế. Chúc đạo hữu sớm ngày đại thành!
         </p>
+        <div class="spirit-social-links">
+          <a href="https://www.facebook.com/truyenviethay" class="social-aura-icon"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://discord.gg/m5JecZwy" class="social-aura-icon"><i class="fab fa-discord"></i></a>
+          <a href="https://www.tiktok.com/@truyenviethay" class="social-aura-icon"><i class="fab fa-tiktok"></i></a>
+        </div>
       </div>
-      <div class="footer-column">
-        <h4 class="footer-title">Liên kết nhanh</h4>
-        <ul class="footer-links">
-          <li><router-link to="/">Trang chủ</router-link></li>
-          <li><router-link to="/the-loai">Thể loại</router-link></li>
-          <li><router-link to="/truyen-hot">Truyện hot</router-link></li>
-          <li><router-link to="/xep-hang">Xếp hạng</router-link></li>
-        </ul>
+
+      <div class="footer-section">
+        <h4 class="footer-spirit-title">Đạo Lộ</h4>
+        <nav class="footer-spirit-nav">
+          <router-link to="/truyen-chu" class="footer-nav-link">Truyện Chữ</router-link>
+          <router-link to="/xep-hang" class="footer-nav-link">Bảng Xếp Hạng</router-link>
+          <router-link to="/truyen-hot" class="footer-nav-link">Truyện Hot</router-link>
+          <router-link to="/the-loai" class="footer-nav-link">Thể Loại</router-link>
+        </nav>
       </div>
-      <div class="footer-column">
-        <h4 class="footer-title">Hỗ trợ</h4>
-        <ul class="footer-links">
-          <li><router-link to="/chinh-sach">Chính sách</router-link></li>
-          <li><router-link to="/dieu-khoan">Điều khoản</router-link></li>
-          <li><router-link to="/lien-he">Liên hệ</router-link></li>
-          <li><router-link to="/bao-loi">Báo lỗi</router-link></li>
-        </ul>
+
+      <div class="footer-section">
+        <h4 class="footer-spirit-title">Quy Tắc</h4>
+        <nav class="footer-spirit-nav">
+          <router-link to="/chinh-sach-bao-mat" class="footer-nav-link">Thiên Cơ Lệnh</router-link>
+          <router-link to="/dieu-khoan-su-dung" class="footer-nav-link">Môn Quy</router-link>
+          <router-link to="/ban-quyen" class="footer-nav-link">Bản Quyền</router-link>
+          <router-link to="/lien-he" class="footer-nav-link">Truyền Âm</router-link>
+        </nav>
       </div>
-      <div class="footer-column">
-        <h4 class="footer-title">Theo dõi</h4>
-        <p class="contact-email">📧 quocbao201104@gmail.com</p>
-        <div class="social-links">
-          <a href="https://www.facebook.com/0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0o0" aria-label="Facebook"
-            ><i class="fab fa-facebook-f"></i
-          ></a>
-          <!-- <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a> -->
-          <a href="https://www.instagram.com/quocbao201104/" aria-label="Instagram"
-            ><i class="fab fa-instagram"></i
-          ></a>
-          <a href="https://discord.gg/qmAxxxp8" aria-label="Discord"><i class="fab fa-discord"></i></a>
+    <div class="footer-section sect-apps">
+    <h4 class="footer-spirit-title">App</h4>
+    <p class="spirit-text-sm">Mang cả thế giới truyện vào điện thoại.</p>
+    <div class="app-aura-buttons">
+      <div class="app-btn-mock install-pwa-btn" @click="handleInstallApp">
+        <i class="fas fa-magic"></i>
+        <span>Android</span>
+      </div>
+      
+      <div class="app-btn-mock">
+        <i class="fab fa-apple"></i>
+        <span>iOS (Dùng Safari > Share)</span>
+      </div>
+    </div>
+  </div>
+    </div>
+
+    <div class="footer-bottom-aura">
+      <div class="bottom-aura-content">
+        <span class="copyright-spirit">
+          &copy; 2026 <span class="text-emerald-400">TruyenVietHay</span>. Tu luyện bởi <strong>Võ Đình Quốc Bảo</strong>.
+        </span>
+        <div class="bottom-spirit-badges">
+          <span>Hệ thống: V2.1.0</span>
+          <span>Pháp khí: Antigravity</span>
         </div>
       </div>
     </div>
-
-    <div class="footer-bottom">
-      <p class="fade-in">
-        &copy; 2025 TruyenVietHay – Cảm ơn bạn đã chọn và đồng hành cùng chúng
-        tôi.
-      </p>
-    </div>
   </footer>
 </template>
+<script setup>
+import { ref, onMounted } from 'vue'
 
-<script>
-export default {
-  name: "AppFooter",
-};
+const installPrompt = ref(null)
+
+onMounted(() => {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Chặn trình duyệt tự hiện bảng cài đặt mặc định
+    e.preventDefault()
+    // Lưu sự kiện để kích hoạt sau
+    installPrompt.value = e
+  })
+})
+
+const handleInstallApp = async () => {
+  if (!installPrompt.value) {
+    alert("Đạo hữu có thể dùng tính năng 'Thêm vào màn hình chính' trong menu trình duyệt!")
+    return
+  }
+  // Hiện bảng cài đặt của PWA
+  installPrompt.value.prompt()
+  const { outcome } = await installPrompt.value.userChoice
+  if (outcome === 'accepted') {
+    installPrompt.value = null
+  }
+}
 </script>
 
 <style scoped>
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css");
-.app-footer {
-  background: #1a1d29;
-  color: #a3a3a3;
-  padding: 50px 20px 20px;
-  border-top: 4px solid transparent;
-  border-image: linear-gradient(to right, #22c55e33, transparent, #22c55e33);
-  border-image-slice: 1;
-  position: relative;
-  overflow: hidden;
+.install-pwa-btn {
+  background: rgba(52, 211, 153, 0.1) !important;
+  border: 1px solid #34d399 !important;
+  animation: auraPulse 2s infinite;
 }
 
-.footer-container {
-  max-width: 1200px;
+@keyframes auraPulse {
+  0% { box-shadow: 0 0 5px rgba(52, 211, 153, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(52, 211, 153, 0.5); }
+  100% { box-shadow: 0 0 5px rgba(52, 211, 153, 0.2); }
+}
+</style>
+<style scoped>
+.footer-xianxia {
+  position: relative;
+  background: #0b0f19;
+  padding-top: 60px;
+  border-top: 1px solid rgba(52, 211, 153, 0.1);
+  overflow: hidden;
+  color: #94a3b8;
+}
+
+/* Hiệu ứng hào quang dưới đáy */
+.footer-aura-glow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 100px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.05) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.footer-content-container {
+  max-width: 1440px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 30px;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 40px;
+  padding: 0 40px 60px;
 }
 
-.footer-column {
+.footer-logo-spirit {
+  height: 45px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 5px rgba(52, 211, 153, 0.1));
+}
+
+.spirit-description {
+  line-height: 1.7;
+  font-size: 0.9rem;
+  margin-bottom: 25px;
+  color: #64748b;
+}
+
+.footer-spirit-title {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.footer-spirit-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 30px;
+  height: 2px;
+  background: #34d399;
+  box-shadow: 0 0 5px #34d399;
+}
+
+.footer-spirit-nav {
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
-.footer-logo {
-  width: 120px;
-  margin-bottom: 10px;
-  transition: transform 0.3s ease, filter 0.3s ease;
-}
-.footer-logo:hover {
-  transform: scale(1.1);
-  filter: brightness(1.3);
-}
-
-.footer-title {
-  color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 15px;
-}
-
-.footer-description {
-  font-size: 0.95rem;
-  line-height: 1.6;
-}
-
-.footer-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 10px;
-}
-
-.footer-links a {
-  color: #a3a3a3;
+.footer-nav-link {
+  color: #64748b;
   text-decoration: none;
-  font-size: 0.95rem;
-  transition: all 0.2s ease;
-}
-
-.footer-links a:hover {
-  color: #22c55e;
-  padding-left: 5px;
-}
-.contact-email {
-  font-size: 0.95rem;
-  margin-bottom: 10px;
-  word-break: break-all;
-}
-.social-links {
+  font-size: 0.9rem;
+  transition: all 0.3s;
   display: flex;
-  gap: 14px;
-  margin-top: 8px;
+  align-items: center;
 }
 
-.social-links a {
-  font-size: 1.4rem;
-  color: #a3a3a3;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+.footer-nav-link:hover {
+  color: #34d399;
+  transform: translateX(8px);
 }
 
-.social-links a:hover {
-  color: #22c55e;
-  text-shadow: 0 0 5px #22c55eaa;
-}
-
-.footer-bottom {
-  text-align: center;
-  margin-top: 40px;
-  padding-top: 20px;
-  font-size: 0.88rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.fade-in {
-  animation: fadeIn 1s ease forwards;
+.footer-nav-link::before {
+  content: '✦';
+  font-size: 0.6rem;
+  margin-right: 8px;
   opacity: 0;
+  transition: opacity 0.3s;
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-  }
+.footer-nav-link:hover::before {
+  opacity: 1;
+}
+
+/* Socials & Apps */
+.spirit-social-links {
+  display: flex;
+  gap: 15px;
+}
+
+.social-aura-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.3s;
+}
+
+.social-aura-icon:hover {
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
+  border-color: #34d39960;
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.app-aura-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.app-btn-mock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 15px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.app-btn-mock:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+
+.app-btn-mock i {
+  font-size: 1.2rem;
+  color: #34d399;
+}
+
+.app-btn-mock span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Bottom Bar */
+.footer-bottom-aura {
+  padding: 25px 40px;
+  background: #090d16;
+  border-top: 1px solid rgba(255,255,255,0.02);
+}
+
+.bottom-aura-content {
+  max-width: 1440px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copyright-spirit {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.bottom-spirit-badges {
+  display: flex;
+  gap: 20px;
+  font-size: 0.75rem;
+  color: #334155;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .footer-container {
+@media (max-width: 1024px) {
+  .footer-content-container {
     grid-template-columns: 1fr 1fr;
+    gap: 50px;
   }
 }
-@media (max-width: 576px) {
-  .app-footer {
-    padding: 30px 15px 80px; /* Extra bottom padding for mobile nav/tabs if any */
-  }
 
-  .footer-container {
+@media (max-width: 640px) {
+  .footer-content-container {
     grid-template-columns: 1fr;
+    padding: 0 25px 40px;
+  }
+  .bottom-aura-content {
+    flex-direction: column;
+    gap: 15px;
     text-align: center;
-    gap: 24px;
-  }
-
-  .footer-title {
-    font-size: 1rem; /* Smaller title */
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #4ade80; /* Highlight title */
-  }
-
-  .footer-description {
-    font-size: 0.85rem;
-    padding: 0 10px;
-  }
-
-  /* Make links grid-like or compact list */
-  .footer-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  .footer-links li {
-    margin-bottom: 0;
-  }
-
-  .footer-links a {
-    font-size: 0.85rem;
-    background: rgba(255,255,255,0.05);
-    padding: 6px 12px;
-    border-radius: 20px;
-    display: inline-block;
-  }
-
-  .contact-email {
-    font-size: 0.85rem;
-  }
-
-  .social-links {
-    justify-content: center;
-    gap: 20px;
-    margin-top: 15px;
-  }
-  
-  .social-links a {
-    font-size: 1.2rem;
-  }
-
-  .footer-bottom {
-    margin-top: 30px;
-    padding-top: 15px;
-    font-size: 0.75rem;
   }
 }
 </style>

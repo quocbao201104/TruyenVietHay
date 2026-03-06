@@ -1,46 +1,13 @@
 <template>
   <!-- ROOT CONTAINER -->
   <div class="banner-slide-aura" :class="{ active: isActive }">
-    
-    <!-- ========================================== -->
-    <!-- GIAO DIỆN DESKTOP (SLIDER TRƯỢT MẶC ĐỊNH) -->
-    <!-- ========================================== -->
-    <div class="slide-jade-scroll desktop-only">
-      <div class="cover-spirit-wrapper">
-        <img :src="coverUrl" :alt="story.ten_truyen" class="cover-bg-aura" draggable="false" />
-        <div class="spirit-overlay"></div>
-        <img :src="coverUrl" :alt="story.ten_truyen" class="cover-img-spirit" draggable="false" />
-      </div>
-
-      <div class="info-spirit-wrapper">
-        <span class="badge-spirit-suggested">
-          <i class="fas fa-wand-magic-sparkles mr-1"></i> Thiên Cơ Đề Cử
-        </span>
-        <h2 class="title-spectral" :title="story.ten_truyen">{{ story.ten_truyen }}</h2>
-        <div class="meta-spirit-row">
-          <span class="author"><i class="fas fa-feather-pointed"></i> {{ story.tac_gia || 'Ẩn Danh' }}</span>
-          <span class="sep">|</span>
-          <span class="views"><i class="fas fa-eye"></i> {{ formatNumber(story.luot_xem) }} linh khí</span>
-        </div>
-        <p class="description-spirit">{{ truncateText(story.mo_ta, 160) }}</p>
-        <router-link
-          :to="`/truyen-chu/${story.slug}`"
-          class="btn-khai-mon-aura"
-          draggable="false"
-          @dragstart.prevent
-        >
-          LĨNH HỘI NGAY <i class="fas fa-chevron-right ml-2 text-[10px]"></i>
-        </router-link>
-      </div>
-    </div>
-
     <!-- ========================================== -->
     <!-- GIAO DIỆN MOBILE (BANNER TĨNH THEO MOCKUP) -->
     <!-- Chỉ hiển thị trên slide đầu tiên để tránh lặp lại nhiều lần -->
     <!-- ========================================== -->
     <div v-if="isFirstSlide" class="mobile-static-banner mobile-only">
       <div class="mobile-bg-wrapper">
-        <img src="@/assets/images/banner-mobile.jpg" alt="Truyện Việt Hay Banner" class="mobile-bg-img" />
+        <img src="https://res.cloudinary.com/dg9ftuhv4/image/upload/v1772805142/truyenviethay/banners/banner-mobile.png" alt="Truyện Việt Hay Banner" class="mobile-bg-img" />
         <!-- Lớp phủ gradient đen lên phần chữ để đảm bảo dễ đọc -->
         <div class="mobile-vignette"></div>
       </div>

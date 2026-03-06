@@ -224,9 +224,11 @@ onMounted(() => {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap");
 
+/* ===== CORE BACKGROUND ===== */
 .story-list-page-xianxia {
   min-height: 100vh;
-  background-color: #0b0f19;
+  background-color: #05080f; /* Tối hơn một chút để các khối nổi bật lên */
+  background-image: radial-gradient(circle at 50% 0%, rgba(52, 211, 153, 0.03) 0%, transparent 70%);
   color: #cbd5e1;
   font-family: 'Be Vietnam Pro', sans-serif;
   overflow-x: hidden;
@@ -241,13 +243,14 @@ onMounted(() => {
 /* ===== HERO & STRIP ===== */
 .hero-aura-wrapper {
   margin-bottom: 50px;
-  border-radius: 24px;
+  border-radius: 20px; /* Đồng bộ góc bo của HeroGrid */
   overflow: hidden;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.5);
 }
 
 .continue-cultivation-area {
   margin-bottom: 60px;
+  position: relative;
+  z-index: 10;
 }
 
 /* ===== GRID LAYOUT ===== */
@@ -259,100 +262,252 @@ onMounted(() => {
 
 .spirit-block { margin-bottom: 50px; }
 
+/* ===== LINH KHÍ TRẬN (SECTION HEADERS) ===== */
 .spirit-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(52, 211, 153, 0.1);
   position: relative;
 }
 
+/* Đường line phân cách ma thuật */
 .spirit-header::after {
-  content: ''; position: absolute; bottom: -1px; left: 0; width: 60px; height: 2px;
-  background: #34d399; box-shadow: 0 0 10px #34d399;
+  content: ''; 
+  position: absolute; 
+  bottom: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 1px;
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.4) 0%, rgba(52, 211, 153, 0.05) 50%, transparent 100%);
+}
+
+.spirit-header::before {
+  content: ''; 
+  position: absolute; 
+  bottom: -1px; 
+  left: 0; 
+  width: 80px; 
+  height: 3px;
+  background: #34d399; 
+  box-shadow: 0 0 15px #34d399;
+  border-radius: 50px;
+  z-index: 2;
 }
 
 .spirit-title {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #f8fafc;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
+
+.spirit-title i { filter: drop-shadow(0 0 8px currentColor); }
+
+/* Đổi màu theme cho các Header khác nhau */
 .spirit-title.gold { color: #fbbf24; }
+.spirit-header:has(.spirit-title.gold)::before { background: #fbbf24; box-shadow: 0 0 15px #fbbf24; }
+.spirit-header:has(.spirit-title.gold)::after { background: linear-gradient(90deg, rgba(251, 191, 36, 0.4) 0%, transparent 100%); }
+
 .spirit-title.sky { color: #38bdf8; }
+.spirit-header:has(.spirit-title.sky)::before { background: #38bdf8; box-shadow: 0 0 15px #38bdf8; }
+.spirit-header:has(.spirit-title.sky)::after { background: linear-gradient(90deg, rgba(56, 189, 248, 0.4) 0%, transparent 100%); }
 
 .view-all-spirit {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
   color: #34d399;
   letter-spacing: 1px;
+  padding: 6px 16px;
+  border-radius: 50px;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.2);
+  transition: all 0.3s;
+}
+
+@media (hover: hover) {
+  .view-all-spirit:hover {
+    background: #34d399;
+    color: #05080f;
+    box-shadow: 0 0 15px rgba(52, 211, 153, 0.4);
+  }
+}
+
+.view-all-spirit.gold { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.2); }
+@media (hover: hover) {
+  .view-all-spirit.gold:hover { background: #fbbf24; color: #05080f; box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+}
+
+.view-all-spirit.sky { color: #38bdf8; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.2); }
+@media (hover: hover) {
+  .view-all-spirit.sky:hover { background: #38bdf8; color: #05080f; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 }
 
 /* Grid mặc định cho Desktop */
 .spirit-grid-responsive {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
-  gap: 20px;
+  gap: 24px; /* Tăng gap để StoryCard thở */
 }
 
-/* Sidebar Styles */
-.sticky-spirit-box { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 30px; }
-.sidebar-card-aura { background: #131b2c; border: 1px solid #1e293b; border-radius: 20px; padding: 22px; }
-.sidebar-title-xianxia { font-size: 0.95rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
+/* ===== THIÊN CƠ CÁC (SIDEBAR - GLASSMORPHISM) ===== */
+.sticky-spirit-box { 
+  position: sticky; 
+  top: 90px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 30px; 
+}
 
+.sidebar-card-aura { 
+  background: rgba(11, 15, 25, 0.6); 
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(52, 211, 153, 0.15); 
+  border-radius: 20px; 
+  padding: 24px; 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar-title-xianxia { 
+  font-size: 1.1rem; 
+  font-weight: 900; 
+  color: #34d399; 
+  text-transform: uppercase; 
+  letter-spacing: 1.5px; 
+  margin-bottom: 24px; 
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+  border-bottom: 1px dashed rgba(52, 211, 153, 0.2);
+  padding-bottom: 15px;
+}
+
+/* THIÊN BẢNG LIST */
 .ranking-spirit-list, .ranking-spirit-list-mobile { display: flex; flex-direction: column; gap: 12px; }
+
 .ranking-spirit-item {
-  display: flex; align-items: center; gap: 15px; padding: 12px 15px;
-  background: linear-gradient(145deg, #131b2c, #0b0f19);
-  border: 1px solid rgba(255, 255, 255, 0.05); 
+  display: flex; align-items: center; gap: 15px; padding: 12px;
+  background: transparent;
+  border: 1px solid transparent; 
   border-radius: 12px; cursor: pointer;
   transition: all 0.3s ease;
+  position: relative;
 }
-.ranking-spirit-item:hover {
-  transform: translateY(-2px);
-  border-color: rgba(52, 211, 153, 0.3);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+
+@media (hover: hover) {
+  .ranking-spirit-item:hover {
+    background: rgba(52, 211, 153, 0.05);
+    border-color: rgba(52, 211, 153, 0.2);
+    transform: translateX(5px);
+  }
 }
+
 .rank-orb {
-  width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px;
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 0.85rem; color: #94a3b8; background: rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  font-weight: 900; font-size: 1rem; color: #94a3b8; 
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 2;
 }
-.rank-orb.top-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
-.rank-orb.top-2 { background: linear-gradient(135deg, #cbd5e1, #94a3b8); color: #0f172a; box-shadow: 0 0 10px rgba(203, 213, 225, 0.2); }
-.rank-orb.top-3 { background: linear-gradient(135deg, #b45309, #78350f); color: #fff; box-shadow: 0 0 10px rgba(180, 83, 9, 0.3); }
+
+/* Lệnh Bài Top 1-2-3 */
+.rank-orb.top-1 { background: rgba(251, 191, 36, 0.1); border-color: #fbbf24; color: #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.3); text-shadow: 0 0 5px #fbbf24; }
+.rank-orb.top-2 { background: rgba(226, 232, 240, 0.1); border-color: #e2e8f0; color: #e2e8f0; box-shadow: 0 0 15px rgba(226, 232, 240, 0.2); text-shadow: 0 0 5px #e2e8f0; }
+.rank-orb.top-3 { background: rgba(217, 119, 6, 0.1); border-color: #d97706; color: #d97706; box-shadow: 0 0 15px rgba(217, 119, 6, 0.2); text-shadow: 0 0 5px #d97706; }
+
+/* ===== CHUẨN HÓA LẠI CĂN CHỈNH THIÊN BẢNG ===== */
 
 .rank-details {
   flex-grow: 1;
-  min-width: 0; /* Important for text-overflow to work in flex container */
+  min-width: 0; 
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: center;
+  align-items: flex-start; /* Ép tất cả nội dung canh trái tuyệt đối */
+  gap: 4px; /* Khoảng cách vừa phải giữa tên và lượt xem */
 }
 
 .rank-name { 
-  font-size: 0.9rem; 
+  margin: 0; /* QUAN TRỌNG: Xóa margin mặc định của thẻ h4 làm lệch form */
+  padding: 0;
+  font-size: 0.95rem; 
   font-weight: 700; 
-  color: #f8fafc; 
+  color: #f1f5f9; 
   white-space: nowrap; 
   overflow: hidden; 
   text-overflow: ellipsis; 
   width: 100%;
+  line-height: 1.2; /* Ép chiều cao chữ vừa vặn */
+  transition: color 0.3s;
 }
-.rank-val { font-size: 0.75rem; color: #34d399; font-weight: 600; }
 
-.tag-cloud-spirit { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (hover: hover) {
+  .ranking-spirit-item:hover .rank-name { color: #34d399; }
+}
+
+.rank-val { 
+  margin: 0;
+  font-size: 0.75rem; 
+  color: #64748b; 
+  font-weight: 600; 
+  display: flex; 
+  align-items: center; 
+  gap: 6px; /* Khoảng cách giữa icon mắt và số */
+  line-height: 1;
+}
+
+/* Icon con mắt màu lục bảo */
+.rank-val::before { 
+  content: '\f06e'; 
+  font-family: 'Font Awesome 6 Free'; 
+  font-weight: 900; 
+  color: #34d399; 
+  font-size: 0.75rem; 
+}
+
+.spirit-more-link, .spirit-more-link-mobile {
+  display: block; text-align: center; margin-top: 20px;
+  color: #94a3b8; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+  transition: color 0.3s;
+  text-decoration: none;
+}
+@media (hover: hover) {
+  .spirit-more-link:hover, .spirit-more-link-mobile:hover { color: #34d399; }
+}
+
+/* CĂN CƠ PHÂN LOẠI (TAG CLOUD) */
+.tag-cloud-spirit { display: flex; flex-wrap: wrap; gap: 10px; }
+
 .tag-pill-spirit {
-  padding: 6px 12px; background: #0b0f19; border: 1px solid #1e293b; border-radius: 50px;
-  color: #94a3b8; font-size: 0.7rem; font-weight: 700; text-decoration: none;
+  padding: 8px 16px; 
+  background: rgba(255, 255, 255, 0.03); 
+  border: 1px solid rgba(255, 255, 255, 0.1); 
+  border-radius: 50px;
+  color: #cbd5e1; 
+  font-size: 0.8rem; 
+  font-weight: 600; 
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@media (hover: hover) {
+  .tag-pill-spirit:hover {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: #34d399;
+    color: #34d399;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(52, 211, 153, 0.2);
+  }
 }
 
 .mobile-extra-aura { display: none; }
@@ -370,10 +525,10 @@ onMounted(() => {
   .hero-aura-wrapper { margin-bottom: 30px; border-radius: 16px; }
   .continue-cultivation-area { margin-bottom: 40px; }
 
-  .spirit-header { margin-bottom: 15px; }
-  .spirit-title { font-size: 1.1rem; }
+  .spirit-header { margin-bottom: 20px; }
+  .spirit-title { font-size: 1.2rem; }
 
-  /* QUAN TRỌNG: Chuyển sang lưới 2 cột thay vì cuộn ngang để duyệt truyện sướng hơn */
+  /* Lưới 2 cột cho Mobile để to rõ, dễ bấm */
   .spirit-grid-responsive {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
@@ -381,20 +536,17 @@ onMounted(() => {
 
   .spirit-block { margin-bottom: 40px; }
 
-  /* Bảng xếp hạng trên mobile */
+  /* Bảng xếp hạng trên mobile cũng xài Glassmorphism */
   .ranking-spirit-list-mobile {
-    background: #131b2c;
+    background: rgba(11, 15, 25, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     padding: 15px;
     border-radius: 20px;
-    border: 1px solid #1e293b;
-  }
-  
-  .spirit-more-link-mobile {
-    display: block; text-align: center; margin-top: 15px;
-    color: #34d399; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+    border: 1px solid rgba(52, 211, 153, 0.15);
   }
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.animate-fadeIn { animation: fadeIn 0.8s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 </style>

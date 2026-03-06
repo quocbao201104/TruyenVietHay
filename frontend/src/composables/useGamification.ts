@@ -142,42 +142,11 @@ export function useGamification() {
     } catch (e) { console.error('fetchUserCurrency:', e); }
   };
 
-  // ── (Legacy) Mua & Đổi từ catalog ─────────────────────────
-  const fetchUserRewards = async (userId: number) => {
-    try {
-      const res = await axios.get(`/api/user-rewards/${userId}`);
-      userRewards.value = res.data.data || [];
-    } catch (e) { userRewards.value = []; }
-  };
-
-  /** Đổi quà từ catalog (milestone / cấp độ) — không qua hộp thư */
-  const claimReward = async (rewardId: number, userId: number) => {
-    try {
-      await axios.post('/api/user-rewards/milestone', { reward_id: rewardId });
-      showSuccessToast('Đổi phần thưởng thành công!');
-      await Promise.all([fetchUserPoints(userId), fetchUserRewards(userId)]);
-    } catch (e: any) {
-      showErrorToast(e.response?.data?.message || 'Lỗi khi đổi phần thưởng');
-      throw e;
-    }
-  };
-
-  const buyReward = async (rewardId: number, userId: number) => {
-    try {
-      await axios.post('/api/user-rewards/buy', { rewardId });
-      showSuccessToast('Mua vật phẩm thành công!');
-      await Promise.all([fetchUserCurrency(), fetchUserRewards(userId)]);
-    } catch (e: any) {
-      showErrorToast(e.response?.data?.message || 'Lỗi khi mua vật phẩm');
-      throw e;
-    }
-  };
-
   const levelProgress = computed(() => {
-    if (!userPoints.value || !currentLevel.value) return 0;
-    const current = userPoints.value.total_exp || 0;
-    const next    = currentLevel.value.next_level_points || 1000;
-    return Math.min(Math.max((current / next) * 100, 0), 100);
+    if (!userPoints.value || !currentLevel.value || !currentLevel.value.next_level_points) return 0;
+    const exp = userPoints.value.total_exp || 0;
+    const next = currentLevel.value.next_level_points;
+    return Math.min(100, Math.floor((exp / next) * 100));
   });
 
   return {
@@ -190,7 +159,7 @@ export function useGamification() {
     // Tasks
     fetchTasks, completeTask,
     // Catalog rewards
-    fetchRewards, fetchUserRewards, claimReward, buyReward,
+    fetchRewards,
     // Hộp thư
     fetchMailbox, claimFromMailbox,
     // Túi đồ

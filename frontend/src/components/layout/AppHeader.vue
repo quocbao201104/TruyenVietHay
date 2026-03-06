@@ -175,7 +175,7 @@
             </div>
             <div class="aura-divider"></div>
             <div class="spirit-dropdown-item logout-spirit" @click="handleLogout">
-              <i class="fas fa-power-off"></i> Thoát Cõi Tiên
+              <i class="fas fa-power-off"></i> Đăng xuất
             </div>
           </div>
         </div>

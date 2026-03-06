@@ -97,17 +97,14 @@
                   query: { storyId: story.id, chapterId: readTarget.id } 
                 }" 
                 class="btn-primary"
-              >
-                <i class="fas fa-book-reader mr-2"></i> {{ hasHistory ? 'TIẾP TỤC ĐỌC' : 'ĐỌC NGAY' }}
+              > {{ hasHistory ? 'TIẾP TỤC ĐỌC' : 'ĐỌC NGAY' }}
               </router-link>
               
               <button @click="toggleFollow" class="btn-secondary" :class="{ 'followed': isFollowed }">
-                <i class="fas fa-heart"></i>
                 <span>{{ isFollowed ? 'Đang Theo Dõi' : 'Theo Dõi' }}</span>
               </button>
 
               <button @click="handleToggleLike" class="btn-like" :class="{ 'liked': isLiked }">
-                <i class="fas fa-thumbs-up"></i>
                 <span>{{ isLiked ? 'Đã Thích' : 'Thích' }}</span>
               </button>
             </div>
@@ -355,7 +352,7 @@ const fetchData = async () => {
         // Kiểm tra lại lần nữa sau khi fetch thêm dữ liệu
         if (lastFetchSlug !== slug) return;
         
-        incrementViewCount(story.value.id);
+        // View increment moved to ChapterView with delay/scroll logic
     }
 };
 

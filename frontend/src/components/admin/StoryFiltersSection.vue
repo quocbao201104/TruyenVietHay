@@ -93,7 +93,7 @@ const internalFilters = ref<Filters>({ ...props.initialFilters });
 const statusOptions = ref([
   { value: '', label: 'Tất cả' },
   { value: 'cho_duyet', label: 'Chờ duyệt' },
-  { value: 'duyet', label: 'Đã duyệt' },
+  { value: 'da_duyet', label: 'Đã duyệt' },
   { value: 'tu_choi', label: 'Từ chối' },
 ]);
 

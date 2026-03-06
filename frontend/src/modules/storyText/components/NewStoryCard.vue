@@ -1,6 +1,5 @@
 <template>
   <div @click="navigateToStory" class="xianxia-story-card" role="link" tabindex="0">
-    <!-- KHUNG ẢNH (LINH VẬT COVER) -->
     <div class="cover-aura-wrapper">
       <img
         :src="story.anh_bia ? getImageUrl(story.anh_bia) : '/img/default-cover.png'"
@@ -10,7 +9,8 @@
         loading="lazy"
       />
       
-      <!-- Lớp phủ khi Hover (Linh Lực Overlay) -->
+      <div class="bottom-vignette"></div>
+
       <div class="aura-overlay">
         <div class="read-btn-spirit">
           <i class="fas fa-eye-low-vision mr-2"></i>
@@ -18,13 +18,11 @@
         </div>
       </div>
 
-      <!-- NGỌC PHIẾN CHƯƠNG (Jade Chapter Badge) -->
       <div class="jade-chapter-badge">
-        <i class="fas fa-scroll text-[9px] text-emerald-400"></i>
+        <i class="fas fa-scroll text-[10px] text-emerald-400"></i>
         <span>{{ story.chuong_moi || `Chương ${story.so_chuong || story.so_luong_chuong || 0}` }}</span>
       </div>  
 
-      <!-- CẢNH GIỚI TAG (Status Sigil) - GIỮ MÀU ĐẶC, KHÔNG TRONG SUỐT -->
       <div :class="['sigil-status', getStatusClass(story.trang_thai)]">
         <i v-if="getStatusClass(story.trang_thai) === 'status-completed'" class="fas fa-circle-check"></i>
         <i v-else-if="getStatusClass(story.trang_thai) === 'status-suggested'" class="fas fa-fire-flame-curved"></i>
@@ -33,7 +31,6 @@
       </div>
     </div>
 
-    <!-- NỘI DUNG CHI TIẾT -->
     <div class="card-spirit-content">
       <h3 class="story-title-main" :title="story.ten_truyen">
         {{ story.ten_truyen }}
@@ -47,17 +44,17 @@
       </div>
 
       <div class="stats-spirit-footer">
-    <div class="stat-spirit">
-        <i class="fas fa-eye text-blue-400"></i> 
-        <span>{{ formatNumber(story.luot_xem) }}</span>
-    </div>
+        <div class="stat-spirit">
+          <i class="fas fa-eye stat-icon-blue"></i> 
+          <span>{{ formatNumber(story.luot_xem) }}</span>
+        </div>
 
-    <div class="stat-spirit">
-        <i class="fas fa-clock text-slate-400"></i>
-        <span>{{ timeAgo(story.thoi_gian_cap_nhat) }}</span>
+        <div class="stat-spirit">
+          <i class="fas fa-clock stat-icon-gray"></i>
+          <span>{{ timeAgo(story.thoi_gian_cap_nhat) }}</span>
+        </div>
+      </div>
     </div>
-</div>
-</div>
   </div>
 </template>
 
@@ -118,24 +115,38 @@ const getStatusClass = (status) => {
 
 .xianxia-story-card {
   font-family: 'Be Vietnam Pro', sans-serif;
-  background: #131b2c;
+  background: #0b0f19; /* Nền tối sâu */
   border-radius: 16px;
   color: #cbd5e1;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #1e293b;
+  border: 1px solid rgba(52, 211, 153, 0.1); /* Viền aura nhạt */
   height: 100%;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
-.xianxia-story-card:hover {
-  transform: translateY(-6px);
-  border-color: #34d39960;
-  box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(52, 211, 153, 0.1);
+@media (hover: hover) {
+  .xianxia-story-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(52, 211, 153, 0.15);
+  }
+
+  .xianxia-story-card:hover .story-cover-img {
+    transform: scale(1.1) rotate(1deg); /* Thêm chút xoay nhẹ cho ảo diệu */
+  }
+
+  .xianxia-story-card:hover .aura-overlay { opacity: 1; }
+
+  .xianxia-story-card:hover .read-btn-spirit {
+    transform: translateY(0);
+  }
+
+  .xianxia-story-card:hover .story-title-main { color: #34d399; }
 }
 
 .cover-aura-wrapper {
@@ -143,17 +154,7 @@ const getStatusClass = (status) => {
   width: 100%;
   padding-top: 140%;
   overflow: hidden;
-  background: #0b0f19;
-}
-
-/* Lớp phủ tối mờ đáy ảnh để nổi chữ */
-.cover-aura-wrapper::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.6) 100%);
-  pointer-events: none;
-  z-index: 1;
+  background: #131b2c;
 }
 
 .story-cover-img {
@@ -164,131 +165,175 @@ const getStatusClass = (status) => {
   transition: transform 0.6s ease-out;
 }
 
-.xianxia-story-card:hover .story-cover-img {
-  transform: scale(1.1);
+
+
+/* Lớp phủ chân ảnh */
+.bottom-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #0b0f19 0%, rgba(11, 15, 25, 0.4) 30%, transparent 60%);
+  pointer-events: none;
+  z-index: 1;
 }
 
+/* Hover Overlay */
 .aura-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(11, 15, 25, 0.6);
+  background: rgba(5, 8, 15, 0.5);
+  backdrop-filter: blur(2px); /* Kính mờ nhẹ */
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
-  transition: 0.3s;
+  transition: 0.3s ease;
   z-index: 5;
 }
 
-.xianxia-story-card:hover .aura-overlay { opacity: 1; }
+
 
 .read-btn-spirit {
-  background: #34d399;
-  color: #0b0f19;
-  padding: 8px 18px;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #05080f;
+  padding: 8px 20px;
   border-radius: 50px;
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(52, 211, 153, 0.4);
+  transform: translateY(10px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* BADGES */
+
+
+/* NGỌC PHIẾN CHƯƠNG (Chapter Badge) */
 .jade-chapter-badge {
   position: absolute;
   bottom: 8px;
   right: 8px;
-  background: #0b0f19;
-  color: #fff;
-  padding: 3px 10px;
-  border-radius: 6px;
-  font-size: 0.6rem;
+  background: rgba(11, 15, 25, 0.75);
+  backdrop-filter: blur(6px);
+  color: #f8fafc;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.7rem;
   font-weight: 700;
-  border: 1px solid rgba(52, 211, 153, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.3);
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
+/* CẢNH GIỚI TAG (Status Sigil - Lệnh Bài) */
 .sigil-status {
   position: absolute;
   top: 8px;
   left: 8px;
   padding: 4px 10px;
-  border-radius: 12px 4px 12px 12px;
-  font-size: 0.55rem;
+  border-radius: 6px 14px 14px 6px;
+  font-size: 0.6rem;
   font-weight: 800;
-  color: #fff;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   z-index: 10;
   display: flex;
   align-items: center;
-  gap: 4px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  gap: 5px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
 
-.status-completed { background: #059669; border: 1px solid rgba(255,255,255,0.2); }
-.status-on-going { background: #2563eb; border: 1px solid rgba(255,255,255,0.2); }
-.status-suggested { background: #d97706; border: 1px solid rgba(255,255,255,0.2); }
+/* Viên Mãn - Ngọc Bích */
+.status-completed { 
+  background: rgba(16, 185, 129, 0.15); 
+  border: 1px solid rgba(16, 185, 129, 0.5); 
+  color: #34d399;
+  text-shadow: 0 0 5px rgba(52, 211, 153, 0.4);
+}
 
-/* CONTENT */
+/* Đang Ra - Băng Lam */
+.status-on-going { 
+  background: rgba(59, 130, 246, 0.15); 
+  border: 1px solid rgba(59, 130, 246, 0.5); 
+  color: #60a5fa;
+  text-shadow: 0 0 5px rgba(96, 165, 250, 0.4);
+}
+
+/* Đề Cử - Xích Kim */
+.status-suggested { 
+  background: rgba(245, 158, 11, 0.15); 
+  border: 1px solid rgba(245, 158, 11, 0.5); 
+  color: #fbbf24;
+  text-shadow: 0 0 5px rgba(251, 191, 36, 0.4);
+}
+
+/* NỘI DUNG */
 .card-spirit-content {
-  padding: 12px 10px;
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  gap: 6px;
+  gap: 8px;
 }
 
 .story-title-main {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f1f5f9;
   line-height: 1.4;
   height: 2.8em;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  transition: color 0.2s;
+  transition: color 0.3s;
 }
 
-.xianxia-story-card:hover .story-title-main { color: #34d399; }
+
 
 .author-spirit {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #64748b;
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-weight: 500;
+  gap: 6px;
+  font-weight: 600;
 }
 
-.author-spirit i { color: #34d39980; font-size: 0.65rem; }
+.author-spirit i { color: rgba(52, 211, 153, 0.6); font-size: 0.7rem; }
 
+/* Thống kê Footer */
 .stats-spirit-footer {
   display: flex;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 10px;
+  border-top: 1px dashed rgba(52, 211, 153, 0.15); /* Đường gạch nối linh khí */
 }
 
 .stat-spirit {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.65rem;
+  gap: 6px;
+  font-size: 0.7rem;
   font-weight: 700;
-  color: #475569;
+  color: #94a3b8;
 }
+
+.stat-icon-blue { color: #3b82f6; }
+.stat-icon-gray { color: #64748b; }
 
 .animate-spin-slow { animation: spin 8s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 @media (max-width: 640px) {
   .story-title-main { font-size: 0.9rem; }
+  .sigil-status { font-size: 0.5rem; padding: 3px 8px; }
+  .jade-chapter-badge { font-size: 0.65rem; padding: 3px 10px; }
 }
 </style>

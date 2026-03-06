@@ -2,13 +2,11 @@
   <div class="profile-page-xianxia">
     <main class="profile-container-aura">
       
-      <!-- TRẠNG THÁI CẢM ỨNG (LOADING) -->
       <div v-if="userStore.isProfileLoading" class="loading-spirit-state">
         <i class="fas fa-yin-yang fa-spin text-4xl mb-4 text-emerald-400"></i>
         <p>Đang cảm ứng tiên cơ đạo hữu...</p>
       </div>
 
-      <!-- TRẠNG THÁI LỖI -->
       <div v-else-if="userStore.profileError" class="error-spirit-state">
         <div class="error-box-aura">
           <i class="fas fa-circle-exclamation text-red-500 text-3xl mb-3"></i>
@@ -19,10 +17,8 @@
         </div>
       </div>
 
-      <!-- NỘI DUNG CHÍNH -->
       <div v-else class="animate-fadeIn">
         
-        <!-- TIÊU ĐỀ TRANG -->
         <div class="page-header-xianxia">
           <h2 class="title-spirit">Tiên Đạo Danh Thiếp</h2>
           <div class="divider-spirit">
@@ -30,10 +26,8 @@
           </div>
         </div>
 
-        <!-- LINH TRẬN CÁ NHÂN (PROFILE CARD) -->
         <section class="spirit-card-main">
           
-          <!-- PHẦN ĐẦU: AVATAR & ĐẠO HIỆU -->
           <div class="spirit-header-aura">
             <div class="avatar-aura-wrapper">
               <div class="aura-ring animate-spin-slow"></div>
@@ -48,15 +42,16 @@
             </div>
 
             <div class="name-spirit-plate">
-              <div class="plate-inner" :style="{ '--badge-color': authStore.user?.badge?.color || '#34d399' }">
-                <h1 class="display-name">{{ user?.full_name || "Vô Danh Đạo Hữu" }}</h1>
-                <UserBadge :badge="authStore.user?.badge" size="md" />
+              <div class="plate-magic-wrapper" :style="{ '--badge-color': authStore.user?.badge?.color || '#34d399' }">
+                <div class="plate-inner">
+                  <h1 class="display-name">{{ user?.full_name || "Vô Danh Đạo Hữu" }}</h1>
+                  <UserBadge :badge="authStore.user?.badge" size="md" />
+                </div>
               </div>
               <p class="spirit-handle">@{{ user?.username || "unknown" }}</p>
             </div>
           </div>
 
-          <!-- PHẦN GIỮA: CĂN CƠ THÔNG TIN -->
           <div class="spirit-details-grid">
             <div class="detail-crystal">
               <i class="fas fa-envelope-open-text icon-aura"></i>
@@ -98,29 +93,26 @@
               </div>
             </div>
 
-            <div class="detail-crystal highlight-emerald" v-if="authStore.user?.badge">
+            <div class="detail-crystal highlight-emerald" v-if="currentLevel">
               <i class="fas fa-wand-magic-sparkles icon-aura emerald"></i>
               <div class="text-group">
                 <span class="label">Cảnh Giới Hiện Tại</span>
                 <span class="value flex items-center gap-2">
-                  {{ authStore.user.badge.badge_name }}
-                  <UserBadge :badge="authStore.user" size="xs" />
+                  {{ currentLevel.name }}
                 </span>
               </div>
             </div>
           </div>
-
-          <!-- GAMIFICATION (TIẾN ĐỘ TU VI) -->
+ 
           <div class="tu-vi-section" v-if="currentLevel">
             <LevelCard
               :level="currentLevel"
-              :points="userPoints?.total_points || 0"
-              :nextLevelPoints="currentLevel?.next_level_points || 100"
+              :points="userPoints?.total_exp || 0"
+              :nextLevelPoints="currentLevel?.next_level_points"
               :nextLevelName="currentLevel?.next_level_name || ''"
             />
           </div>
 
-          <!-- PHẦN CUỐI: TIÊN MÔN LỆNH (NAVIGATION) -->
           <div class="spirit-nav-footer">
             <router-link to="/user/cai-dat-thong-tin" class="spirit-nav-pill">
               <i class="fas fa-user-gear"></i>
@@ -137,7 +129,16 @@
               <span>Lịch Sử Đọc</span>
             </router-link>
 
-            <!-- Admin/Author Tools -->
+            <div v-if="user?.role === 'user' && userStore.applicationStatus?.status === 'pending'" class="spirit-nav-pill pending">
+              <i class="fas fa-hourglass-half"></i>
+              <span>Đang chờ Admin phê duyệt</span>
+            </div>
+            
+            <router-link v-else-if="user?.role === 'user'" to="/user/dang-ky-tac-gia" class="spirit-nav-pill special">
+              <i class="fas fa-feather-pointed"></i>
+              <span>Đăng Ký Làm Tác Giả</span>
+            </router-link>
+
             <router-link v-if="user?.role === 'author'" to="/user/dashboard" class="spirit-nav-pill special">
               <i class="fas fa-chart-line"></i>
               <span>Bảng Điều Khiển</span>
@@ -149,10 +150,9 @@
             </router-link>
           </div>
 
-          <!-- LOGOUT -->
           <div class="logout-aura-area">
              <button @click="handleLogout" class="btn-logout-spirit">
-               <i class="fas fa-power-off"></i> Thoát Cõi Tiên
+               <i class="fas fa-power-off"></i> Thoát
              </button>
           </div>
         </section>
@@ -183,11 +183,11 @@ export default {
     const { currentLevel, userPoints, fetchCurrentLevel, fetchUserPoints } = useGamification();
 
     watch(
-      () => userStore.user,
-      (newUser) => {
-        if (newUser?.id) {
-          fetchUserPoints(newUser.id);
-          fetchCurrentLevel(newUser.id);
+      () => userStore.profile,
+      (newProfile) => {
+        if (newProfile?.id) {
+          fetchUserPoints(newProfile.id);
+          fetchCurrentLevel(newProfile.id);
         }
       },
       { immediate: true },
@@ -195,6 +195,7 @@ export default {
 
     onMounted(() => {
       userStore.fetchUserProfile();
+      userStore.fetchApplicationStatus();
     });
 
     const user = computed(() => userStore.getUserProfile);
@@ -359,36 +360,81 @@ export default {
   box-shadow: 0 0 10px #10b981;
 }
 
-/* Name Plate */
+/* Tái cấu trúc và tinh chỉnh Name Plate - Thanh mảnh hơn */
 .name-spirit-plate {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: center; /* Căn giữa theo chiều dọc so với avatar */
+  height: fit-content;
+}
+
+/* Khung viền linh khí lưu chuyển tinh tế hơn */
+.plate-magic-wrapper {
+  position: relative;
+  display: inline-flex;
+  padding: 1.5px; /* Giảm độ dày của viền để tinh tế hơn */
+  border-radius: 50px;
+  /* Gradient mượt mà hơn, huyền ảo hơn */
+  background: linear-gradient(135deg, var(--badge-color), rgba(255, 255, 255, 0.05), var(--badge-color));
+  background-size: 200% 200%;
+  animation: spiritual-flow 6s ease infinite; /* Chuyển động chậm hơn để huyền ảo */
+  margin-bottom: 6px; /* Giảm khoảng cách với username */
+  z-index: 1;
+  height: fit-content;
+}
+
+/* Hào quang (Glow) huyền ảo hơn, ít blur hơn */
+.plate-magic-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: -3px; /* Giảm diện tích blur */
+  background: inherit;
+  filter: blur(8px); /* Blur nhẹ hơn */
+  opacity: 0.4; /* Opacity thấp hơn */
+  z-index: -1;
+  border-radius: 50px;
+  animation: spiritual-flow 6s ease infinite;
 }
 
 .plate-inner {
   display: inline-flex;
-  align-items: center;
-  gap: 15px;
-  padding: 8px 25px;
-  background: rgba(52, 211, 153, 0.05);
-  border: 2px solid var(--badge-color);
-  border-radius: 50px; /* Pill */
-  margin-bottom: 12px;
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+  align-items: center; /* Căn giữa nội dung */
+  justify-content: space-between; /* Đẩy tên và badge ra hai bên */
+  gap: 12px; /* Giảm gap để chặt chẽ hơn */
+  padding: 6px 20px; /* Giảm padding dọc đáng kể để thẻ thanh mảnh */
+  background: #0b0f19; /* Đảm bảo nền tối phẳng, không 3D */
+  border-radius: 50px;
+  z-index: 2;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4); /* Shadow mờ hơn */
+  width: fit-content;
 }
 
+/* Đạo hiệu phát sáng tinh tế, kích thước nhỏ hơn */
 .display-name {
-  font-size: 2.2rem;
+  font-size: 1.8rem; /* Giảm kích thước chữ để khối nhỏ hơn */
   font-weight: 900;
-  color: #fff;
+  color: #ffffff;
   margin: 0;
   line-height: 1;
+  /* text-shadow nhẹ hơn */
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5px;
+}
+
+/* Căn chỉnh badge chính xác hơn với baseline chữ */
+.user-badge[size="md"] {
+    display: flex;
+    align-items: center;
+    margin-top: -1px;
 }
 
 .spirit-handle {
-  font-size: 1.1rem;
+  font-size: 0.95rem; /* username nhỏ hơn */
   color: #64748b;
   font-weight: 600;
-  margin-left: 20px;
+  margin-left: 20px; 
 }
 
 /* Info Grid */
@@ -410,10 +456,12 @@ export default {
   transition: all 0.3s;
 }
 
-.detail-crystal:hover {
-  transform: translateY(-5px);
-  border-color: #34d39960;
-  background: #1a2436;
+@media (hover: hover) {
+  .detail-crystal:hover {
+    transform: translateY(-5px);
+    border-color: #34d39960;
+    background: #1a2436;
+  }
 }
 
 .icon-aura {
@@ -462,14 +510,17 @@ export default {
   transition: all 0.3s;
 }
 
-.spirit-nav-pill:hover {
-  background: #34d39910;
-  border-color: #34d399;
-  color: #34d399;
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .spirit-nav-pill:hover {
+    background: #34d39910;
+    border-color: #34d399;
+    color: #34d399;
+    transform: translateY(-3px);
+  }
 }
 
 .spirit-nav-pill.special { background: #34d39915; border-color: #34d39940; color: #34d399; }
+.spirit-nav-pill.pending { background: #fbbf2415; border-color: #fbbf2440; color: #fbbf24; cursor: default; }
 .spirit-nav-pill.admin { background: #f43f5e10; border-color: #f43f5e40; color: #f43f5e; }
 
 /* Logout Area */
@@ -490,21 +541,25 @@ export default {
   transition: all 0.3s;
 }
 
-.btn-logout-spirit:hover {
-  background: #f43f5e;
-  color: #fff;
-  box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
+@media (hover: hover) {
+  .btn-logout-spirit:hover {
+    background: #f43f5e;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
+  }
 }
 
 /* Animations */
 .animate-spin-slow { animation: spin 10s linear infinite; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spiritual-flow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
 /* Responsive */
 @media (max-width: 900px) {
   .spirit-header-aura { flex-direction: column; text-align: center; gap: 25px; }
-  .name-spirit-plate { width: 100%; }
+  .name-spirit-plate { align-items: center; margin-left: 0; margin-top: 20px; }
+  .plate-magic-wrapper { margin-bottom: 8px; }
   .plate-inner { width: 100%; justify-content: center; }
   .spirit-details-grid { grid-template-columns: 1fr; }
   .spirit-card-main { padding: 30px 20px; }

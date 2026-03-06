@@ -5,16 +5,16 @@ import type {
     UpdateUserPayload,
     ChangePasswordPayload,
     UserPaginationResponse,
+    AuthorApplicationPayload,
 } from "@/types/user";
 
 
 /**
  * Lấy thông tin chi tiết của người dùng hiện tại.
  * Endpoint: GET /api/user/me
- * @returns Promise<User> Thông tin người dùng.
  */
-export async function getMeApi(): Promise<{ user: User }> {
-    const response = await axios.get<{ user: User }>("/api/user/me");
+export async function getMeApi(): Promise<{ user: User; token?: string }> {
+    const response = await axios.get<{ user: User; token?: string }>("/api/user/me");
     return response.data;
 }
 
@@ -60,6 +60,24 @@ export async function changePasswordApi(
     data: ChangePasswordPayload
 ): Promise<any> {
     const response = await axios.put("/api/user/change-password", data);
+    return response.data;
+}
+
+/**
+ * Gửi đơn đăng ký làm tác giả.
+ * Endpoint: POST /api/author/apply
+ * @param data (pen_name, bio, experience).
+ */
+export async function applyAuthorApi(data: AuthorApplicationPayload): Promise<any> {
+    const response = await axios.post("/api/author/apply", data);
+    return response.data;
+}
+
+/**
+ * Lấy trạng thái đơn đăng ký làm tác giả của người dùng hiện tại.
+ */
+export async function getAuthorApplicationStatusApi(): Promise<any> {
+    const response = await axios.get("/api/author/status");
     return response.data;
 }
 

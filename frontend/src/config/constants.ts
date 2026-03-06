@@ -23,7 +23,7 @@ export const getImageUrl = (path: string | null | undefined, width: number = 500
 };
 
 export const getAvatarUrl = (path: string | null | undefined): string => {
-     if (!path) return `${IMAGE_BASE_URL}/uploads_img/avatar/default-avatar.jpg`;
+     if (!path || path.toLowerCase().includes('default-avatar') || path.toLowerCase().includes('avatar-default')) return '/img/avatar-default.png';
      if (path.startsWith('http')) return path;
      
      const cleanPath = path.startsWith('/') ? path : `/${path}`;

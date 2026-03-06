@@ -24,6 +24,13 @@ import ChapterView from "@/views/ChapterView.vue";
 import AuthorChapterManagementView from "@/views/Author/AuthorChapterManagementView.vue";
 import AuthorChapterEditor from "@/views/Author/AuthorChapterEditor.vue";
 import AuthorDashboardView from "@/views/Author/AuthorDashboardView.vue";
+import AuthorApplyView from "@/views/Author/AuthorApplyView.vue";
+
+// Rules & Legal Views
+import PrivacyView from "@/views/Rules/PrivacyView.vue";
+import TermsView from "@/views/Rules/TermsView.vue";
+import CopyrightView from "@/views/Rules/CopyrightView.vue";
+import ContactView from "@/views/Rules/ContactView.vue";
 const routes: Array<RouteRecordRaw> = [
   { path: "/", name: "Home", component: HomeView },
   { path: "/dang-nhap", name: "Login", component: LoginView },
@@ -168,6 +175,33 @@ const routes: Array<RouteRecordRaw> = [
       meta: { requiresAuth: true, requiredRole: ["author", "admin"] },
   },
   {
+    path: "/author/apply",
+    name: "AuthorApply",
+    component: AuthorApplyView,
+    meta: { requiresAuth: true },
+  },
+  // Rules & Legal Routes
+  {
+    path: "/chinh-sach-bao-mat",
+    name: "Privacy",
+    component: PrivacyView,
+  },
+  {
+    path: "/dieu-khoan-su-dung",
+    name: "Terms",
+    component: TermsView,
+  },
+  {
+    path: "/ban-quyen",
+    name: "Copyright",
+    component: CopyrightView,
+  },
+  {
+    path: "/lien-he",
+    name: "Contact",
+    component: ContactView,
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/views/NotFoundView.vue"),
@@ -218,14 +252,10 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const authStore = useAuthStore();
+  
+  // Wait for initialization IF it hasn't happened yet
   if (!authStore.isInitialized) {
-    try {
-      await authStore.initialize();
-    } catch (error) {
-      console.error("Auth store initialization failed:", error);
-      authStore.clearAuth();
-      return next({ name: "Login", query: { toast: "session_expired" } });
-    }
+    await authStore.initialize();
   }
 
   const isAuthPage = to.name === "Login" || to.name === "Register";
@@ -240,7 +270,8 @@ router.beforeEach(async (to, from, next) => {
   const requiredRoles = to.meta.requiredRole as string[] | undefined;
 
   if (requiresAuth && !authStore.isLoggedIn) {
-    next({ name: "Login", query: { toast: "session_expired" } });
+     // If initialization finished and we are NOT logged in, then redirect
+     next({ name: "Login", query: { toast: "session_expired" } });
   } else if (requiresAuth && authStore.isLoggedIn && requiredRoles) {
     if (!authStore.user || !requiredRoles.includes(authStore.user.role)) {
       next({ name: "Home", query: { toast: "unauthorized" } });

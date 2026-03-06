@@ -26,3 +26,18 @@ export const getAdminDashboard = async (): Promise<AdminDashboardResponse> => {
   const res = await axios.get<AdminDashboardResponse>("/api/admin/dashboard");
   return res.data;
 };
+
+export const getAuthorApplications = async (status?: string): Promise<any> => {
+    const res = await axios.get("/api/admin/author-applications", { params: { status } });
+    return res.data;
+};
+
+export const approveAuthorApplication = async (id: number): Promise<any> => {
+    const res = await axios.post("/api/admin/approve-author", { id });
+    return res.data;
+};
+
+export const rejectAuthorApplication = async (id: number, admin_note?: string): Promise<any> => {
+    const res = await axios.post("/api/admin/reject-author", { id, admin_note });
+    return res.data;
+};

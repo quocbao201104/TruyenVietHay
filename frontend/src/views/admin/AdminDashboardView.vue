@@ -51,6 +51,11 @@
         </div>
       </section>
 
+      <!-- PHẦN X: ĐƠN ĐĂNG KÝ TÁC GIẢ -->
+      <section class="applications-section animate-fadeIn">
+        <AdminAuthorApplications />
+      </section>
+
       <!-- PHẦN 3: THIÊN BẢNG LINH THƯ (TOP 10) -->
       <section class="top-stories-section-admin">
         <div class="section-title-aura admin">
@@ -97,6 +102,7 @@ import { getAdminDashboard } from "@/modules/admin/admin.api";
 import AuthorDashboardStatCard from "@/components/author/AuthorDashboardStatCard.vue";
 import AuthorDashboardChart from "@/components/author/AuthorDashboardChart.vue";
 import AdminDashboardTopStories from "@/components/admin/AdminDashboardTopStories.vue";
+import AdminAuthorApplications from "@/components/admin/AdminAuthorApplications.vue";
 import { useAppToast } from "@/composables/useAppToast";
 
 const { showErrorToast } = useAppToast();
@@ -171,6 +177,7 @@ onMounted(() => {
   letter-spacing: 6px;
   background: linear-gradient(to right, #a78bfa, #fff, #a78bfa);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 15px rgba(167, 139, 250, 0.4));
 }

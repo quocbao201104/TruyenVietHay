@@ -1,8 +1,8 @@
 // frontend/src/modules/user/user.store.ts
 import { defineStore } from "pinia";
 import { useToast } from "vue-toastification";
-import { getMeApi, updateMeApi, changePasswordApi } from "./user.api";
-import type { User, UpdateUserPayload, ChangePasswordPayload } from "@/types/user";
+import { getMeApi, updateMeApi, changePasswordApi, applyAuthorApi, getAuthorApplicationStatusApi } from "./user.api";
+import type { User, UpdateUserPayload, ChangePasswordPayload, AuthorApplicationPayload } from "@/types/user";
 import { useAuthStore } from "@/modules/auth/auth.store";
 
 interface UserState {
@@ -11,6 +11,7 @@ interface UserState {
   profileError: string | null;
   isUpdatingProfile: boolean;
   updateProfileError: string | null;
+  applicationStatus: any | null;
 }
 
 export const useUserStore = defineStore("user", {
@@ -20,12 +21,14 @@ export const useUserStore = defineStore("user", {
     profileError: null,
     isUpdatingProfile: false,
     updateProfileError: null,
+    applicationStatus: null,
   }),
 
   getters: {
     getUserProfile: (state) => state.profile,
     isProfileLoading: (state) => state.isLoadingProfile,
     getProfileError: (state) => state.profileError,
+    getAuthorApplicationStatus: (state) => state.applicationStatus,
   },
 
   actions: {
@@ -46,6 +49,13 @@ export const useUserStore = defineStore("user", {
         if (response.user.avatar) {
             response.user.avatar = response.user.avatar + '?' + Date.now();
         }
+        
+        // Handle token refresh if role changed in backend
+        if (response.token) {
+          authStore.setToken(response.token);
+          console.log("Auth token refreshed due to role change");
+        }
+
         this.profile = response.user;
         authStore.setUser(response.user);
       } catch (error: any) {
@@ -58,6 +68,17 @@ export const useUserStore = defineStore("user", {
       } finally {
         this.isLoadingProfile = false;
       }
+    },
+
+    async fetchApplicationStatus() {
+        try {
+            const response = await getAuthorApplicationStatusApi();
+            this.applicationStatus = response.application;
+            return response.application;
+        } catch (error) {
+            console.error("Lỗi fetchApplicationStatus:", error);
+            return null;
+        }
     },
 
     async updateUserProfile(data: UpdateUserPayload) {
@@ -98,6 +119,21 @@ export const useUserStore = defineStore("user", {
       } catch (error: any) {
         toast.error("Đổi mật khẩu thất bại: " + (error.response?.data?.message || error.message || "Lỗi không xác định."));
         console.error("Lỗi changeUserPassword action:", error);
+        throw error;
+      }
+    },
+
+    async applyToBeAuthor(data: AuthorApplicationPayload) {
+      const toast = useToast();
+      try {
+        const response = await applyAuthorApi(data);
+        toast.success(response.message || "Gửi đơn đăng ký thành công!");
+        await this.fetchApplicationStatus(); // Refresh status
+        return response;
+      } catch (error: any) {
+        const message = error.response?.data?.message || error.message || "Gửi đơn đăng ký thất bại.";
+        toast.error(message);
+        console.error("Lỗi applyToBeAuthor action:", error);
         throw error;
       }
     },

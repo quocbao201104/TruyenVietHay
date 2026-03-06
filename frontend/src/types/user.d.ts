@@ -60,3 +60,12 @@ export interface UserPaginationResponse {
         authorUsers: number;
     };
 }
+
+/**
+ * Payload khi gửi đơn đăng ký làm tác giả.
+ */
+export interface AuthorApplicationPayload {
+    pen_name: string;
+    bio: string;
+    experience: string;
+}

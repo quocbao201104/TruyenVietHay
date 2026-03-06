@@ -1,8 +1,8 @@
 <template>
   <div class="chapter-view-xianxia" :class="{ 'light-aura': !isDarkMode }">
-    <div class="fixed top-0 left-0 w-full z-[1000]">
+    <div class="fixed top-0 left-0 w-full z-1000">
       <div
-        class="h-[3px] bg-gradient-to-r from-emerald-600 via-emerald-400 to-teal-300 shadow-[0_0_10px_#34d399] transition-all duration-300"
+        class="h-[3px] bg-linear-to-r from-emerald-600 via-emerald-400 to-teal-300 shadow-[0_0_10px_#34d399] transition-all duration-300"
         :style="{ width: scrollProgress + '%' }"
       />
     </div>
@@ -135,6 +135,25 @@ const isScrolled = ref(false);
 const lastScrollTop = ref(0);
 const isScrollingDown = ref(false);
 
+// View Tracking logic
+const isViewCounted = ref(false);
+let viewTimer: ReturnType<typeof setTimeout> | null = null;
+
+const triggerViewIncrement = () => {
+  if (isViewCounted.value || !chapter.value?.id) return;
+  isViewCounted.value = true;
+  store.incrementView(chapter.value.id);
+  if (viewTimer) clearTimeout(viewTimer);
+};
+
+const startViewTimer = () => {
+  if (viewTimer) clearTimeout(viewTimer);
+  isViewCounted.value = false;
+  viewTimer = setTimeout(() => {
+    triggerViewIncrement();
+  }, 15000); // 15 seconds
+};
+
 watch([fontSize, fontFamily], () => {
   localStorage.setItem('reading-font-size', fontSize.value.toString());
   localStorage.setItem('reading-font-family', fontFamily.value);
@@ -180,6 +199,12 @@ const handleScroll = () => {
   } else {
       isScrollingDown.value = false;
   }
+  
+  // Trigger view if scrolled significantly (300px)
+  if (winScroll > 300 && !isViewCounted.value) {
+    triggerViewIncrement();
+  }
+
   lastScrollTop.value = winScroll <= 0 ? 0 : winScroll;
 };
 
@@ -215,8 +240,16 @@ const loadData = async () => {
   const storySlug = route.params.storySlug as string;
   if (chapterSlug && storySlug) {
     await store.fetchChapter(chapterSlug, storySlug);
-    if (chapter.value && (chapterList.value.length === 0 || chapterList.value[0].truyen_id !== chapter.value.truyen_id)) {
-      await store.fetchChapterList(chapter.value.truyen_id);
+    if (chapter.value) {
+      // Save reading history for logged in user
+      if (useAuthStore().isLoggedIn) {
+        saveReadingHistory(chapter.value.truyen_id, chapter.value.id).catch(err => {
+          console.error("Failed to save reading history:", err);
+        });
+      }
+      if (chapterList.value.length === 0 || chapterList.value[0].truyen_id !== chapter.value.truyen_id) {
+        await store.fetchChapterList(chapter.value.truyen_id);
+      }
     }
   }
 };
@@ -224,13 +257,18 @@ const loadData = async () => {
 onMounted(() => {
   loadData();
   window.addEventListener('scroll', handleScroll);
+  startViewTimer();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll);
+  if (viewTimer) clearTimeout(viewTimer);
 });
 
-watch(() => [route.params.chapterSlug, route.params.storySlug], () => loadData());
+watch(() => [route.params.chapterSlug, route.params.storySlug], () => {
+  loadData();
+  startViewTimer(); // Reset timer for new chapter
+});
 </script>
 
 <style scoped>

@@ -45,21 +45,18 @@
                   
                   <div class="stat-value-group">
                     <span class="stat-value">{{ userPoints?.total_exp?.toLocaleString() || 0 }}</span>
-                    <span class="stat-label exp">Tu Vi</span>
                   </div>
                 </div>
                 <div class="stat-card">
                   <i class="fas fa-coins stat-icon gem"></i>
                   <div class="stat-value-group">
                     <span class="stat-value">{{ userCurrency?.toLocaleString() || 0 }}</span>
-                    <span class="stat-label gem">Linh Thạch Hạ Phẩm</span>
                   </div>
                 </div>
                 <div class="stat-card">
                   <i class="fas fa-hourglass-half stat-icon time"></i>
                   <div class="stat-value-group">
                     <span class="stat-value">{{ remainingLifespan || 'Vô hạn' }}</span>
-                    <span class="stat-label time">Thọ Nguyên</span>
                   </div>
                 </div>
               </div>
@@ -283,13 +280,15 @@
 import { computed, ref, onMounted } from 'vue';
 import { useGamification } from '@/composables/useGamification';
 import { useAuthStore } from '@/modules/auth/auth.store';
+import { useUserStore } from '@/modules/user/user.store';
 
 export default {
   name: 'TasksView',
   setup() {
     const authStore = useAuthStore();
+    const userStore = useUserStore();
     const { 
-      userPoints, currentLevel, tasks, rewards, mailbox, badges, userCurrency, 
+      userPoints, currentLevel, tasks, rewards, mailbox, badges, userCurrency, levelProgress,
       fetchUserPoints, fetchCurrentLevel, fetchTasks, fetchUserCurrency, 
       fetchMailbox, fetchInventoryBadges, completeTask, claimFromMailbox, equipBadge, upgradeLevel
     } = useGamification();
@@ -332,13 +331,6 @@ export default {
            ...tasks.value.filter(t => t.status !== 'completed'),
            ...tasks.value.filter(t => t.status === 'completed')
         ]
-    });
-
-    const levelProgress = computed(() => {
-        if (!userPoints.value || !currentLevel.value) return 0;
-        const current = userPoints.value.total_exp || 0; 
-        const next = currentLevel.value.next_level_points || 1000; 
-        return Math.min(Math.max((current / next) * 100, 0), 100);
     });
 
     const remainingLifespan = computed(() => {
@@ -394,8 +386,9 @@ export default {
     const handleUpgradeLevel = async () => {
     processingUpgrade.value = true;
     try {
-        // Truyền ID của Bảo vào đây
-        await upgradeLevel(authStore.user.id); 
+        await upgradeLevel(authStore.user.id);
+        // Refresh profile to get new role/token if promoted to Author
+        await userStore.fetchUserProfile();
     } finally {
         processingUpgrade.value = false;
     }
@@ -530,45 +523,96 @@ export default {
   .user-stats { width: auto; }
 }
 
-/* Badge (Avatar) */
-.badge-container { position: relative; }
-.badge-container:hover .badge-glow { opacity: 1; }
+/* ===== TỐI ƯU BADGE - HIỆU ỨNG ĐAN ĐIỀN NỘI TẠI (KHÔNG PHÓNG TO) ===== */
+.badge-container {
+  position: relative;
+  /* Giữ nguyên kích thước gốc, không thêm margin-bottom quá lớn */
+}
+
+/* 1. Vầng hào quang nền (Glow ngoài) - Giảm nhẹ để tập trung vào hiệu ứng nội tại */
 .badge-glow {
   position: absolute;
   inset: -10px;
-  background: conic-gradient(from 0deg, transparent 0%, var(--badge-color) 40%, transparent 60%);
+  /* Giữ conic-gradient cũ nhưng giảm độ blur để tinh tế hơn */
+  background: conic-gradient(from 0deg, transparent 0%, color-mix(in srgb, var(--badge-color) 80%, transparent) 40%, transparent 60%);
   border-radius: 50%;
-  opacity: 0.6;
+  opacity: 0.5; /* Mặc định mờ hơn */
   transition: opacity 0.3s;
-  filter: blur(10px);
-  animation: spin-slow 6s linear infinite;
+  filter: blur(12px);
+  animation: spin-slow 10s linear infinite; /* Quay chậm hơn nữa */
 }
+
+/* Hover chỉ làm hào quang ngoài bừng sáng, không phóng to container */
+@media (hover: hover) {
+  .badge-container:hover .badge-glow {
+    opacity: 0.9;
+  }
+}
+
+/* 2. Khung chứa chính (Wrapper) */
 .badge-icon-wrapper {
   position: relative;
-  background-color: #0b0f19;
+  /* Làm nền trong Đan Điền đen sâu hơn nữa để nổi bật hiệu ứng trong viền */
+  background-color: #050810; 
   width: 6rem;
   height: 6rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Tăng độ dày viền để sắc nét hơn một chút */
   border: 2px solid var(--badge-color);
-  box-shadow: 0 0 20px color-mix(in srgb, var(--badge-color) 40%, transparent);
+  /* Bóng đổ ngoài nhẹ nhàng */
+  box-shadow: 0 0 15px color-mix(in srgb, var(--badge-color) 40%, transparent);
   margin: 0.25rem;
-  overflow: hidden;
+  overflow: hidden; /* Quan trọng: Cắt hiệu ứng Core ảo ở phía trong */
+  z-index: 1;
 }
+
+/* *** HIỆU ỨNG MỚI: HẠCH TÂM LINH KHÍ (DORMANT CORE) - NẰM TRONG VIỀN *** */
+.badge-icon-wrapper::before {
+  content: '';
+  position: absolute;
+  /* Phủ rộng ra ngoài một chút để khi xoay không bị lộ mép phẳng */
+  inset: -20px; 
+  /* Gradient tâm linh khí, phối màu trắng sáng ở tâm để tạo độ rực */
+  background: radial-gradient(circle, color-mix(in srgb, var(--badge-color) 90%, #fff) 0%, transparent 70%);
+  border-radius: 50%;
+  /* Mặc định Đan Điền đang ở trạng thái ẩn (dormant), linh khí mờ nhạt */
+  opacity: 0.15;
+  filter: blur(5px);
+  z-index: 0; /* Nằm dưới ảnh/icon */
+  transition: all 0.4s ease-out; /* Hiệu ứng bừng sáng mượt mà */
+}
+
+/* *** KHI HOVER: ĐAN ĐIỀN BỪNG SÁNG & LINH KHÍ LƯU CHUYỂN *** */
+@media (hover: hover) {
+  .badge-container:hover .badge-icon-wrapper::before {
+    /* Bừng sáng mạnh mẽ */
+    opacity: 0.8;
+    filter: blur(2px);
+    /* Chuyển động xoay & hô hấp (pulse) nằm trong viền */
+    animation: core-active-swirl 4s linear infinite, core-active-pulse 1.5s ease-in-out infinite alternate;
+  }
+}
+
+/* 3. Ảnh/Icon nằm trên Core */
 .badge-image {
   width: 4rem;
   height: 4rem;
   object-fit: contain;
-  z-index: 10;
-  filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.8));
+  z-index: 10; /* Nằm trên lớp linh khí bừng sáng */
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--badge-color) 60%, transparent));
 }
+
 .badge-icon {
+  z-index: 10; /* Nằm trên lớp linh khí bừng sáng */
   color: #34d399;
   font-size: 2.25rem;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* 4. Label Cảnh Giới - Giữ nguyên vị trí cũ */
 .badge-label {
   position: absolute;
   bottom: -0.75rem;
@@ -585,6 +629,21 @@ export default {
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: -0.05em;
+  z-index: 11;
+}
+
+/* ===== ANIMATIONS MỚI PHỤC VỤ HIỆU ỨNG NỘI TẠI ===== */
+
+/* Linh khí lưu chuyển (Xoay nhanh hơn một chút khi hover) */
+@keyframes core-active-swirl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Hô hấp tâm (Hạch tâm phập phồng nhẹ) */
+@keyframes core-active-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.1); opacity: 0.9; }
 }
 
 /* User Tu Vi / Linh Thach */
@@ -750,7 +809,9 @@ export default {
   border: none;
   cursor: pointer;
 }
-.tab-btn:hover { color: #cbd5e1; }
+@media (hover: hover) {
+  .tab-btn:hover { color: #cbd5e1; }
+}
 .tab-btn.active { color: #34d399; }
 .tab-btn:not(.active) { color: #64748b; }
 .tab-badge {
@@ -812,9 +873,11 @@ export default {
   padding: 1.5rem;
   transition: all 0.3s;
 }
-.task-card:hover {
-  border-color: rgba(16, 185, 129, 0.5);
-  box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+@media (hover: hover) {
+  .task-card:hover {
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+  }
 }
 
 .task-card.completed {
@@ -822,9 +885,11 @@ export default {
   background-color: rgba(6, 78, 59, 0.05);
   opacity: 0.6;
 }
-.task-card.completed:hover {
-  border-color: rgba(6, 78, 59, 0.3);
-  box-shadow: none;
+@media (hover: hover) {
+  .task-card.completed:hover {
+    border-color: rgba(6, 78, 59, 0.3);
+    box-shadow: none;
+  }
 }
 
 .task-completed-stamp {
@@ -910,9 +975,11 @@ export default {
   gap: 0.5rem;
   cursor: pointer;
 }
-.task-action-btn:hover:not(:disabled) {
-  background-color: #10b981;
-  color: #0b0f19;
+@media (hover: hover) {
+  .task-action-btn:hover:not(:disabled) {
+    background-color: #10b981;
+    color: #0b0f19;
+  }
 }
 .task-action-btn:disabled {
   opacity: 0.5;
@@ -951,7 +1018,9 @@ export default {
   transition: all 0.3s;
 }
 @media (min-width: 768px) { .mail-card { flex-direction: row; } }
-.mail-card:hover { border-color: rgba(16, 185, 129, 0.4); }
+@media (hover: hover) {
+  .mail-card:hover { border-color: rgba(16, 185, 129, 0.4); }
+}
 
 .mail-body {
   display: flex;
@@ -971,7 +1040,9 @@ export default {
   flex-shrink: 0;
   transition: transform 0.3s;
 }
-.mail-card:hover .mail-icon-wrapper { transform: scale(1.1); }
+@media (hover: hover) {
+  .mail-card:hover .mail-icon-wrapper { transform: scale(1.1); }
+}
 .mail-icon-wrapper.badge { background-color: rgba(4, 47, 46, 0.4); border-color: rgba(20, 184, 166, 0.3); }
 .mail-icon-wrapper.currency { background-color: rgba(69, 26, 3, 0.4); border-color: rgba(245, 158, 11, 0.3); }
 .mail-icon-wrapper.exp { background-color: rgba(2, 44, 34, 0.4); border-color: rgba(16, 185, 129, 0.3); }
@@ -1019,7 +1090,9 @@ export default {
   cursor: pointer;
 }
 @media (min-width: 768px) { .mail-claim-btn { width: auto; } }
-.mail-claim-btn:hover:not(:disabled) { background: linear-gradient(to right, #34d399, #5eead4); }
+@media (hover: hover) {
+  .mail-claim-btn:hover:not(:disabled) { background: linear-gradient(to right, #34d399, #5eead4); }
+}
 .mail-claim-btn:active:not(:disabled) { transform: scale(0.95); }
 .mail-claim-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
@@ -1097,7 +1170,9 @@ export default {
   background-color: #0b0f19;
   border: 1px solid #1e293b;
 }
-.inventory-slot:hover { border-color: color-mix(in srgb, var(--badge-color) 50%, transparent); background-color: color-mix(in srgb, var(--badge-color) 10%, transparent); }
+@media (hover: hover) {
+  .inventory-slot:hover { border-color: color-mix(in srgb, var(--badge-color) 50%, transparent); background-color: color-mix(in srgb, var(--badge-color) 10%, transparent); }
+}
 
 .inventory-slot.equipped {
   background-color: color-mix(in srgb, var(--badge-color) 10%, transparent);
@@ -1118,7 +1193,9 @@ export default {
   filter: blur(1px);
   transition: background-color 0.3s;
 }
-.inventory-slot.empty:hover .empty-inner { background-color: rgba(16, 185, 129, 0.05); }
+@media (hover: hover) {
+  .inventory-slot.empty:hover .empty-inner { background-color: rgba(16, 185, 129, 0.05); }
+}
 
 .inventory-equipped-glow {
   position: absolute;
@@ -1152,7 +1229,9 @@ export default {
   z-index: 10;
   opacity: 0.6;
 }
-.inventory-slot:hover .inventory-badge-img { transform: scale(1.1); opacity: 1; }
+@media (hover: hover) {
+  .inventory-slot:hover .inventory-badge-img { transform: scale(1.1); opacity: 1; }
+}
 .inventory-slot.equipped .inventory-badge-img { opacity: 1; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--badge-color) 50%, transparent)); }
 
 .inventory-tooltip {
@@ -1175,7 +1254,9 @@ export default {
   width: 8rem;
   text-align: center;
 }
-.inventory-slot:hover .inventory-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
+@media (hover: hover) {
+  .inventory-slot:hover .inventory-tooltip { opacity: 1; transform: translateX(-50%) scale(1); }
+}
 .tooltip-title { font-weight: 900; color: var(--badge-color); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: -0.05em; }
 .tooltip-desc { color: #64748b; }
 .tooltip-desc.equipped { color: white; }

@@ -15,13 +15,17 @@ interface AuthState {
   token: string | null;
   user: User | null;
   isInitialized: boolean;
+  isInitialLoading: boolean;
 }
+
+let initializationPromise: Promise<void> | null = null;
 
 export const useAuthStore = defineStore("auth", {
   state: (): AuthState => ({
     token: localStorage.getItem("token") || null,
     user: null,
     isInitialized: false,
+    isInitialLoading: false,
   }),
 
   getters: {
@@ -46,6 +50,8 @@ export const useAuthStore = defineStore("auth", {
       this.setToken(null);
       this.setUser(null);
       this.isInitialized = false;
+      this.isInitialLoading = false;
+      initializationPromise = null;
       const toast = useToast();
       toast.info("Bạn đã đăng xuất.");
     },
@@ -88,6 +94,7 @@ export const useAuthStore = defineStore("auth", {
         const errorMessage =
           err.response?.data?.message || err.message || "Đăng nhập Google thất bại";
         toast.error(errorMessage);
+        this.clearAuth();
         throw { message: errorMessage, raw: err };
       }
     },
@@ -113,38 +120,30 @@ export const useAuthStore = defineStore("auth", {
     // Khởi tạo store khi reload app
     async initialize(): Promise<void> {
       if (this.isInitialized) return;
-      this.isInitialized = true; 
+      if (initializationPromise) return initializationPromise;
 
-      if (this.token) {
-        try {
-          const response = await getMeApi();
-          this.setUser(response.user);
-        } catch (error: any) {
-          const toast = useToast();
-          console.error("Lỗi xác thực (Initialize):", error);
-          
-          let errorMsg = "Lỗi không xác định";
-          if (error.response) {
-              console.error("Status:", error.response.status);
-              console.error("Data:", error.response.data);
-              errorMsg = `Lỗi ${error.response.status}: ${error.response.data?.message || 'Server Error'}`;
-
-              if (error.response.status === 401 || error.response.status === 403) {
-                 this.clearAuth();
-                 toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-                 return;
-              }
-          } else {
-              console.error("Network Error or other:", error.message);
-              errorMsg = `Lỗi mạng: ${error.message}`;
+      this.isInitialLoading = true;
+      initializationPromise = (async () => {
+        if (this.token) {
+          try {
+            const response = await getMeApi();
+            this.setUser(response.user);
+          } catch (error: any) {
+            console.error("Lỗi xác thực (Initialize):", error);
+            if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+              this.clearAuth();
+            }
           }
-          
-           // Show toast for non-auth errors to debug
-           toast.error(`Khôi phục phiên thất bại: ${errorMsg}`);
-        }
-      } else {
+        } else {
           this.setUser(null);
-      }
+        }
+        this.isInitialized = true;
+        this.isInitialLoading = false;
+        initializationPromise = null;
+      })();
+
+      return initializationPromise;
     },
   },
 });
+  

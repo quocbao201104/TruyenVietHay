@@ -20,6 +20,8 @@ export interface Chapter {
       next_slug: string | null;
   };
   trang_thai?: string;
+  ly_do_tu_choi?: string;
+  luot_xem?: number;
 }
 
 export interface ChapterListResponse {
@@ -64,8 +66,8 @@ export const deleteChapter = async (id: number): Promise<void> => {
   await axios.delete(`/api/chuong/${id}`);
 };
 
-export const approveOrRejectChapter = async (id: number, action: 'duyet' | 'tu_choi'): Promise<any> => {
-  const response = await axios.put(`/api/chuong/${id}/duyet-chuong`, { action });
+export const approveOrRejectChapter = async (id: number, action: 'duyet' | 'tu_choi', reason?: string): Promise<any> => {
+  const response = await axios.put(`/api/chuong/${id}/duyet-chuong`, { action, reason });
   return response.data;
 };
 
@@ -74,3 +76,7 @@ export const approveAllChaptersByStoryId = async (storyId: number): Promise<any>
   return response.data;
 };
 
+export const incrementChapterView = async (chapterId: number): Promise<any> => {
+  const response = await axios.post(`/api/chuong/${chapterId}/view`);
+  return response.data;
+};

@@ -1,118 +1,117 @@
 <template>
-  <div class="trang-chu">
-    <!-- Phần hero -->
-    <section class="hero">
-      <div class="container">
-        <div class="logo-wrapper">
-          <img
-            src="@/assets/images/logo.png"
-            alt="TruyenVietHay Logo"
-            class="logo"
-          />
-          <p class="slogan">Thế giới truyện Việt trong tầm tay bạn</p>
-        </div>
+  <div class="trang-chu-xianxia">
+    <section class="hero-gate">
+      <div class="hero-bg-wrapper">
+        <img 
+          src="https://res.cloudinary.com/dg9ftuhv4/image/upload/v1772805144/truyenviethay/banners/banner-desktop.jpg" 
+          alt="TruyenVietHay Background" 
+          class="hero-bg-image"
+          crossorigin="anonymous"
+        />
+        <div class="hero-vignette"></div>
+      </div>
 
-        <h1 class="tieu-de-chinh">
-          Đọc Truyện Miễn Phí, Nhanh Và Mượt Mà, Cộng Đồng Tác Giả Tài Năng,
-          Cùng Nhau Sáng Tạo
-        </h1>
+      <div class="container relative z-10">
+        <div class="hero-content">
+          <div class="logo-wrapper animate-float">
+            <img src="@/assets/images/logo.png" alt="TruyenVietHay Logo" class="logo-spirit" />
+            <p class="slogan-spirit">Thế giới truyện Việt trong tầm tay bạn</p>
+          </div>
 
-        <div class="nut-dieu-huong">
-          <router-link to="/truyen-chu" class="nut-truyen nut-truyen-chu">
-            Truyện Chữ <span class="mui-ten">→</span>
-          </router-link>
-          <router-link to="/truyen-tranh" class="nut-truyen nut-truyen-tranh">
-            Truyện Tranh <span class="mui-ten">→</span>
-          </router-link>
+          <h1 class="tieu-de-chinh">
+            Đọc Truyện Miễn Phí, Nhanh Và Mượt Mà<br/>
+            <span class="text-highlight">Cộng Đồng Tác Giả Tài Năng, Cùng Nhau Sáng Tạo</span>
+          </h1>
+
+          <div class="nut-dieu-huong">
+            <router-link to="/truyen-chu" class="btn-spirit emerald">
+              <i class="fas fa-book-open mr-2"></i> Truyện Chữ
+            </router-link>
+            <router-link to="/truyen-tranh" class="btn-spirit azure">
+              <i class="fas fa-image mr-2"></i> Truyện Tranh
+            </router-link>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Phần giới thiệu -->
-    <section class="gioi-thieu">
+    <section class="gioi-thieu-sect">
       <div class="container">
-        <h2 class="tieu-de-phu">
-          Giới thiệu về TruyenVietHay – Truyện Hay Truyện Việt - Nền tảng đọc
-          truyện online miễn phí mới 2025
-        </h2>
+        <div class="section-header-spirit">
+          <h2 class="tieu-de-phu">
+GIỚI THIỆU VỀ TRUYỆN VIỆT HAY
+          </h2>
+          <p class="noi-dung-lead">
+            Nền tảng đọc truyện online miễn phí mới 2026. Nơi kết nối tâm hồn yêu văn chương của hàng triệu độc giả, mang đến không gian đọc truyện chất lượng cao đậm chất Việt.
+          </p>
+        </div>
 
-        <p class="noi-dung">
-          <strong>TruyenVietHay</strong> tự hào là nền tảng đọc truyện trực
-          tuyến hàng đầu Việt Nam, nơi kết nối tâm hồn yêu văn chương của hàng
-          triệu độc giả. Với sứ mệnh "Lan tỏa văn hóa đọc", chúng tôi mang đến
-          không gian đọc truyện chất lượng cao hoàn toàn miễn phí, nơi mỗi câu
-          chữ đều thấm đẫm tinh thần Việt.
-        </p>
-
-        <h3 class="tieu-de-nho">Điểm khác biệt chỉ có tại TruyenVietHay</h3>
-
-        <ul class="danh-sach">
-          <li>
-            <strong>Kho truyện đồ sộ đa thể loại:</strong> Hơn 50.000+ tựa
-            truyện từ cổ điển đến hiện đại, đáp ứng mọi gu đọc: ngôn tình lãng
-            mạn, kiếm hiệp kỳ ảo, trinh thám hồi hộp, khoa học viễn tưởng sáng
-            tạo, và cả những tác phẩm văn học đương đại đậm chất Việt.
-          </li>
-
-          <li>
-            <strong>Cập nhật nhanh - chất lượng cao:</strong> Mỗi ngày có 100+
-            chương truyện mới được đăng tải. Đội ngũ biên tập viên chuyên nghiệp
-            đảm bảo nội dung chuẩn mực, hình ảnh sắc nét.
-          </li>
-
-          <li>
-            <strong>Cộng đồng sáng tạo rộng lớn:</strong> Kết nối với 5.000+ tác
-            giả tài năng từ Bắc chí Nam. Bạn có thể tương tác trực tiếp với tác
-            giả, đóng góp ý tưởng hoặc tham gia các cuộc thi sáng tác thường
-            niên.
-          </li>
-
-          <li>
-            <strong>Trải nghiệm đọc đỉnh cao:</strong> Giao diện được tối ưu hóa
-            cho mọi thiết bị. Chế độ đọc ban đêm, lưu trang tự động, điều chỉnh
-            font chữ giúp bảo vệ mắt và nâng cao trải nghiệm.
-          </li>
-
-          <li>
-            <strong>Hệ thống đề cử thông minh:</strong> Công nghệ AI phân tích
-            sở thích để gợi ý những truyện phù hợp nhất với bạn. Bộ sưu tập cá
-            nhân cho phép lưu trữ và đồng bộ trên mọi thiết bị.
-          </li>
-
-          <li>
-            <strong>Hỗ trợ tác giả toàn diện:</strong> Chính sách chia sẻ lợi
-            nhuận công bằng, hệ thống đánh giá minh bạch và các workshop nâng
-            cao nghiệp vụ dành cho tác giả.
-          </li>
-        </ul>
-
-        <div class="thong-tin-them">
-          <h4 class="tieu-de-nho">Con số ấn tượng</h4>
-          <div class="so-lieu">
-            <div class="so-lieu-item">
-              <span class="con-so">50.000+</span>
-              <span class="mo-ta">Tựa truyện</span>
-            </div>
-            <div class="so-lieu-item">
-              <span class="con-so">2.000.000+</span>
-              <span class="mo-ta">Độc giả</span>
-            </div>
-            <div class="so-lieu-item">
-              <span class="con-so">5.000+</span>
-              <span class="mo-ta">Tác giả</span>
-            </div>
+        <div class="stats-grid-aura">
+          <div class="stat-card">
+            <i class="fas fa-book-journal-whills stat-icon emerald"></i>
+            <span class="con-so">50.000+</span>
+            <span class="mo-ta">Tựa truyện</span>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-users stat-icon azure"></i>
+            <span class="con-so">2.000.000+</span>
+            <span class="mo-ta">Độc giả</span>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-feather-pointed stat-icon gold"></i>
+            <span class="con-so">5.000+</span>
+            <span class="mo-ta">Tác giả</span>
           </div>
         </div>
 
-        <p class="ket-thuc">
-          <strong>TruyenVietHay</strong> không chỉ là nơi đọc truyện, mà còn là
-          ngôi nhà chung của những người yêu văn chương. Dù bạn là độc giả thích
-          khám phá hay tác giả muốn chia sẻ tác phẩm, chúng tôi luôn chào đón
-          bạn với những trải nghiệm <strong>đậm chất Việt</strong> nhất.
-        </p>
+        <h3 class="tieu-de-nho">Điểm Khác Biệt Làm Nên Cảnh Giới</h3>
 
-        <div class="copyright">
-          © 2024 TruyenVietHay. Bản quyền thuộc về TruyenVietHay Team.
+        <div class="features-grid-spirit">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+            <h4 class="feature-title">Kho Truyện Đồ Sộ</h4>
+            <p class="feature-desc">Hơn 50.000+ tựa truyện đa thể loại: Tiên hiệp, kiếm hiệp, ngôn tình, khoa học viễn tưởng và văn học đương đại Việt.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+            <h4 class="feature-title">Cập Nhật Thần Tốc</h4>
+            <p class="feature-desc">100+ chương truyện mới mỗi ngày. Đội ngũ biên tập viên chuyên nghiệp đảm bảo nội dung chuẩn mực, sắc nét.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-handshake"></i></div>
+            <h4 class="feature-title">Cộng Đồng Sáng Tạo</h4>
+            <p class="feature-desc">Kết nối với 5.000+ tác giả tài năng. Tương tác trực tiếp, đóng góp ý tưởng và tham gia các cuộc thi sáng tác.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-mobile-screen"></i></div>
+            <h4 class="feature-title">Trải Nghiệm Đỉnh Cao</h4>
+            <p class="feature-desc">Giao diện tối ưu mọi thiết bị. Chế độ đọc ban đêm, lưu trang tự động, tùy chỉnh font chữ bảo vệ mắt.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-brain"></i></div>
+            <h4 class="feature-title">Đề Cử Thông Minh</h4>
+            <p class="feature-desc">Công nghệ AI phân tích sở thích để gợi ý truyện phù hợp. Đồng bộ bộ sưu tập cá nhân trên mọi thiết bị.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon"><i class="fas fa-gem"></i></div>
+            <h4 class="feature-title">Hỗ Trợ Tác Giả</h4>
+            <p class="feature-desc">Chính sách chia sẻ lợi nhuận công bằng, hệ thống đánh giá minh bạch và workshop nâng cao nghiệp vụ.</p>
+          </div>
+        </div>
+
+        <div class="ket-thuc-box">
+          <p class="ket-thuc-text">
+            <strong>TruyenVietHay</strong> không chỉ là nơi đọc truyện, mà còn là ngôi nhà chung của những người yêu văn chương. Hãy gia nhập cùng chúng tôi để trải nghiệm những trang sách <strong>đậm chất Việt</strong> nhất.
+          </p>
+        </div>
+
+        <div class="copyright-spirit">
+          © 2026 TruyenVietHay. Bản quyền thuộc về TruyenVietHay Team.
         </div>
       </div>
     </section>
@@ -125,31 +124,15 @@ export default {
 };
 </script>
 
-<style>
-/* Reset CSS */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap");
 
-html,
-body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-}
-
-/* Font chữ */
-
-/* Layout chính */
-.trang-chu {
+.trang-chu-xianxia {
   font-family: "Be Vietnam Pro", sans-serif;
-  background-color: #1a1d29;
-  color: #ffffff;
+  background-color: #05080f; /* Nền tối sâu */
+  color: #cbd5e1;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  overflow-x: hidden;
 }
 
 .container {
@@ -159,308 +142,259 @@ body {
   padding: 0 20px;
 }
 
-/* Phần Hero */
-.hero {
-  min-height: 80vh;
+/* ===== HERO GATE ===== */
+/* ===== TỐI ƯU ÁNH SÁNG HERO BANNER ===== */
+.hero-gate {
+  position: relative;
+  min-height: 90vh; /* Tăng chiều cao để thấy rõ background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  /* Thêm một lớp màu nền Indigo sâu làm gốc để tránh đen tuyền */
+  background-color: #050b18; 
+}
+
+.hero-bg-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  /* Giảm Blur xuống và tăng độ sáng (brightness) nhẹ */
+  filter: blur(2px) brightness(0.7) saturate(1.1);
+  transform: scale(1.02);
+  animation: spiritMove 30s ease-in-out infinite alternate;
+}
+
+/* LỚP PHỦ ÁNH SÁNG TÂM ĐIỂM (Mấu chốt để không bị tối quá) */
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%, 
+    rgba(52, 211, 153, 0.1) 0%, /* Hào quang xanh nhẹ ở tâm */
+    rgba(5, 11, 24, 0.6) 50%,    /* Mờ dần */
+    #05080f 100%                 /* Đen sâu ở rìa */
+  );
+}
+
+/* Hiệu ứng trôi nổi nhẹ nhàng cho background */
+@keyframes spiritMove {
+  from { transform: scale(1.02) translate(0, 0); }
+  to { transform: scale(1.1) translate(-1%, -2%); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  padding: 60px 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  text-align: center;
-  padding: 40px 0;
 }
 
-.logo-wrapper {
-  margin-bottom: 30px;
-}
+.logo-wrapper { margin-bottom: 30px; }
 
-.logo {
-  width: 260px;
+.logo-spirit {
+  width: 280px;
   height: auto;
   margin: 0 auto;
-  display: block;
-  transition: transform 0.3s ease;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+  filter: drop-shadow(0 0 15px rgba(52, 211, 153, 0.4));
+  transition: transform 0.4s ease;
 }
+.logo-spirit:hover { transform: scale(1.05); filter: drop-shadow(0 0 25px rgba(52, 211, 153, 0.6)); }
 
-.logo:hover {
-  transform: scale(1.05);
-}
-
-.slogan {
-  font-size: 1.3rem;
-  color: #a1a1aa;
+.slogan-spirit {
+  font-size: 1.2rem;
+  color: #94a3b8;
   margin-top: 15px;
-  letter-spacing: 0.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
 }
 
 .tieu-de-chinh {
-  font-size: 2rem;
-  font-weight: 600;
-  max-width: 800px;
-  margin: 0 auto 30px;
-  color: #fff;
-  line-height: 1.4;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 2.2rem;
+  font-weight: 800;
+  max-width: 900px;
+  margin: 0 auto 40px;
+  color: #f8fafc;
+  line-height: 1.5;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.8);
+}
+.text-highlight {
+  background: linear-gradient(to right, #34d399, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Nút điều hướng */
+/* Nút Tụ Linh */
 .nut-dieu-huong {
   display: flex;
-  gap: 30px;
+  gap: 20px;
   justify-content: center;
-}
-
-.nut-truyen {
-  display: inline-flex;
-  align-items: center;
-  padding: 16px 42px;
-  border-radius: 30px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  text-decoration: none;
-  color: white;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.nut-truyen::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: 0.5s;
-}
-
-.nut-truyen:hover::before {
-  left: 100%;
-}
-
-.nut-truyen-chu {
-  background: linear-gradient(135deg, #4ade80, #22c55e);
-  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
-}
-
-.nut-truyen-tranh {
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-}
-
-.nut-truyen:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-.mui-ten {
-  margin-left: 8px;
-  transition: transform 0.3s ease;
-}
-
-.nut-truyen:hover .mui-ten {
-  transform: translateX(5px);
-}
-
-/* Phần giới thiệu */
-.gioi-thieu {
-  padding: 50px 0;
-  background-color: #1a1d29;
-  border-top: 1px solid #2a2f42;
-}
-
-.tieu-de-phu {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #facc15;
-  margin-bottom: 30px;
-  text-align: center;
-  position: relative;
-  padding-bottom: 10px;
-}
-
-.tieu-de-phu::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 3px;
-  background: #facc15;
-}
-
-.noi-dung {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #d4d4d8;
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.tieu-de-nho {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.danh-sach {
-  list-style-type: none;
-  margin-bottom: 25px;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.danh-sach li {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #d4d4d8;
-  margin-bottom: 12px;
-  padding-left: 30px;
-  position: relative;
-  transition: transform 0.2s ease;
-}
-
-.danh-sach li::before {
-  content: "▹";
-  color: #4ade80;
-  font-size: 1.2rem;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-.danh-sach li:hover {
-  transform: translateX(5px);
-}
-
-.danh-sach li strong {
-  color: #ffffff;
-}
-
-/* Phần số liệu */
-.thong-tin-them {
-  margin: 40px 0;
-}
-
-.so-lieu {
-  display: flex;
-  justify-content: space-around;
-  margin: 30px 0;
   flex-wrap: wrap;
 }
 
-.so-lieu-item {
-  text-align: center;
-  margin: 15px;
-  min-width: 150px;
+.btn-spirit {
+  display: inline-flex;
+  align-items: center;
+  padding: 16px 40px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.con-so {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #facc15;
-  margin-bottom: 5px;
+.btn-spirit.emerald {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #05080f;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+.btn-spirit.emerald:hover { background: linear-gradient(135deg, #34d399, #6ee7b7); box-shadow: 0 8px 30px rgba(16, 185, 129, 0.6); transform: translateY(-3px); }
+
+.btn-spirit.azure {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  backdrop-filter: blur(10px);
+}
+.btn-spirit.azure:hover { background: rgba(255, 255, 255, 0.1); border-color: #60a5fa; color: #60a5fa; box-shadow: 0 8px 30px rgba(96, 165, 250, 0.3); transform: translateY(-3px); }
+
+/* ===== PHẦN GIỚI THIỆU ===== */
+.gioi-thieu-sect {
+  padding: 80px 0;
+  background-image: radial-gradient(circle at 50% 100%, rgba(52, 211, 153, 0.03) 0%, transparent 60%);
 }
 
-.mo-ta {
-  font-size: 0.9rem;
-  color: #a1a1aa;
-}
-
-/* Kết thúc */
-.ket-thuc {
-  font-size: 1.2rem;
-  line-height: 1.8;
-  color: #d4d4d8;
+.section-header-spirit {
   text-align: center;
   max-width: 800px;
-  margin: 0 auto;
+  margin: 0 auto 50px;
 }
 
-.ket-thuc strong {
-  color: #facc15;
+.tieu-de-phu {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #f8fafc;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
+.noi-dung-lead {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #94a3b8;
+}
+
+/* Các con số (Stats) */
+.stats-grid-aura {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 70px;
+}
+
+.stat-card {
+  background: rgba(11, 15, 25, 0.6);
+  border: 1px solid rgba(52, 211, 153, 0.1);
+  border-radius: 20px;
+  padding: 30px 20px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.stat-card:hover { transform: translateY(-5px); border-color: rgba(52, 211, 153, 0.3); }
+
+.stat-icon { font-size: 2.5rem; margin-bottom: 15px; display: block; }
+.stat-icon.emerald { color: #34d399; filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.5)); }
+.stat-icon.azure { color: #60a5fa; filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.5)); }
+.stat-icon.gold { color: #fbbf24; filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.5)); }
+
+.con-so { display: block; font-size: 2.5rem; font-weight: 900; color: #f8fafc; margin-bottom: 5px; text-shadow: 0 2px 10px rgba(255,255,255,0.2); }
+.mo-ta { font-size: 1rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Features Grid */
+.tieu-de-nho {
+  text-align: center; font-size: 1.5rem; font-weight: 800; color: #34d399;
+  margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px;
+}
+
+.features-grid-spirit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+  margin-bottom: 60px;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+.feature-card:hover { background: rgba(52, 211, 153, 0.05); border-color: rgba(52, 211, 153, 0.3); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+
+.feature-icon {
+  width: 50px; height: 50px; border-radius: 12px;
+  background: rgba(52, 211, 153, 0.1); color: #34d399;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; margin-bottom: 20px;
+}
+
+.feature-title { font-size: 1.2rem; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+.feature-desc { font-size: 0.95rem; color: #94a3b8; line-height: 1.6; }
+
+/* Kết thúc box */
+.ket-thuc-box {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 8, 15, 0));
+  border-left: 4px solid #34d399;
+  padding: 30px;
+  border-radius: 0 16px 16px 0;
+  max-width: 900px;
+  margin: 0 auto 50px;
+}
+.ket-thuc-text { font-size: 1.1rem; line-height: 1.8; color: #cbd5e1; margin: 0; }
+.ket-thuc-text strong { color: #34d399; }
 
 /* Copyright */
-.copyright {
-  margin-top: 50px;
-  text-align: center;
-  color: #a1a1aa;
-  font-size: 0.9rem;
-  padding-top: 20px;
-  border-top: 1px solid #2a2f42;
+.copyright-spirit {
+  text-align: center; color: #475569; font-size: 0.9rem; font-weight: 600;
+  padding-top: 30px; border-top: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
+/* Animations */
+@keyframes slowZoom { 0% { transform: scale(1.05); } 100% { transform: scale(1.15); } }
+@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+.animate-float { animation: float 6s ease-in-out infinite; }
+
 /* Responsive */
-@media (max-width: 768px) {
-  .hero {
-    min-height: 70vh;
-    padding: 30px 0;
-  }
+@media (max-width: 900px) {
+  .tieu-de-chinh { font-size: 1.8rem; }
+  .stats-grid-aura { grid-template-columns: 1fr; gap: 20px; margin-bottom: 50px; }
+  .features-grid-spirit { grid-template-columns: 1fr; }
+}
 
-  .logo {
-    width: 180px;
-  }
-
-  .slogan {
-    font-size: 1rem;
-  }
-
-  .tieu-de-chinh {
-    font-size: 1.6rem;
-    padding: 0 15px;
-  }
-
-  .nut-dieu-huong {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .nut-truyen {
-    padding: 14px 30px;
-    font-size: 1.1rem;
-  }
-
-  .tieu-de-phu {
-    font-size: 1.5rem;
-    padding: 0 15px;
-  }
-
-  .noi-dung,
-  .danh-sach li,
-  .ket-thuc {
-    font-size: 1rem;
-    padding: 0 15px;
-  }
-
-  .danh-sach li {
-    padding-left: 25px;
-  }
-
-  .so-lieu {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .so-lieu-item {
-    margin: 10px 0;
-  }
-
-  .copyright {
-    margin-top: 30px;
-    font-size: 0.8rem;
-  }
+@media (max-width: 640px) {
+  .logo-spirit { width: 220px; }
+  .slogan-spirit { font-size: 1rem; }
+  .tieu-de-chinh { font-size: 1.5rem; padding: 0 10px; }
+  .btn-spirit { width: 100%; justify-content: center; }
+  .nut-dieu-huong { flex-direction: column; width: 100%; padding: 0 20px; }
+  .tieu-de-phu { font-size: 1.5rem; }
 }
 </style>

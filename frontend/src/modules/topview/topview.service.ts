@@ -1,6 +1,7 @@
 import axios from "@/utils/axios";
 
-import { Story } from "@/modules/storyText/story.service";
+import { type Story } from "@/modules/storyText/story.service";
+export type { Story };
 
 export interface StoryResponse {
     data: Story[];
