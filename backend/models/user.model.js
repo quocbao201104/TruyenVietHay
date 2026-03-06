@@ -35,7 +35,7 @@ const UserModel = {
     },
 
     create: async (userData) => {
-        const avatar = userData.avatar || "/uploads_img/avatar/default-avatar.jpg";
+        const avatar = userData.avatar || null;
         const sql = `
             INSERT INTO users_new (username, password, email, full_name, phone, role, avatar, gender, google_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)

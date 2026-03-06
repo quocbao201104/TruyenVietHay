@@ -3,7 +3,6 @@ const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { OAuth2Client } = require("google-auth-library");
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const slugify = require("slugify");
 const UserLevelHistory = require("../models/userLevelHistory.model");
 const InventoryModel = require("../models/inventory.model");
@@ -42,7 +41,7 @@ exports.register = async (req, res) => {
             full_name,
             phone,
             role,
-            avatar: avatar || "/uploads_img/avatar/default-avatar.jpg",
+            avatar: avatar || null,
         };
 
         await User.create(newUser);
@@ -139,6 +138,17 @@ exports.getMe = async (req, res) => {
 
         const user = results[0];
 
+        // CHECK ROLE CHANGE: If database role differs from JWT role, issue new token
+        let newToken = null;
+        if (req.user.role !== user.role) {
+            newToken = jwt.sign(
+                { id: user.id, role: user.role },
+                process.env.JWT_SECRET,
+                { expiresIn: "7d" }
+            );
+            console.log(`New token issued for user ${userId} due to role change: ${req.user.role} -> ${user.role}`);
+        }
+
         // Attach equipped badge to profile response
         const levelId = await UserLevelHistory.getCurrentLevelOfUser(userId);
         const equippedBadgesMap = await InventoryModel.getEquippedBadgesForUsers([userId]);
@@ -146,6 +156,7 @@ exports.getMe = async (req, res) => {
 
         res.json({
             message: "Thông tin người dùng",
+            token: newToken, // Include optional new token
             user: {
                 id: user.id,
                 username: user.username,
@@ -287,9 +298,23 @@ exports.changePassword = async (req, res) => {
 };
 
 exports.googleLogin = async (req, res) => {
-    const { token } = req.body;
+    // Robustly extract token from various possible field names
+    const token = req.body.token || req.body.idToken || req.body.credential;
+    
+    if (!token) {
+        console.error("Google Login Error: Missing token in request body", req.body);
+        return res.status(400).json({ 
+            message: "Thiếu token xác thực Google", 
+            receivedFields: Object.keys(req.body) 
+        });
+    }
     
     try {
+        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+        
+        // Handle massive clock skew (system clock is behind Google)
+        OAuth2Client.CLOCK_SKEW_SECS_ = 10000;
+
         const ticket = await client.verifyIdToken({
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID,
@@ -368,7 +393,15 @@ exports.googleLogin = async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Google Login Error:", err);
-        res.status(400).json({ message: "Xác thực Google thất bại", error: err.message });
+        console.error("Google Login Verification Error:", {
+            error: err.message,
+            stack: err.stack,
+            clientId: process.env.GOOGLE_CLIENT_ID ? "PRESENT" : "MISSING"
+        });
+        res.status(400).json({ 
+            message: "Xác thực Google thất bại", 
+            error: err.message,
+            debug: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 };

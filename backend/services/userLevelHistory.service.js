@@ -8,7 +8,27 @@ const getHistoryByUserId = async (userId, pagination = {}) => {
     const { limit = 10, offset = 0 } = pagination;
     const history = await UserLevelHistory.getByUserId(userId, limit, offset);
     const total = await UserLevelHistory.getCountByUserId(userId);
-    return { data: history, total };
+
+    // Filter next level info based on role compatibility
+    const db = require("../config/db");
+    const [users] = await db.execute("SELECT role FROM users_new WHERE id = ?", [userId]);
+    const userRole = users[0]?.role || 'user';
+
+    const processedData = history.map(item => {
+        // If next level is 'author' but user is just 'user', hide next level info to show "Max Level" UI
+        if (item.next_level_id && item.next_level_type === 'author' && userRole === 'user') {
+            return {
+                ...item,
+                next_level_id: null,
+                next_level_name: null,
+                next_level_points: null,
+                next_level_type: null
+            };
+        }
+        return item;
+    });
+
+    return { data: processedData, total };
   } catch (error) {
     throw new Error("Lỗi khi lấy lịch sử cấp bậc: " + error.message);
   }
@@ -112,25 +132,22 @@ const autoUpgrade = async (user_id) => {
 
     const nextLevel = nextLevels[0];
 
+    // Check points requirement
+    if (total_exp < nextLevel.required_points) {
+      throw new Error(`Chưa đủ điểm. Cần ${nextLevel.required_points} điểm để thăng cấp.`);
+    }
+
     // --- CONSTRAINTS CHECK ---
     // Rule: User role must match the target level type
     const [users] = await connection.execute("SELECT role FROM users_new WHERE id = ?", [user_id]);
     const userRole = users[0]?.role;
 
     if (nextLevel.type === 'author' && userRole === 'user') {
-        throw new Error(`Bạn cần nâng cấp tài khoản lên Tác giả (Author) để lên cấp ${nextLevel.name}`);
-    }
-    // General type mismatch check:
-    // If nextLevel.type is 'user', allow both 'user' and 'author'.
-    // If nextLevel.type is 'author', allow 'author'.
-    // Admin is allowed everything.
-    if (nextLevel.type === 'author' && userRole !== 'author' && userRole !== 'admin') {
-        throw new Error(`Cấp độ này yêu cầu vai trò ${nextLevel.type}`);
-    }
-
-    // Check points requirement
-    if (total_exp < nextLevel.required_points) {
-      throw new Error(`Chưa đủ điểm. Cần ${nextLevel.required_points} điểm để thăng cấp.`);
+        // AUTOMATIC ROLE UPGRADE: If user hits an author level, promote them to author
+        await connection.execute("UPDATE users_new SET role = 'author' WHERE id = ?", [user_id]);
+        console.log(`User ${user_id} automatically promoted to 'author' role for level ${nextLevel.name}`);
+    } else if (nextLevel.type === 'author' && userRole !== 'author' && userRole !== 'admin') {
+        throw new Error(`Cảnh giới này chỉ dành cho Tác giả hoặc Quản trị viên.`);
     }
 
     // --- LIFESPAN CALCULATION (CUMULATIVE) ---
@@ -220,6 +237,12 @@ const ensureUserLevel = async (userId) => {
     // Check if user has level history
     const currentLevelId = await UserLevelHistory.getCurrentLevelOfUser(userId);
     if (currentLevelId) {
+        // Even if level exists, ensure rewards are triggered (idempotent fix for missing initial rewards)
+        try {
+            await triggerLevelUpRewards(userId, currentLevelId);
+        } catch (e) {
+            console.error(`[EnsureRewards] Failed for existing user ${userId}:`, e.message);
+        }
         return currentLevelId;
     }
 
@@ -275,6 +298,13 @@ const ensureUserLevel = async (userId) => {
         start_date: now,
         end_date: end_date
     });
+
+    // TRIGGER REWARDS for the initial level
+    try {
+        await triggerLevelUpRewards(userId, defaultLevelId);
+    } catch (e) {
+        console.error(`[InitialLevel] Failed to trigger rewards for user ${userId}:`, e.message);
+    }
 
     return defaultLevelId;
 };

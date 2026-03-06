@@ -6,8 +6,10 @@ const UserLevelHistory = {
       `SELECT 
         h.*, 
         l.name as name, 
+        l.next_level_id as next_level_id,
         nl.name as next_level_name,
-        nl.required_points as next_level_points
+        nl.required_points as next_level_points,
+        nl.type as next_level_type
       FROM user_levels_history h
       LEFT JOIN user_levels l ON h.level_id = l.level_id
       LEFT JOIN user_levels nl ON l.next_level_id = nl.level_id

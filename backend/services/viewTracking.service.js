@@ -15,8 +15,11 @@ const NodeCache = require("node-cache");
 // CẤU HÌNH NODE-CACHE CHO VIEW TRACKING
 // =============================================================================
 
-/** TTL chống spam: 30 phút = 1800 giây */
+/** TTL chống spam: 30 phút = 1800 giây cho CHAPTER */
 const VIEW_SPAM_TTL_SECONDS = 30 * 60;
+
+/** TTL chống spam: 24 giờ = 86400 giây cho NOVEL (Unique View) */
+const NOVEL_VIEW_COOLDOWN_SECONDS = 24 * 60 * 60;
 
 /**
  * Cache riêng cho View Tracking
@@ -32,6 +35,9 @@ const viewCache = new NodeCache({
 
 /** Prefix cho key chống spam (viewed:user_123:chapter_456 hoặc viewed:ip_1.2.3.4:chapter_456) */
 const SPAM_KEY_PREFIX = "viewed:";
+
+/** Prefix cho key chống spam novel (viewed_novel:user_123:novel_456) */
+const NOVEL_SPAM_KEY_PREFIX = "viewed_novel:";
 
 /** Prefix cho bộ đếm view buffer (novel_1, chapter_456) */
 const NOVEL_VIEW_PREFIX = "novel:";
@@ -82,6 +88,22 @@ function markAsViewed(viewerId, chapterId) {
   viewCache.set(key, 1, VIEW_SPAM_TTL_SECONDS);
 }
 
+/**
+ * Kiểm tra user đã xem truyện này trong 24h chưa
+ */
+function hasViewedNovelRecently(viewerId, novelId) {
+  const key = `${NOVEL_SPAM_KEY_PREFIX}${viewerId}:novel_${novelId}`;
+  return viewCache.get(key) !== undefined;
+}
+
+/**
+ * Đánh dấu user đã xem truyện (set TTL 24h)
+ */
+function markNovelAsViewed(viewerId, novelId) {
+  const key = `${NOVEL_SPAM_KEY_PREFIX}${viewerId}:novel_${novelId}`;
+  viewCache.set(key, 1, NOVEL_VIEW_COOLDOWN_SECONDS);
+}
+
 // =============================================================================
 // GHI NHẬN VIEW VÀO CACHE (BUFFER)
 // =============================================================================
@@ -91,15 +113,17 @@ function markAsViewed(viewerId, chapterId) {
  * @param {number} novelId - ID truyện
  * @param {number} chapterId - ID chương
  */
-function incrementViewCounts(novelId, chapterId) {
+function incrementViewCounts(novelId, chapterId, shouldIncrementNovel = true) {
   const novelKey = `${NOVEL_VIEW_PREFIX}${novelId}`;
   const chapterKey = `${CHAPTER_VIEW_PREFIX}${chapterId}`;
 
-  const novelCount = viewCache.get(novelKey) || 0;
   const chapterCount = viewCache.get(chapterKey) || 0;
-
-  viewCache.set(novelKey, novelCount + 1);
   viewCache.set(chapterKey, chapterCount + 1);
+
+  if (shouldIncrementNovel) {
+    const novelCount = viewCache.get(novelKey) || 0;
+    viewCache.set(novelKey, novelCount + 1);
+  }
 }
 
 // =============================================================================
@@ -119,14 +143,28 @@ function incrementViewCounts(novelId, chapterId) {
 function recordChapterView(req, novelId, chapterId) {
   const viewerId = getViewerIdentifier(req);
 
+  // 1. Kiểm tra spam chapter (30 phút)
   if (hasViewedRecently(viewerId, chapterId)) {
-    return { counted: false, reason: "spam" };
+    return { counted: false, reason: "chapter_spam" };
   }
 
+  // 2. Kiểm tra spam novel (24 giờ)
+  const shouldIncrementNovel = !hasViewedNovelRecently(viewerId, novelId);
+  // // 2. Không giới hạn spam 24h cho truyện nữa, mỗi lượt xem chương hợp lệ đều tính cho truyện
+  // const shouldIncrementNovel = true;
+  // 3. Mark viewed
   markAsViewed(viewerId, chapterId);
-  incrementViewCounts(novelId, chapterId);
+  if (shouldIncrementNovel) {
+    markNovelAsViewed(viewerId, novelId);
+  }
 
-  return { counted: true };
+  // 4. Increment buffer
+  incrementViewCounts(novelId, chapterId, shouldIncrementNovel);
+
+  return { 
+    counted: true, 
+    novelIncremented: shouldIncrementNovel 
+  };
 }
 
 // =============================================================================

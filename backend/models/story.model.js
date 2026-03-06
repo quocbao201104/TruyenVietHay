@@ -201,24 +201,24 @@ const StoryModel = {
     return rows;
   },
  delete: async (id) => {
-    // 1. Xóa thông báo liên quan (Cập nhật tên cột sang target_id và lọc theo type truyện)
-    await db.query(`DELETE FROM thong_bao WHERE target_id = ? AND type = 2`, [id]);
-
-    // 2. Xóa các bản ghi ở bảng trung gian và bảng phụ (Vẫn giữ truyen_id nếu bạn chưa đổi tên các bảng này)
-    await db.query(`DELETE FROM truyen_theloai WHERE truyen_id = ?`, [id]);
-    await db.query(`DELETE FROM chuong WHERE truyen_id = ?`, [id]);
-    await db.query(`DELETE FROM theo_doi WHERE truyen_id = ?`, [id]);
-    
-    // 3. Xóa dữ liệu đánh giá (Bảng này dùng để tính hot_score)
-    await db.query(`DELETE FROM ratings WHERE truyen_id = ?`, [id]);
-
-    // 4. Xóa bình luận (Nếu có bảng bình luận trỏ trực tiếp đến truyện)
-    // await db.query(`DELETE FROM binh_luan WHERE truyen_id = ?`, [id]);
-
-    // 5. Cuối cùng mới xóa truyện chính
-    const [result] = await db.query(`DELETE FROM truyen_new WHERE id = ?`, [id]);
-    
-    return result.affectedRows;
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        await connection.query(`DELETE FROM thong_bao WHERE target_id = ? AND type = 2`, [id]);
+        await connection.query(`DELETE FROM truyen_theloai WHERE truyen_id = ?`, [id]);
+        await connection.query(`DELETE FROM chuong WHERE truyen_id = ?`, [id]);
+        await connection.query(`DELETE FROM theo_doi WHERE truyen_id = ?`, [id]);
+        await connection.query(`DELETE FROM ratings WHERE truyen_id = ?`, [id]);
+        const [result] = await connection.query(`DELETE FROM truyen_new WHERE id = ?`, [id]);
+        
+        await connection.commit();
+        return result.affectedRows;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 },
   addGenresForStory: async (truyenId, theloaiIds) => {
     const values = theloaiIds.map((id) => [truyenId, id]);
@@ -285,13 +285,15 @@ const StoryModel = {
             ids = category_ids.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
         }
 
-        if (ids.length > 0) {
-            // Use IN clause with subquery to find stories having AT LEAST ONE of the categories
-            // OR logic is typical for facets: "Action OR Adventure"
-            const placeholders = ids.map(() => '?').join(',');
-            whereConditions.push(`tn.id IN (SELECT truyen_id FROM truyen_theloai WHERE theloai_id IN (${placeholders}))`);
-            params.push(...ids);
-        }
+        // Thay thế đoạn xử lý category_ids
+if (ids.length > 0) {
+    const placeholders = ids.map(() => '?').join(',');
+    whereConditions.push(`EXISTS (
+        SELECT 1 FROM truyen_theloai tt 
+        WHERE tt.truyen_id = tn.id AND tt.theloai_id IN (${placeholders})
+    )`);
+    params.push(...ids);
+}
     }
 
     // Filter by Status

@@ -1,8 +1,8 @@
-    const express = require("express");
-    const methodOverride = require("method-override");
-    const app = express();
-    const port = process.env.PORT || 3000;
-    require("dotenv").config();
+require("dotenv").config();
+const express = require("express");
+const methodOverride = require("method-override");
+const app = express();
+const port = process.env.PORT || 3000;
     require("./config/db"); // Keep for side-effect (DB connection logging) but remove unused 'db' variable
 
     // View Tracking: Cronjob sync view counts từ node-cache sang MySQL mỗi 5 phút

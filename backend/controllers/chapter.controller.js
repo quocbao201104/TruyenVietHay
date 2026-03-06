@@ -33,7 +33,7 @@ const createChapter = async (req, res) => {
 
 // Duyệt chương
 const approveOrRejectChapter = async (req, res) => {
-  const { action } = req.body;
+  const { action, reason } = req.body;
   const chapterId = req.params.id;
 
   if (!action) {
@@ -43,7 +43,7 @@ const approveOrRejectChapter = async (req, res) => {
   }
 
   try {
-    const result = await chapterService.approveChapter(chapterId, action);
+    const result = await chapterService.approveChapter(chapterId, action, reason);
     res.json(result);
   } catch (error) {
     console.error("Error in approveOrRejectChapter:", error);
@@ -126,16 +126,8 @@ const getChapterBySlug = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chương!" });
     }
 
-    // VIEW TRACKING: Ghi nhận lượt xem (buffer trong cache, sync DB qua cronjob)
-    // Chỉ tracking cho chương đã duyệt (không phải chương mẫu)
-    if (chapter.trang_thai === "da_duyet" && chapter.is_chuong_mau !== 1) {
-      try {
-        const viewTrackingService = require("../services/viewTracking.service");
-        viewTrackingService.recordChapterView(req, chapter.truyen_id, chapter.id);
-      } catch (e) {
-        console.error("ViewTracking Error:", e.message);
-      }
-    }
+    // VIEW TRACKING: Moved to separate endpoint /view to support "Time-on-page" logic
+    // We no longer call recordChapterView here automatically.
 
     // GAMIFICATION TRIGGER
     if (req.user && req.user.id) {
@@ -214,11 +206,42 @@ const approveAllChapters = async (req, res) => {
     if (!truyen_id) {
       return res.status(400).json({ message: "Thiếu ID truyện!" });
     }
+    const ChapterModel = require("../models/chapter.model");
     await ChapterModel.approveAllChapters(truyen_id);
     res.json({ message: "Đã duyệt tất cả chương của truyện này!" });
   } catch (error) {
     console.error("approveAllChapters error:", error);
     res.status(500).json({ message: "Lỗi server khi duyệt tất cả chương." });
+  }
+};
+
+// Tăng lượt xem chương (Manual trigger từ Frontend)
+const incrementChapterView = async (req, res) => {
+  try {
+    const chapterId = req.params.id;
+    const ChapterModel = require("../models/chapter.model");
+    const viewTrackingService = require("../services/viewTracking.service");
+
+    const chapter = await ChapterModel.getChapterById(chapterId);
+
+    if (!chapter) {
+      return res.status(404).json({ message: "Không tìm thấy chương!" });
+    }
+
+    // Chỉ tracking cho chương đã duyệt
+    if (chapter.trang_thai === "da_duyet") {
+      const result = viewTrackingService.recordChapterView(req, chapter.truyen_id, chapter.id);
+      return res.json({ 
+        message: "Ghi nhận linh khí (view) thành công.", 
+        counted: result.counted,
+        novelIncremented: result.novelIncremented
+      });
+    }
+
+    res.json({ message: "Chương chưa khai mở, không tính linh khí." });
+  } catch (error) {
+    console.error("incrementChapterView error:", error);
+    res.status(500).json({ message: "Lỗi server khi tăng lượt xem." });
   }
 };
 
@@ -232,4 +255,5 @@ module.exports = {
   getChapterBySlug,
   getAdminChaptersByStoryId,
   approveAllChapters,
+  incrementChapterView,
 };

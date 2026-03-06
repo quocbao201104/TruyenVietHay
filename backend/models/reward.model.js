@@ -69,24 +69,35 @@ const triggerLevelUpRewards = async (userId, newLevel) => {
     return [];
   }
 
-  // Bước 2: Chuẩn bị dữ liệu để INSERT hàng loạt vào user_rewards
-  // Mỗi phần thưởng là một row: (user_id, reward_id, quantity, status, source)
-  const rows = levelRewards.map((r) => [
+  // Bước 2: Lọc bỏ các phần thưởng đã nhận (Tránh trùng lặp - Idempotency)
+  const [existingRewards] = await db.query(
+    `SELECT reward_id FROM user_rewards WHERE user_id = ? AND source = 'level'`,
+    [userId]
+  );
+  const existingIdSet = new Set(existingRewards.map(r => r.reward_id));
+  
+  const newRewards = levelRewards.filter(r => !existingIdSet.has(r.reward_id));
+
+  if (newRewards.length === 0) {
+    return [];
+  }
+
+  // Bước 3: Chuẩn bị dữ liệu để INSERT hàng loạt vào user_rewards
+  const insertRows = newRewards.map((r) => [
     userId,
     r.reward_id,
     r.quantity,
-    "unlocked",  // status enum: 'locked'|'unlocked'|'claimed'|'used'|'expired'
-    "level",     // source enum: 'task'|'level'|'event'|'admin'|'shop'
+    "unlocked",
+    "level",
   ]);
 
-  // Bước 3: Bulk insert một lần duy nhất cho hiệu suất tốt hơn
+  // Bước 4: Bulk insert
   await db.query(
     `INSERT INTO user_rewards (user_id, reward_id, quantity, status, source) VALUES ?`,
-    [rows]
+    [insertRows]
   );
 
-  // Trả về mảng quà đã gửi (để caller biết gửi thông báo nếu cần)
-  return levelRewards.map((r) => ({
+  return newRewards.map((r) => ({
     reward_id: r.reward_id,
     reward_type: r.reward_type,
     quantity: r.quantity,

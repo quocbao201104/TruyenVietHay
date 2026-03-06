@@ -5,7 +5,7 @@ const StoryModel = require("../models/story.model");
 const ChapterModel = require("../models/chapter.model");
 
 // Duyệt chương và gửi thông báo
-const approveChapter = async (chapter_id, action) => {
+const approveChapter = async (chapter_id, action, reason) => {
   try {
     const [rows] = await db.query(
       `SELECT c.truyen_id, c.trang_thai AS trang_thai_kiem_duyet, t.user_id, t.ten_truyen AS ten_truyen
@@ -30,8 +30,11 @@ const approveChapter = async (chapter_id, action) => {
     }
 
     const newStatus = action === "duyet" ? "da_duyet" : "tu_choi";
-    await db.query("UPDATE chuong SET trang_thai = ? WHERE id = ?", [
+    const rejectionReason = action === "tu_choi" ? reason : null;
+
+    await db.query("UPDATE chuong SET trang_thai = ?, ly_do_tu_choi = ? WHERE id = ?", [
       newStatus,
+      rejectionReason,
       chapter_id,
     ]);
 
@@ -43,9 +46,13 @@ const approveChapter = async (chapter_id, action) => {
     }
 
     // Gửi thông báo cho tác giả (type: APPROVAL, target: story)
-    const contentForAuthor = action === "duyet"
+    let contentForAuthor = action === "duyet"
       ? NOTIF_TEMPLATE.CHAPTER_APPROVED_AUTHOR(ten_truyen)
       : NOTIF_TEMPLATE.CHAPTER_REJECTED_AUTHOR(ten_truyen);
+    
+    if (action === "tu_choi" && reason) {
+        contentForAuthor += `. Lý do: ${reason}`;
+    }
 
     await notificationService.sendNotification(
       user_id,

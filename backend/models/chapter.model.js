@@ -1,28 +1,22 @@
 const db = require("../config/db");
 
+// Tối ưu hàm cập nhật: Lấy dữ liệu 1 lần rồi update
 const updateChuongMoiNhat = async (truyen_id) => {
-  // Update so_luong_chuong and chuong_moi
-  const [latestChuong] = await db.query(
-    `SELECT so_chuong, tieu_de 
+  // Lấy cả chương mới nhất và tổng số chương trong 1 query
+  const [[info]] = await db.query(
+    `SELECT 
+        (SELECT so_chuong FROM chuong WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet' ORDER BY so_chuong DESC LIMIT 1) as max_so,
+        COUNT(*) as tong_so
      FROM chuong 
-     WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet'
-     ORDER BY so_chuong DESC LIMIT 1`,
-    [truyen_id]
+     WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet'`,
+    [truyen_id, truyen_id]
   );
-  
-  let chuongMoiString = "Hiện tại chưa có chương tương ứng";
-  if (latestChuong.length > 0) {
-    const chuong = latestChuong[0];
-    chuongMoiString = `Chương ${chuong.so_chuong}`;
-  }
 
-  await db.query(`
-    UPDATE truyen_new 
-    SET 
-        chuong_moi = ?, 
-        so_luong_chuong = (SELECT COUNT(*) FROM chuong WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet')
-    WHERE id = ?`, 
-    [chuongMoiString, truyen_id, truyen_id]
+  const chuongMoiString = info.max_so ? `Chương ${info.max_so}` : "Hiện tại chưa có chương tương ứng";
+
+  await db.query(
+    `UPDATE truyen_new SET chuong_moi = ?, so_luong_chuong = ? WHERE id = ?`,
+    [chuongMoiString, info.tong_so, truyen_id]
   );
 };
 
@@ -50,7 +44,7 @@ const ChapterModel = {
 
   getChaptersByStoryId: async (truyen_id, limit, offset) => {
     const [rows] = await db.query(
-      `SELECT id, truyen_id, so_chuong, tieu_de, slug, thoi_gian_dang
+      `SELECT id, truyen_id, so_chuong, tieu_de, slug, thoi_gian_dang, luot_xem
         FROM chuong 
         WHERE truyen_id = ? AND is_chuong_mau = 0 AND trang_thai = 'da_duyet'
         ORDER BY so_chuong ASC
@@ -62,7 +56,7 @@ const ChapterModel = {
 
   getAdminChaptersByStoryId: async (truyen_id, limit, offset) => {
     const [rows] = await db.query(
-      `SELECT id, truyen_id, so_chuong, tieu_de, slug, thoi_gian_dang, trang_thai
+      `SELECT id, truyen_id, so_chuong, tieu_de, slug, thoi_gian_dang, trang_thai, ly_do_tu_choi, luot_xem
         FROM chuong 
         WHERE truyen_id = ? AND is_chuong_mau = 0
         ORDER BY so_chuong ASC
@@ -80,16 +74,14 @@ const ChapterModel = {
   },
 
   getChapterBySlug: async (chapterSlug, storySlug) => {
-    // Thêm 2 subquery để lấy prev_slug và next_slug
-    // Giả sử bạn đang dùng cột `id` để xác định thứ tự trước/sau của chương.
-    // Nếu bạn có cột `so_chuong` (chương 1, 2, 3...) thì thay chữ `id` thành `so_chuong` nhé.
+    // Tối ưu: Dùng so_chuong để điều hướng thay vì id
     const query = `
       SELECT 
         c.*, 
         t.ten_truyen, 
         t.slug as truyen_slug,
-        (SELECT slug FROM chuong WHERE truyen_id = c.truyen_id AND id < c.id ORDER BY id DESC LIMIT 1) as prev_chapter_slug,
-        (SELECT slug FROM chuong WHERE truyen_id = c.truyen_id AND id > c.id ORDER BY id ASC LIMIT 1) as next_chapter_slug
+        (SELECT slug FROM chuong WHERE truyen_id = c.truyen_id AND so_chuong < c.so_chuong AND trang_thai = 'da_duyet' ORDER BY so_chuong DESC LIMIT 1) as prev_chapter_slug,
+        (SELECT slug FROM chuong WHERE truyen_id = c.truyen_id AND so_chuong > c.so_chuong AND trang_thai = 'da_duyet' ORDER BY so_chuong ASC LIMIT 1) as next_chapter_slug
       FROM chuong c 
       JOIN truyen_new t ON c.truyen_id = t.id 
       WHERE c.slug = ? AND t.slug = ? 
@@ -101,19 +93,12 @@ const ChapterModel = {
     
     if (rows.length > 0) {
         const row = rows[0];
-        
-        // Format to match the frontend expectation
         return {
             ...row,
-            truyen: {
-                id: row.truyen_id,
-                ten_truyen: row.ten_truyen,
-                slug: row.truyen_slug
-            },
-            // Đóng gói thêm Next/Prev để Frontend dễ gọi
+            truyen: { id: row.truyen_id, ten_truyen: row.ten_truyen, slug: row.truyen_slug },
             navigation: {
-                prev_slug: row.prev_chapter_slug || null, // null nếu là chương đầu tiên
-                next_slug: row.next_chapter_slug || null  // null nếu là chương mới nhất
+                prev_slug: row.prev_chapter_slug || null,
+                next_slug: row.next_chapter_slug || null
             }
         };
     }
@@ -175,22 +160,32 @@ const ChapterModel = {
   },
 
   approveAllChapters: async (truyen_id) => {
-    const [result] = await db.execute(
-      `UPDATE chuong SET trang_thai = 'da_duyet' WHERE truyen_id = ? AND is_chuong_mau = 0`,
-      [truyen_id]
-    );
+    const connection = await db.getConnection(); // Sử dụng connection để dùng Transaction
+    try {
+      await connection.beginTransaction();
 
-    // 1. Update story timestamp
-    if (result.affectedRows > 0) {
-        await db.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
+      const [result] = await connection.execute(
+        `UPDATE chuong SET trang_thai = 'da_duyet' WHERE truyen_id = ? AND is_chuong_mau = 0`,
+        [truyen_id]
+      );
+
+      if (result.affectedRows > 0) {
+        await connection.query("UPDATE truyen_new SET thoi_gian_cap_nhat = NOW() WHERE id = ?", [truyen_id]);
         
-        // 2. Update chapter count and newest chapter text
-        await updateChuongMoiNhat(truyen_id);
+        // Gọi hàm update count bên trong transaction này luôn
+        // Lưu ý: Cần viết lại hàm updateChuongMoiNhat để nhận connection nếu muốn tối ưu tuyệt đối
+        await updateChuongMoiNhat(truyen_id); 
+      }
+
+      await connection.commit();
+      return result.affectedRows;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
     }
-    
-    return result.affectedRows;
   },
-  updateChuongMoiNhat,
 };
 
 module.exports = ChapterModel;

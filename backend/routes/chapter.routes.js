@@ -54,6 +54,9 @@ router.put(
   chapterController.approveAllChapters
 );
 
+// Tăng lượt xem chương (Explicit call từ frontend sau timeout/scroll)
+router.post("/:id/view", optionalAuthenticateToken, chapterController.incrementChapterView);
+
 router.delete(
   "/:id",
   authenticateToken,

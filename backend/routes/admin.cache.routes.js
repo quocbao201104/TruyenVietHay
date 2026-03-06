@@ -4,11 +4,24 @@ const { getStats, invalidate } = require('../utils/cache');
 const viewTrackingService = require('../services/viewTracking.service');
 const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 const adminDashboardController = require('../controllers/adminDashboard.controller');
+const authorApplicationController = require('../controllers/authorApplication.controller');
 
 /**
  * Admin Dashboard - Tổng quan hệ thống (RBAC: admin only)
  */
 router.get('/dashboard', authenticateToken, authorizeRoles('admin'), adminDashboardController.getAdminDashboard);
+
+/**
+ * Author Management - Quản lý đơn đăng ký tác giả (RBAC: admin only)
+ */
+// GET /api/admin/author-applications - List all applications
+router.get('/author-applications', authenticateToken, authorizeRoles('admin'), authorApplicationController.getApplications);
+
+// POST /api/admin/approve-author - Approve an application
+router.post('/approve-author', authenticateToken, authorizeRoles('admin'), authorApplicationController.approveApplication);
+
+// POST /api/admin/reject-author - Reject an application
+router.post('/reject-author', authenticateToken, authorizeRoles('admin'), authorApplicationController.rejectApplication);
 
 /**
  * Cache Monitoring Endpoints

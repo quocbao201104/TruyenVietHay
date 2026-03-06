@@ -14,8 +14,8 @@ const db = require("../config/db");
 const viewTrackingService = require("../services/viewTracking.service");
 const logger = require("../utils/logger");
 
-/** Khoảng chạy: 5 phút (tính bằng giây cho node-cron) */
-const CRON_SCHEDULE = "*/5 * * * *"; // Mỗi 5 phút
+/** Khoảng chạy: 1 phút (tính bằng giây cho node-cron) */
+const CRON_SCHEDULE = "*/1 * * * *"; // Mỗi 1 phút
 
 /**
  * Bulk update lượt xem truyện vào truyen_new
